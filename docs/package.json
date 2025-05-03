@@ -1,0 +1,20 @@
+{
+  "name": "@dynamicforms/vuetify-modal-form-kit-docs",
+  "version": "1.0.0",
+  "description": "Documentation for @dynamicforms/vuetify-modal-form-kit",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview"
+  },
+  "dependencies": {
+    "vue": "^3.4.19",
+    "vuetify": "^3.8"
+  },
+  "devDependencies": {
+    "sass": "^1.85.1",
+    "vitepress": "^1.6.3"
+  }
+}
