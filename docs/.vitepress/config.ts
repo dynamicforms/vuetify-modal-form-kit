@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitepress';
 
 export default defineConfig({
-  title: 'DynamicForms Vuetify Inputs',
+  title: 'DynamicForms Vuetify modal form kit',
   description: 'One dialog onscreen at any one time plus a programmatic (vs template) form builder.',
   themeConfig: {
     logo: '/logo.png',
@@ -24,7 +24,8 @@ export default defineConfig({
         {
           text: 'API with Examples',
           items: [
-            { text: 'modal', link: '/examples/modal' },
+            { text: 'form builder - simple', link: '/examples/form-builder' },
+            { text: 'form builder - responsive', link: '/examples/form-builder-responsive' },
           ]
         }
       ]

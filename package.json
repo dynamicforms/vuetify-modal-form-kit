@@ -42,7 +42,7 @@
   "issues": "https://github.com/velis74/dynamicforms-vuetify-modal-form-kit/issues",
   "peerDependencies": {
     "@dynamicforms/vue-forms": "^0.2.4",
-    "@dynamicforms/vuetify-inputs": "^0.1.18",
+    "@dynamicforms/vuetify-inputs": "^0.2.3",
     "lodash-es": "^4.17.12",
     "vue": "^3.4",
     "vue-markdown-render": "^2.2.1",
@@ -52,7 +52,7 @@
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^22.14.1",
     "@vitejs/plugin-vue": "^5",
-    "@vitest/coverage-v8": "^3",
+    "@vitest/coverage-istanbul": "^3",
     "@vue/test-utils": "^2.2.4",
     "@vue/tsconfig": "^0.7.0",
     "eslint-config-velis": "^1.1.16",

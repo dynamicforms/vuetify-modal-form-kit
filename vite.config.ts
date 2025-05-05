@@ -64,9 +64,18 @@ export default defineConfig({
     }
   },
   test: {
+    coverage: {
+      provider: 'istanbul',  // for some reason v8 was giving Serialized Error: { code: 'ERR_INSPECTOR_NOT_CONNECTED' }
+      include: [
+        'src/**/*'
+      ],
+      exclude: [
+        '**/index.ts',
+      ],
+    },
     server: {
       deps: {
-        // inline: ['vuetify']
+        inline: [/vuetify/]
       },
     },
     globals: true,
