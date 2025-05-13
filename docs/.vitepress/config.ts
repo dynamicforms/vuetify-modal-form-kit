@@ -26,6 +26,7 @@ export default defineConfig({
           items: [
             { text: 'form builder - simple', link: '/examples/form-builder' },
             { text: 'form builder - responsive', link: '/examples/form-builder-responsive' },
+            { text: 'modal', link: '/examples/dialog-basic' },
           ]
         }
       ]

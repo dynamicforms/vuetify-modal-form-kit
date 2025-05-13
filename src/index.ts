@@ -2,7 +2,7 @@
 
 export * from './core';
 export * from './layout';
-// export * from './modal';
+export * from './modal';
 
 export const DynamicFormsModalFormKit = {
   install: (/* app: App */) => {

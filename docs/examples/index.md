@@ -7,3 +7,7 @@ code.
 ## [FormBuilder](./form-builder)
 
 The demo showcases how to programmatically build a form and then render it using form-render component.
+
+## [Modal](./dialog-basic)
+
+Modal support.

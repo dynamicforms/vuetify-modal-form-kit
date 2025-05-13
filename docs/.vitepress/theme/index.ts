@@ -7,7 +7,6 @@ import * as directives from 'vuetify/directives'
 import 'vuetify/styles'
 import '@mdi/font/css/materialdesignicons.css'
 import { DynamicFormsModalFormKit } from '../../../src';
-// import DynamicFormsInputsVuetify from '../../../src/vuetify-components';
 
 export default {
   extends: DefaultTheme,
