@@ -5,13 +5,10 @@
     :form-control="currentModal.form"
     :size="currentModal.size"
     :dialog-id="currentModal.dialogId"
+    :title="currentModal.title"
     :color="currentModal.color"
     :icon="currentModal.icon"
   >
-    <template #title>
-      <template v-if="!(currentModal.title instanceof MdString)">{{ currentModal.title }}</template>
-      <vue-markdown v-else source="currentModal.title"/>
-    </template>
     <template #body>
       <template v-if="bodyType === 'string'">{{ currentModal.message }}</template>
       <vue-markdown v-else-if="bodyType === 'md'" source="currentModal.title"/>

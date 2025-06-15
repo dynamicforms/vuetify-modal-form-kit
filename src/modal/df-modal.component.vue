@@ -1,23 +1,25 @@
 <template>
   <!--https://stackoverflow.com/questions/55085735/vuetify-v-dialog-dynamic-width-->
   <v-dialog
-    :model-value="isShown"
+    v-model="isShown"
     :width="width"
     :max-width="width"
     :fullscreen="fullScreen"
     :retain-focus="false"
     persistent
-    @update:model-value="onModelValueUpdate"
   >
     <v-card>
       <v-card-title>
         <v-sheet
           :color="props.color || undefined"
-          :class="{ 'mx-n4 mt-n3 mb-3 d-flex align-center px-4 py-3': !!props.color }"
+          :class="{ 'mx-n4 mt-n3 mb-3 d-flex align-center px-4 py-6': !!props.color }"
           :elevation="!!props.color ? 4 : 0"
         >
           <v-icon v-if="icon" class="me-2" :icon="icon"/>
-          <slot name="title"/>
+          <slot name="title">
+            <template v-if="!(title instanceof Form.MdString)">{{ title }}</template>
+            <vue-markdown v-else source="title"/>
+          </slot>
         </v-sheet>
       </v-card-title>
       <v-card-text>
@@ -34,7 +36,8 @@
 
 <script setup lang="ts">
 import * as Form from '@dynamicforms/vue-forms';
-import { computed, onUnmounted } from 'vue';
+import { computed, onUnmounted, watch } from 'vue';
+import VueMarkdown from 'vue-markdown-render';
 import { useDisplay } from 'vuetify';
 
 import DialogSize from './dialog-size';
@@ -42,17 +45,20 @@ import dialogTracker from './top-modal-tracker';
 
 interface Props {
   modelValue: boolean;
-  size: DialogSize;
+  size?: DialogSize;
   formControl?: Form.Group;
   dialogId?: symbol;
+  title?: Form.RenderContent;
   color?: string;
   icon?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: false,
+  size: DialogSize.DEFAULT,
   dialogId: undefined,
   formControl: undefined,
+  title: undefined,
   color: undefined,
   icon: undefined,
 });
@@ -82,25 +88,33 @@ const width = computed<'unset' | number>(() => {
   }
 });
 
-const sym = props.dialogId ?? Symbol('df-dialog');
-const isTop = dialogTracker.isTop(sym);
-const isShown = computed(() => props.modelValue && isTop.value);
+const sym = computed(() => (props.dialogId ?? Symbol('df-dialog')));
+const isTop = dialogTracker.isTop(sym.value);
 const emit = defineEmits<{
   'update:model-value': [value: boolean]
 }>();
 
-onUnmounted(() => {
-  dialogTracker.remove(sym);
+function onModelValueUpdate(value: boolean, dontEmit = false) {
+  if (value) {
+    dialogTracker.push(sym.value);
+  } else {
+    dialogTracker.remove(sym.value);
+  }
+  if (!dontEmit) emit('update:model-value', value);
+}
+
+const isShown = computed({
+  get: () => props.modelValue && isTop.value,
+  set: (value: boolean) => { onModelValueUpdate(value); },
 });
 
-function onModelValueUpdate(value: boolean) {
-  if (value) {
-    dialogTracker.push(sym);
-  } else {
-    dialogTracker.remove(sym);
-  }
-  emit('update:model-value', value);
-}
+watch(() => props.modelValue, (newValue, oldValue) => {
+  if (newValue !== oldValue) onModelValueUpdate(newValue, true);
+}, { immediate: true });
+
+onUnmounted(() => {
+  dialogTracker.remove(sym.value);
+});
 
 type Slots = {
   title: () => any;
