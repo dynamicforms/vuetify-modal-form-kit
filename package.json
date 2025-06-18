@@ -1,7 +1,7 @@
 {
   "name": "@dynamicforms/vuetify-modal-form-kit",
   "private": false,
-  "version": "0.1.5",
+  "version": "0.1.8",
   "type": "module",
   "description": "Form layout and modal helpers",
   "author": "Jure Erznožnik",

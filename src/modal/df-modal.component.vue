@@ -12,7 +12,7 @@
       <v-card-title>
         <v-sheet
           :color="props.color || undefined"
-          :class="{ 'mx-n4 mt-n3 mb-3 d-flex align-center px-4 py-6': !!props.color }"
+          :class="{ 'mx-n4 mt-n3 mb-3 d-flex align-center px-4 py-6': !!props.color, 'position-relative': closable }"
           :elevation="!!props.color ? 4 : 0"
         >
           <v-icon v-if="icon" class="me-2" :icon="icon"/>
@@ -20,6 +20,16 @@
             <template v-if="!(title instanceof Form.MdString)">{{ title }}</template>
             <vue-markdown v-else source="title"/>
           </slot>
+          <v-btn
+            v-if="closable"
+            icon
+            variant="text"
+            class="position-absolute"
+            style="right: 0.25em"
+            @click="onModelValueUpdate(false)"
+          >
+            <v-icon icon="mdi-close"/>
+          </v-btn>
         </v-sheet>
       </v-card-title>
       <v-card-text>
@@ -45,6 +55,7 @@ import dialogTracker from './top-modal-tracker';
 
 interface Props {
   modelValue: boolean;
+  closable?: boolean;
   size?: DialogSize;
   formControl?: Form.Group;
   dialogId?: symbol;
@@ -55,6 +66,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: false,
+  closable: false,
   size: DialogSize.DEFAULT,
   dialogId: undefined,
   formControl: undefined,
@@ -95,18 +107,18 @@ const emit = defineEmits<{
 }>();
 
 function onModelValueUpdate(value: boolean, dontEmit = false) {
-  if (value) {
-    dialogTracker.push(sym.value);
-  } else {
-    dialogTracker.remove(sym.value);
+  if (!props.dialogId || !value) {
+    // manage stack only if this dialog is a template-one, not managed by api.ts
+    if (value) {
+      dialogTracker.push(sym.value);
+    } else {
+      dialogTracker.remove(sym.value);
+    }
   }
   if (!dontEmit) emit('update:model-value', value);
 }
 
-const isShown = computed({
-  get: () => props.modelValue && isTop.value,
-  set: (value: boolean) => { onModelValueUpdate(value); },
-});
+const isShown = computed(() => props.modelValue && isTop.value);
 
 watch(() => props.modelValue, (newValue, oldValue) => {
   if (newValue !== oldValue) onModelValueUpdate(newValue, true);
