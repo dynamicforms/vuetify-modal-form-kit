@@ -11,7 +11,7 @@
   >
     <template #body>
       <template v-if="bodyType === 'string'">{{ currentModal.message }}</template>
-      <vue-markdown v-else-if="bodyType === 'md'" source="currentModal.title"/>
+      <vue-markdown v-else-if="bodyType === 'md'" :source="String(currentModal.message)"/>
       <template v-else><component :is="componentInfo?.componentName" v-bind="componentInfo?.componentProps"/></template>
     </template>
     <template #actions>

@@ -96,7 +96,7 @@ const dialogResult = ref(null);
 async function showMessage() {
   dialogResult.value = await modal.message(
     'Information',
-    'This is a simple message dialog with a close button.',
+    new Form.MdString('This is a **simple message** dialog with a close button.'),
     { color: 'info', icon: 'mdi-information-outline' },
   );
 }
