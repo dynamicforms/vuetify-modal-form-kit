@@ -152,4 +152,30 @@ describe('Column', () => {
       ],
     });
   });
+  it('should add components using simple() API on Column', () => {
+    const fb = new FormBuilder();
+
+    fb.row({}, (row) => row
+      .col({}, (col) => {
+        col.simple()
+          .generic('VTextField', { label: 'First Name' })
+          .generic('VTextField', { label: 'Last Name' });
+        return col;
+      }));
+
+    const json = fb.toJSON();
+
+    // Should have 1 row with 1 column containing 2 components
+    expect(json.rows.length).toBe(1);
+    expect(json.rows[0].columns.length).toBe(1);
+    expect(json.rows[0].columns[0].components.length).toBe(2);
+
+    // First component
+    expect(json.rows[0].columns[0].components[0].name).toBe('VTextField');
+    expect(json.rows[0].columns[0].components[0].props.label).toBe('First Name');
+
+    // Second component
+    expect(json.rows[0].columns[0].components[1].name).toBe('VTextField');
+    expect(json.rows[0].columns[0].components[1].props.label).toBe('Last Name');
+  });
 });

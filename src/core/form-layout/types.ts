@@ -73,3 +73,5 @@ export interface ComponentJSON<T extends ComponentProps = ComponentProps> {
   name: string | symbol;
   props: T;
 }
+
+export type TwelveDivisible = 1 | 2 | 3 | 4 | 6 | 12;

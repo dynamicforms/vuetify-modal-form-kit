@@ -68,6 +68,39 @@ mainForm.row({ }, (row) => row
 const form = new FormBuilder();
 
 formBuilder
+  .simple() // single-column layout if no parameter is given
+  .generic('h3', { [FormBuilderBodyProp]: 'Personal Information', class: 'mt-0' })
+  .simple(2)
+  .generic('VTextField', { label: 'First Name', modelValue: '' })
+  .generic('VTextField', { label: 'Last Name', modelValue: '' })
+  .simple()
+  .generic('h3', { [FormBuilderBodyProp]: 'Contact Information', class: 'mt-0' })
+  .simple(2)
+  .generic('VTextField', { label: 'Email', type: 'email', modelValue: '' })
+  .generic('VSelect', {
+    label: 'Preferred Contact Method',
+    items: [
+      { title: 'Email', value: 'email' },
+      { title: 'Phone', value: 'phone' },
+      { title: 'Mail', value: 'mail' }
+    ],
+    modelValue: '',
+  })
+  .simple()
+  .generic('h3', { [FormBuilderBodyProp]: 'Additional Information', class: 'mt-0' })
+  .generic('VTextarea', { label: 'Comments', rows: 3, modelValue: '' });
+
+/************************************************************************
+ *
+ * OR
+ * 
+ * Code left to demonstrate the "long and clunky, but more powerful and 
+ * fine-controlled" way of declaring the layout vs the simple() way above
+ * 
+ * Both code fragments result in the same layout being built.
+ ************************************************************************/
+
+formBuilder
   .row({ }, (row) => row
     .column({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt

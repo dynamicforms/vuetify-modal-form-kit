@@ -44,6 +44,23 @@ class ColBase implements ComponentProps {
     return this;
   }
 
+  /**
+   * @return returns a proxy that allows to immediately from the column object add components, e.g.
+   * new FormBuilder().row((row) => row.col((col) => col.simple.generic(...) will add one component into this column.
+   * You may call the ComponentBuilder's methods as many times as you want to generate components
+   */
+  simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(): T {
+    const res = new Proxy({} as T, {
+      get: (target: T, prop: string | symbol) => (
+        (...args: any[]) => {
+          this.component((cmpt : any) => cmpt[prop](...args));
+          return res;
+        }
+      ),
+    });
+    return res;
+  }
+
   toJSON(): ColumnJSON {
     return {
       props: this.props,
@@ -74,6 +91,15 @@ export class Column extends ResponsiveRenderOptions<ColBase> {
     if (!this._value[breakpoint]) this._value[breakpoint] = new ColBase();
     colCallback(this._value[breakpoint]);
     return this;
+  }
+
+  /**
+   * @return returns a proxy that allows to immediately from the column object add components, e.g.
+   * new FormBuilder().row((row) => row.col((col) => col.simple.generic(...) will add one component into this column.
+   * You may call the ComponentBuilder's methods as many times as you want to generate components
+   */
+  simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(): T {
+    return this._value.simple<T>();
   }
 
   toJSON(breakpoint?: BreakpointNames): ColumnJSONResponsive {

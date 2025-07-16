@@ -2,8 +2,13 @@
 import { BreakpointNames, responsiveBreakpoints, ResponsiveRenderOptions } from '@dynamicforms/vuetify-inputs';
 import { isArray, isObjectLike } from 'lodash-es';
 
+import { type ComponentBuilderBase, VuetifyInputsComponentBuilder } from './component';
 import { Row } from './row';
-import { ComponentProps, FormJSON, FormJSONResponsive, RowPropsPartial } from './types';
+import { ComponentProps, FormJSON, FormJSONResponsive, RowPropsPartial, TwelveDivisible } from './types';
+
+export type SimpleProxy<T extends ComponentBuilderBase> = T & {
+  simple: (cols?: TwelveDivisible) => SimpleProxy<T>;
+};
 
 class FormBase implements ComponentProps {
   rows: Row[] = [];
@@ -13,6 +18,39 @@ class FormBase implements ComponentProps {
     rowCallback(row);
     this.rows.push(row);
     return this;
+  }
+
+  /**
+   * @param cols specifies how many columns we want per row. each column will be 12/cols wide with cols columns per row
+   * @return returns a proxy that allows to immediately from the FormBuilder object add components into their own
+   * rows and columns e.g. new FormBuilder().simple.generic(...) will create a layout with one row, column and within
+   * it your generic component. You may call the ComponentBuilder's methods as many times as you want
+   * to generate more rows and columns with components
+   */
+  simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(cols: TwelveDivisible = 1): SimpleProxy<T> {
+    let currentRow: Row | null = null;
+    let componentsInCurrentRow = 0;
+
+    const res = new Proxy({} as SimpleProxy<T>, {
+      get: (target: SimpleProxy<T>, prop: string | symbol) => {
+        if (prop === 'simple') {
+          return (newCols: TwelveDivisible = 1) => this.simple<T>(newCols);
+        }
+        return (...args: any[]) => {
+          if (!currentRow || componentsInCurrentRow >= cols) {
+            this.row({}, (row) => {
+              currentRow = row;
+              return row;
+            });
+            componentsInCurrentRow = 0;
+          }
+          currentRow!.col({ cols: 12 / cols }, (col) => col.component((cmpt: any) => cmpt[prop](...args)));
+          componentsInCurrentRow++;
+          return res;
+        };
+      },
+    });
+    return res;
   }
 
   toJSON(breakpoint?: BreakpointNames): FormJSON {
@@ -31,6 +69,17 @@ export class FormBuilder extends ResponsiveRenderOptions<FormBase> {
     if (!this._value[breakpoint]) this._value[breakpoint] = new FormBase();
     formCallback(this._value[breakpoint]);
     return this;
+  }
+
+  /**
+   * @param cols specifies how many columns we want per row. each column will be 12/cols wide with cols columns per row
+   * @return returns a proxy that allows to immediately from the FormBuilder object add components into their own
+   * rows and columns e.g. new FormBuilder().simple.generic(...) will create a layout with one row, column and within
+   * it your generic component. You may call the ComponentBuilder's methods as many times as you want
+   * to generate more rows and columns with components
+   */
+  simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(cols: TwelveDivisible = 1): SimpleProxy<T> {
+    return this._value.simple<T>(cols);
   }
 
   toJSON(breakpoint?: BreakpointNames): FormJSONResponsive {

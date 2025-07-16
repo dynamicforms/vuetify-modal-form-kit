@@ -1,3 +1,4 @@
+import { FormBuilder } from './form-builder';
 import { Row } from './row';
 
 describe('Row', () => {
@@ -137,5 +138,70 @@ describe('Row', () => {
 
     expect(mockCallback).toHaveBeenCalledTimes(1);
     expect(mockCallback).toHaveBeenCalledWith(expect.any(Object));
+  });
+
+  it('should add components using simple() API on Row', () => {
+    const fb = new FormBuilder();
+
+    fb.row({}, (row) => {
+      row.simple()
+        .generic('VTextField', { label: 'First Name' })
+        .generic('VTextField', { label: 'Last Name' });
+      return row;
+    });
+
+    const json = fb.toJSON();
+
+    // Should have 1 row with 2 columns
+    expect(json.rows.length).toBe(1);
+    expect(json.rows[0].columns.length).toBe(2);
+
+    // First column
+    expect(json.rows[0].columns[0].props).toEqual({ cols: 12 });
+    expect(json.rows[0].columns[0].components.length).toBe(1);
+    expect(json.rows[0].columns[0].components[0].name).toBe('VTextField');
+    expect(json.rows[0].columns[0].components[0].props.label).toBe('First Name');
+
+    // Second column
+    expect(json.rows[0].columns[1].props).toEqual({ cols: 12 });
+    expect(json.rows[0].columns[1].components.length).toBe(1);
+    expect(json.rows[0].columns[1].components[0].name).toBe('VTextField');
+    expect(json.rows[0].columns[1].components[0].props.label).toBe('Last Name');
+  });
+
+  it('should add components using simple(cols = 2) API on Row', () => {
+    const fb = new FormBuilder();
+
+    fb.row({}, (row) => {
+      row.simple(2)
+        .generic('VTextField', { label: 'First Name' })
+        .generic('VTextField', { label: 'Middle Name' })
+        .generic('VTextField', { label: 'Last Name' });
+      return row;
+    });
+
+    const json = fb.toJSON();
+
+    // Should have 1 row with 3 columns, eash 6 wide (because we specified a 2-column layout)
+    expect(json.rows.length).toBe(1);
+    expect(json.rows[0].columns.length).toBe(3);
+
+    // First column
+    expect(json.rows[0].columns[0].props).toEqual({ cols: 6 });
+    expect(json.rows[0].columns[0].components.length).toBe(1);
+    expect(json.rows[0].columns[0].components[0].name).toBe('VTextField');
+    expect(json.rows[0].columns[0].components[0].props.label).toBe('First Name');
+
+    // Second column
+    expect(json.rows[0].columns[1].props).toEqual({ cols: 6 });
+    expect(json.rows[0].columns[1].components.length).toBe(1);
+    expect(json.rows[0].columns[1].components[0].name).toBe('VTextField');
+    expect(json.rows[0].columns[1].components[0].props.label).toBe('Middle Name');
+
+    // Third column
+    expect(json.rows[0].columns[2].props).toEqual({ cols: 6 });
+    expect(json.rows[0].columns[2].components.length).toBe(1);
+    expect(json.rows[0].columns[2].components[0].name).toBe('VTextField');
+    expect(json.rows[0].columns[2].components[0].props.label).toBe('Last Name');
   });
 });
