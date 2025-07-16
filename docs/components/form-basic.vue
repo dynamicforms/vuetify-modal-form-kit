@@ -21,26 +21,26 @@ const formBuilder = new FormBuilder();
 // Personal Information Section
 formBuilder
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('h3', { [FormBuilderBodyProp]: 'Personal Information', class: 'mt-0' }))))
   .row({ }, (row) => row
-    .column({ cols: 6, offset: 0 }, (col) => col
+    .col({ cols: 6, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'First Name', modelValue: '' })))
-    .column({ cols: 6, offset: 0 }, (col) => col
+    .col({ cols: 6, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Last Name', modelValue: '' }))))
   // Contact Information Section
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('h3', { [FormBuilderBodyProp]: 'Contact Information', class: 'mt-0' }))))
   .row({ }, (row) => row
-    .column({ cols: 6, offset: 0 }, (col) => col
+    .col({ cols: 6, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Email', type: 'email', modelValue: '' })))
-    .column({ cols: 6, offset: 0 }, (col) => col
+    .col({ cols: 6, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VSelect', {
           label: 'Preferred Contact Method',
@@ -53,11 +53,11 @@ formBuilder
         }))))
   // Additional Information Section
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('h3', { [FormBuilderBodyProp]: 'Additional Information', class: 'mt-0' }))))
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextarea', { label: 'Comments', rows: 3, modelValue: '' }))));
 

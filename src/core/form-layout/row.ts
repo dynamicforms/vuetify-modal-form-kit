@@ -33,7 +33,7 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
     super({ props } as BreakpointsJSON<RowBase>);
   }
 
-  column(colProps?: ColumnPropsPartial, colCallback?: (col: Column) => Column): this {
+  col(colProps?: ColumnPropsPartial, colCallback?: (col: Column) => Column): this {
     this._value.col(colProps, colCallback);
     return this;
   }

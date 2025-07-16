@@ -100,7 +100,7 @@ describe('Column', () => {
 
   it('should support nested forms via component method', () => {
     const nestedForm = new FormBuilder();
-    nestedForm.row({ }, (row) => row.column({ cols: 12 }));
+    nestedForm.row({ }, (row) => row.col({ cols: 12 }));
 
     const column = new Column({ cols: 12 });
     column.component((cmpt) => cmpt
@@ -117,7 +117,7 @@ describe('Column', () => {
   it('should serialize nested form correctly', () => {
     const nestedForm = new FormBuilder();
     nestedForm.row({ }, (row) => row
-      .column({ cols: 12, offset: 0 }, (col) => col
+      .col({ cols: 12, offset: 0 }, (col) => col
         .component((cmpt) => cmpt
           .generic('VTextField', { label: 'Nested field' }))));
 

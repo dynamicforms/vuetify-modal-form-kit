@@ -61,26 +61,26 @@ const formBuilder = new FormBuilder();
 // Default layout (lg and up) - full version with up to 4 fields in a row
 formBuilder
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('h2', { [FormBuilderBodyProp]: 'Registration Form', class: 'ma-0 pa-0' }))))
   // Personal Information
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('h4', { [FormBuilderBodyProp]: 'Personal Information', class: 'mt-0' }))))
   // Row with 4 fields
   .row({ }, (row) => row
-    .column({ cols: 3, offset: 0 }, (col) => col
+    .col({ cols: 3, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'First Name', placeholder: 'Enter first name' })))
-    .column({ cols: 3, offset: 0 }, (col) => col
+    .col({ cols: 3, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Last Name', placeholder: 'Enter last name' })))
-    .column({ cols: 3, offset: 0 }, (col) => col
+    .col({ cols: 3, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'SSN', placeholder: 'Enter social security number' })))
-    .column({ cols: 3, offset: 0 }, (col) => col
+    .col({ cols: 3, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VSelect', {
           label: 'Gender',
@@ -92,17 +92,17 @@ formBuilder
         }))))
   // Contact Information
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('h4', { [FormBuilderBodyProp]: 'Contact Information', class: 'mt-0' }))))
   .row({ }, (row) => row
-    .column({ cols: 4, offset: 0 }, (col) => col
+    .col({ cols: 4, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Email', type: 'email', placeholder: 'email@domain.com' })))
-    .column({ cols: 4, offset: 0 }, (col) => col
+    .col({ cols: 4, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Phone', placeholder: '+1 234 567 890' })))
-    .column({ cols: 4, offset: 0 }, (col) => col
+    .col({ cols: 4, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VSelect', {
           label: 'Preferred Contact Method',
@@ -114,33 +114,33 @@ formBuilder
         }))))
   // Address
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('h4', { [FormBuilderBodyProp]: 'Address', class: 'mt-0' }))))
   .row({ }, (row) => row
-    .column({ cols: 8, offset: 0 }, (col) => col
+    .col({ cols: 8, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Street', placeholder: 'Enter street name' })))
-    .column({ cols: 4, offset: 0 }, (col) => col
+    .col({ cols: 4, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'House Number', placeholder: 'Enter number' }))))
   .row({ }, (row) => row
-    .column({ cols: 4, offset: 0 }, (col) => col
+    .col({ cols: 4, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Postal Code', placeholder: '12345' })))
-    .column({ cols: 4, offset: 0 }, (col) => col
+    .col({ cols: 4, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'City', placeholder: 'Enter city' })))
-    .column({ cols: 4, offset: 0 }, (col) => col
+    .col({ cols: 4, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Country', placeholder: 'USA' }))))
   // Additional Information
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('h4', { [FormBuilderBodyProp]: 'Additional Information', class: 'mt-0' }))))
   .row({ }, (row) => row
-    .column({ cols: 6, offset: 0 }, (col) => col
+    .col({ cols: 6, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VSelect', {
           label: 'Education',
@@ -152,7 +152,7 @@ formBuilder
             { title: 'Doctorate', value: 'doctorate' }
           ]
         })))
-    .column({ cols: 6, offset: 0 }, (col) => col
+    .col({ cols: 6, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VRadioGroup', {
           label: 'Status',
@@ -165,7 +165,7 @@ formBuilder
           ]
         }))))
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextarea', {
           label: 'Additional Notes',
@@ -176,26 +176,26 @@ formBuilder
 // Medium screens (md) - similar to lg but with some adaptations
 formBuilder.breakpoint('md', (form) => form
     .row({ }, (row) => row
-      .column({ cols: 12, offset: 0 }, (col) => col
+      .col({ cols: 12, offset: 0 }, (col) => col
         .component((cmpt) => cmpt
           .generic('h2', { [FormBuilderBodyProp]: 'Registration Form', class: 'ma-0 pa-0' }))))
     // Personal Information - here we use a different row layout
     .row({ }, (row) => row
-      .column({ cols: 12, offset: 0 }, (col) => col
+      .col({ cols: 12, offset: 0 }, (col) => col
         .component((cmpt) => cmpt
           .generic('h4', { [FormBuilderBodyProp]: 'Personal Information', class: 'ma-0' }))))
     .row({ }, (row) => row
-      .column({ cols: 6, offset: 0 }, (col) => col
+      .col({ cols: 6, offset: 0 }, (col) => col
         .component((cmpt) => cmpt
           .generic('VTextField', { label: 'First Name', placeholder: 'Enter first name' })))
-      .column({ cols: 6, offset: 0 }, (col) => col
+      .col({ cols: 6, offset: 0 }, (col) => col
         .component((cmpt) => cmpt
           .generic('VTextField', { label: 'Last Name', placeholder: 'Enter last name' }))))
     .row({ }, (row) => row
-      .column({ cols: 6, offset: 0 }, (col) => col
+      .col({ cols: 6, offset: 0 }, (col) => col
         .component((cmpt) => cmpt
           .generic('VTextField', { label: 'SSN', placeholder: 'Enter social security number' })))
-      .column({ cols: 6, offset: 0 }, (col) => col
+      .col({ cols: 6, offset: 0 }, (col) => col
         .component((cmpt) => cmpt
           .generic('VSelect', {
             label: 'Gender',
@@ -207,18 +207,18 @@ formBuilder.breakpoint('md', (form) => form
           }))))
     // Contact Information
     .row({ }, (row) => row
-      .column({ cols: 12, offset: 0 }, (col) => col
+      .col({ cols: 12, offset: 0 }, (col) => col
         .component((cmpt) => cmpt
           .generic('h4', { [FormBuilderBodyProp]: 'Contact Information', class: 'mt-0' }))))
     .row({ }, (row) => row
-      .column({ cols: 6, offset: 0 }, (col) => col
+      .col({ cols: 6, offset: 0 }, (col) => col
         .component((cmpt) => cmpt
           .generic('VTextField', { label: 'Email', type: 'email', placeholder: 'email@domain.com' })))
-      .column({ cols: 6, offset: 0 }, (col) => col
+      .col({ cols: 6, offset: 0 }, (col) => col
         .component((cmpt) => cmpt
           .generic('VTextField', { label: 'Phone', placeholder: '+1 234 567 890' }))))
     .row({ }, (row) => row
-      .column({ cols: 12, offset: 0 }, (col) => col
+      .col({ cols: 12, offset: 0 }, (col) => col
         .component((cmpt) => cmpt
           .generic('VSelect', {
             label: 'Preferred Contact Method',
@@ -230,18 +230,18 @@ formBuilder.breakpoint('md', (form) => form
           }))))
     // Address - showing an example of breakpoint at the column level
     .row({ }, (row) => row
-      .column({ cols: 12, offset: 0 }, (col) => col
+      .col({ cols: 12, offset: 0 }, (col) => col
         .component((cmpt) => cmpt
           .generic('h4', { [FormBuilderBodyProp]: 'Address', class: 'mt-0' }))))
     .row({ }, (row) => row
-      .column({ cols: 8, offset: 0 }, (col) => col
+      .col({ cols: 8, offset: 0 }, (col) => col
         .breakpoint('sm', (col) => {
           col.cols = 12;
           return col;
         })  // Column adapts for sm
         .component((cmpt) => cmpt
           .generic('VTextField', { label: 'Street', placeholder: 'Enter street name' })))
-      .column({ cols: 4, offset: 0 }, (col) => col
+      .col({ cols: 4, offset: 0 }, (col) => col
         .breakpoint('sm', (col) => {
           col.cols = 12;
           return col;
@@ -249,13 +249,13 @@ formBuilder.breakpoint('md', (form) => form
         .component((cmpt) => cmpt
           .generic('VTextField', { label: 'House Number', placeholder: 'Enter number' }))))
     .row({ }, (row) => row
-      .column({ cols: 4, offset: 0 }, (col) => col
+      .col({ cols: 4, offset: 0 }, (col) => col
         .component((cmpt) => cmpt
           .generic('VTextField', { label: 'Postal Code', placeholder: '12345' })))
-      .column({ cols: 4, offset: 0 }, (col) => col
+      .col({ cols: 4, offset: 0 }, (col) => col
         .component((cmpt) => cmpt
           .generic('VTextField', { label: 'City', placeholder: 'Enter city' })))
-      .column({ cols: 4, offset: 0 }, (col) => col
+      .col({ cols: 4, offset: 0 }, (col) => col
         .component((cmpt) => cmpt
           .generic('VTextField', { label: 'Country', placeholder: 'USA' }))))
   // Other parts of the form remain the same as in lg variant...
@@ -264,57 +264,57 @@ formBuilder.breakpoint('md', (form) => form
 // Small screens (sm) - only the most necessary fields in one column, with some exceptions
 formBuilder.breakpoint('sm', (form) => form
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('h3', { [FormBuilderBodyProp]: 'Registration Form', class: 'ma-0' }))))
   // Personal Information
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('h5', { [FormBuilderBodyProp]: 'Personal Information', class: 'mt-0' }))))
   .row({ }, (row) => row
-    .column({ cols: 6, offset: 0 }, (col) => col
+    .col({ cols: 6, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'First Name', placeholder: 'Enter first name', dense: true })))
-    .column({ cols: 6, offset: 0 }, (col) => col
+    .col({ cols: 6, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Last Name', placeholder: 'Enter last name', dense: true }))))
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'SSN', placeholder: 'Enter social security number', dense: true }))))
   // Contact Information
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('h5', { [FormBuilderBodyProp]: 'Contact Information', class: 'mt-0' }))))
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Email', type: 'email', placeholder: 'email@domain.com', dense: true }))))
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Phone', placeholder: '+1 234 567 890', dense: true }))))
   // Address
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('h5', { [FormBuilderBodyProp]: 'Address', class: 'mt-0' }))))
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Street and Number', placeholder: 'E.g. Main Street 123', dense: true }))))
   .row({ }, (row) => row
-    .column({ cols: 4, offset: 0 }, (col) => col
+    .col({ cols: 4, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Postal Code', placeholder: '12345', dense: true })))
-    .column({ cols: 8, offset: 0 }, (col) => col
+    .col({ cols: 8, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'City', placeholder: 'New York', dense: true }))))
   // Notes
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextarea', {
           label: 'Additional Notes',
@@ -326,29 +326,29 @@ formBuilder.breakpoint('sm', (form) => form
 // Mobile screens (xs) - minimal and simplified form
 formBuilder.breakpoint('xs', (form) => form
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('h4', { [FormBuilderBodyProp]: 'Registration', class: 'ma-0' }))))
   // Only the most important fields
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Full Name', placeholder: 'John Doe', dense: true }))))
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Email', type: 'email', placeholder: 'john.doe@email.com', dense: true }))))
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Phone', placeholder: '+1 234 567 890', dense: true }))))
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Address', placeholder: 'E.g. Main Street 123, New York', dense: true }))))
   // Confirmation field
   .row({ }, (row) => row
-    .column({ cols: 12, offset: 0 }, (col) => col
+    .col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VCheckbox', {
           label: 'I agree to the terms and conditions',

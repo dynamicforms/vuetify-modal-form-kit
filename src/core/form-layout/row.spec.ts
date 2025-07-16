@@ -8,8 +8,8 @@ describe('Row', () => {
 
   it('should add columns', () => {
     const row = new Row();
-    row.column({ cols: 6 });
-    row.column({ cols: 6 });
+    row.col({ cols: 6 });
+    row.col({ cols: 6 });
 
     expect(row.toJSON()).toEqual({
       props: {},
@@ -22,8 +22,8 @@ describe('Row', () => {
 
   it('should add columns with offset', () => {
     const row = new Row();
-    row.column({ cols: 4, offset: 2 });
-    row.column({ cols: 4, offset: 2 });
+    row.col({ cols: 4, offset: 2 });
+    row.col({ cols: 4, offset: 2 });
 
     expect(row.toJSON()).toEqual({
       props: {},
@@ -36,7 +36,7 @@ describe('Row', () => {
 
   it('should allow adding components to columns', () => {
     const row = new Row();
-    row.column({ cols: 12, offset: 0 }, (col) => col
+    row.col({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Test' })));
 
@@ -57,8 +57,8 @@ describe('Row', () => {
     const row = new Row();
 
     // Default layout
-    row.column({ cols: 6 });
-    row.column({ cols: 6 });
+    row.col({ cols: 6 });
+    row.col({ cols: 6 });
 
     // Small screen layout
     row.breakpoint('sm', (r) => r.col({ cols: 12 }));
@@ -95,9 +95,9 @@ describe('Row', () => {
     const row = new Row();
 
     // Default layout
-    row.column({ cols: 4 });
-    row.column({ cols: 4 });
-    row.column({ cols: 4 });
+    row.col({ cols: 4 });
+    row.col({ cols: 4 });
+    row.col({ cols: 4 });
 
     // Small screen layout
     row.breakpoint('sm', (r) => r.col({ cols: 6 }));
@@ -133,7 +133,7 @@ describe('Row', () => {
     const row = new Row();
     const mockCallback = vi.fn().mockReturnValue({});
 
-    row.column({ cols: 12, offset: 0 }, mockCallback);
+    row.col({ cols: 12, offset: 0 }, mockCallback);
 
     expect(mockCallback).toHaveBeenCalledTimes(1);
     expect(mockCallback).toHaveBeenCalledWith(expect.any(Object));
