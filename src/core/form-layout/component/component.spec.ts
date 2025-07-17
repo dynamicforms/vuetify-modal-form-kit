@@ -1,4 +1,5 @@
-import { Column } from './column';
+import { Column } from '../column';
+
 import { Component, ComponentBuilderBase } from './component';
 
 describe('Component', () => {

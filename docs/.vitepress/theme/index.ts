@@ -1,3 +1,4 @@
+import { DynamicFormsInputs } from '@dynamicforms/vuetify-inputs';
 import { h } from 'vue'
 import type { Theme } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
@@ -21,7 +22,7 @@ export default {
 
     app.use(vuetify);
     app.use(DynamicFormsModalFormKit);
-    // app.use(DynamicFormsInputsVuetify);
+    app.use(DynamicFormsInputs, { registerComponents: true });
   },
   Layout: () => {
     return h(DefaultTheme.Layout, null, {

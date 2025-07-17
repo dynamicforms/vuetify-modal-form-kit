@@ -28,14 +28,12 @@ const form = new FormBuilder();
 
 // Add a row with two equal columns
 form
-  .row({ }, (row) => row
-    .column({ cols: 6, offset: 0 }, (col) => col
-      .component((cmpt) => cmpt
-        .generic('VTextField', { label: 'First name', placeholder: 'Enter your first name' })))
-    .column({ cols: 6, offset: 0 }, (col) => col
-      .component((cmpt) => cmpt
-        .generic('VTextField', { label: 'Last name', placeholder: 'Enter your last name' }))));
+  .row({ }, (row) => row.simple(2)
+    .dfInput({ label: 'First name', placeholder: 'Enter your first name' }))
+    .dfInput({ label: 'Last name', placeholder: 'Enter your last name' });
+
   // Add a second row with a full-width text area
+form
   .row({ }, (row) => row
     .column({ cols: 12, offset: 0 }, (col) => col
       .component((cmpt) => cmpt

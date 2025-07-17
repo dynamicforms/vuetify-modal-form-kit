@@ -1,6 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
-import type { FormBuilder } from './form-builder';
-import { ComponentJSON, ComponentProps, FormBuilderName } from './types';
+import type { FormBuilder } from '../form-builder';
+import { ComponentJSON, ComponentProps, FormBuilderName } from '../types';
 
 export class Component<T extends Record<string, any> = Record<string, any>> {
   name: string | symbol;
@@ -35,11 +35,5 @@ export class ComponentBuilderBase implements ComponentBuilderInterface<Component
 
   nestedForm(form: FormBuilder): this {
     return this.generic(FormBuilderName, form);
-  }
-}
-
-export class VuetifyInputsComponentBuilder extends ComponentBuilderBase {
-  textInput(props: Record<string, any>): this {
-    return this.generic('aaaa', props);
   }
 }
