@@ -2,6 +2,7 @@
 // eslint-disable-next-line max-classes-per-file
 import * as Form from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
+import { isEmpty } from 'lodash-es';
 import { computed, ref } from 'vue';
 
 // import { Action, ActionCollection, FilteredActions } from '@/actions';
@@ -46,7 +47,7 @@ class ModalAPI {
   yesNo(title: Form.RenderContent, message: Form.RenderContent, options?: ModalOptions): CloseablePromise<string> {
     const hasAction = Object.keys(options?.form?.fields ?? []).some((fieldName) => (
       options?.form?.field(fieldName) instanceof Form.Action
-    ));
+    )) || !isEmpty(options?.actions);
 
     const yes = Action.yesAction();
     Object.defineProperty(yes, 'defaultConfirm', { value: true });
@@ -59,7 +60,7 @@ class ModalAPI {
   message(title: Form.RenderContent, message: Form.RenderContent, options?: ModalOptions): CloseablePromise<string> {
     const hasAction = Object.keys(options?.form?.fields ?? []).some((fieldName) => (
       options?.form?.field(fieldName) instanceof Form.Action
-    ));
+    )) || !isEmpty(options?.actions);
 
     const close = Action.closeAction();
     Object.defineProperties(close, {
