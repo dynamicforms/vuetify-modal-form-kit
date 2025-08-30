@@ -32,7 +32,7 @@ export default defineConfig({
       ]
     },
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/velis74/dynamicforms-vuetify-inputs' }
+      { icon: 'github', link: 'https://github.com/velis74/dynamicforms-vuetify-modal-form-kit' }
     ],
     footer: {
       message: 'Released under the MIT License.',
