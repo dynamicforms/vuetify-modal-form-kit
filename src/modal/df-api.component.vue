@@ -10,9 +10,7 @@
     :icon="currentModal.icon"
   >
     <template #body>
-      <template v-if="bodyType === 'string'">{{ currentModal.message }}</template>
-      <vue-markdown v-else-if="bodyType === 'md'" :source="String(currentModal.message)"/>
-      <template v-else><component :is="componentInfo?.componentName" v-bind="componentInfo?.componentProps"/></template>
+      <messages-widget message=" " :errors="messages" classes=""/>
     </template>
     <template #actions>
       <df-actions
@@ -25,10 +23,9 @@
 </template>
 
 <script setup lang="ts">
-import { isCustomModalContentComponentDef, MdString } from '@dynamicforms/vue-forms';
-import { DfActions, Action } from '@dynamicforms/vuetify-inputs';
+import { RenderableValue, RenderContentRef } from '@dynamicforms/vue-forms';
+import { Action, DfActions, MessagesWidget } from '@dynamicforms/vuetify-inputs';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import VueMarkdown from 'vue-markdown-render';
 
 import { currentModal, installed } from './api';
 import DfModal from './df-modal.component.vue';
@@ -39,17 +36,7 @@ watch(() => currentModal.value, (modal) => {
   isOpen.value = modal !== null;
 });
 
-const bodyType = computed(() => {
-  const msg = currentModal?.value?.message;
-  if (!msg) return 'string';
-  if (msg instanceof MdString) return 'md';
-  if (isCustomModalContentComponentDef(msg)) return 'component';
-  return 'string';
-});
-
-const componentInfo = computed(
-  () => (isCustomModalContentComponentDef(currentModal?.value?.message) ? currentModal?.value?.message : null),
-);
+const messages = computed(() => [new RenderableValue(currentModal?.value?.message as RenderContentRef)]);
 
 onMounted(() => {
   if (installed.value) {

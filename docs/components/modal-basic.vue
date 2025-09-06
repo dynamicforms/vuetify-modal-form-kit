@@ -81,7 +81,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import * as Form from '@dynamicforms/vue-forms';
+import { Field, Group, MdString, RenderContent, Validators } from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
 import { modal, DialogSize, DfModal, ModalView } from '../../src';
 
@@ -96,7 +96,7 @@ const dialogResult = ref(null);
 async function showMessage() {
   dialogResult.value = await modal.message(
     'Information',
-    new Form.MdString('This is a **simple message** dialog with a close button.'),
+    new MdString('This is a **simple message** dialog with a close button.'),
     { color: 'info', icon: 'mdi-information-outline' },
   );
 }
@@ -112,19 +112,19 @@ async function showConfirmation() {
 // Form dialog
 async function showFormDialog() {
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  const emailAction = new Form.Validators.Pattern(emailPattern);
+  const emailAction = new Validators.Pattern(emailPattern);
 
   // Create a form with validation
-  const form = new Form.Group({
-    name: Form.Field.create({
+  const form = new Group({
+    name: Field.create({
       // component: 'VTextField',
       value: { label: 'Name' },
-      validators: [new Form.Validators.Required()],
+      validators: [new Validators.Required()],
     }),
-    email: Form.Field.create({
+    email: Field.create({
       // component: 'VTextField',
       value: { label: 'Email' },
-      validators: [new Form.Validators.Required(), emailAction],
+      validators: [new Validators.Required(), emailAction],
     }),
     // Add action buttons
     submit: Action.create({ value: { label: 'Submit', icon: 'mdi-check' } }),
@@ -132,13 +132,17 @@ async function showFormDialog() {
   });
 
   // Show dialog with form
-  dialogResult.value = await modal.message('User Information', 'Please enter your details:', { form });
+  dialogResult.value = await modal.message(
+    'User Information',
+    new RenderContent({ componentName: 'div', componentVHtml: '' }),
+    { form },
+  );
 
   // If form was submitted successfully, display the entered values
   if (dialogResult.value === 'submit') {
     const userData = {
-      name: form.field('name').value,
-      email: form.field('email').value,
+      name: field('name').value,
+      email: field('email').value,
     };
 
     // Show the results in another dialog
@@ -152,9 +156,9 @@ async function showFormDialog() {
 // Dialog with different sizes
 async function showSizedDialog(size) {
   // Create a form with a size field
-  const form = new Form.Group({
+  const form = new Group({
     // Size field controls dialog size
-    size: Form.Field.create({ value: size }),
+    size: Field.create({ value: size }),
     // Action button
     ok: Action.create({ value: { label: 'OK', icon: 'mdi-check' } }),
   });

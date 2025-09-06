@@ -73,7 +73,7 @@ class ModalAPI {
 
   custom(title: Form.RenderContent, componentName: string, componentProps: Record<any, any>, options?: ModalOptions)
     : CloseablePromise<string> {
-    return this.message(title, <Form.CustomModalContentComponentDef>{ componentName, componentProps }, options);
+    return this.message(title, <Form.SimpleComponentDef>{ componentName, componentProps }, options);
   }
 
   private messageInternal(
