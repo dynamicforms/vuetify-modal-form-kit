@@ -1,7 +1,7 @@
 {
   "name": "@dynamicforms/vuetify-modal-form-kit",
   "private": false,
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "module",
   "description": "Form layout and modal helpers",
   "author": "Jure Erznožnik",
@@ -41,8 +41,8 @@
   },
   "issues": "https://github.com/velis74/dynamicforms-vuetify-modal-form-kit/issues",
   "peerDependencies": {
-    "@dynamicforms/vue-forms": "^0.4.0",
-    "@dynamicforms/vuetify-inputs": "^0.5.7",
+    "@dynamicforms/vue-forms": "^0.4.5",
+    "@dynamicforms/vuetify-inputs": "^0.6.2",
     "lodash-es": "^4.17.12",
     "vue": "^3.4",
     "vue-markdown-render": "^2.2.1",

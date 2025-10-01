@@ -81,9 +81,9 @@
 
 <script setup>
 import { ref } from 'vue';
-import { Field, Group, MdString, RenderContent, Validators } from '@dynamicforms/vue-forms';
+import { Field, Group, MdString, Validators } from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
-import { modal, DialogSize, DfModal, ModalView } from '../../src';
+import { modal, DialogSize, ModalView } from '../../src';
 
 // Flag to control whether to show modal API component in this demo
 // In a real app, this would be in your App.vue
