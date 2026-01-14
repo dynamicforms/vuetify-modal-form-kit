@@ -17,8 +17,7 @@
         >
           <v-icon v-if="icon" class="me-2" :icon="icon"/>
           <slot name="title">
-            <template v-if="!(title instanceof Form.MdString)">{{ title }}</template>
-            <vue-markdown v-else source="title"/>
+            <messages-widget message=" " :errors="dialogTitle" classes=""/>
           </slot>
           <v-btn
             v-if="closable"
@@ -46,8 +45,8 @@
 
 <script setup lang="ts">
 import * as Form from '@dynamicforms/vue-forms';
+import { MessagesWidget } from '@dynamicforms/vuetify-inputs';
 import { computed, onUnmounted, watch } from 'vue';
-import VueMarkdown from 'vue-markdown-render';
 import { useDisplay } from 'vuetify';
 
 import DialogSize from './dialog-size';
@@ -81,7 +80,7 @@ const fullScreen = computed(() => {
   if (size.value === DialogSize.SMALL && !display.smAndUp.value) return true;
   if (size.value === DialogSize.MEDIUM && !display.mdAndUp.value) return true;
   if (size.value === DialogSize.LARGE && !display.lgAndUp.value) return true;
-  return size.value === DialogSize.X_LARGE && !display.xl.value;
+  return size.value === DialogSize.X_LARGE && !display.xlAndUp.value;
 });
 
 const width = computed<'unset' | number>(() => {
@@ -119,6 +118,14 @@ function onModelValueUpdate(value: boolean, dontEmit = false) {
 }
 
 const isShown = computed(() => props.modelValue && isTop.value);
+
+const dialogTitle = computed(() => {
+  const title = props.title;
+  if (title && title instanceof Form.RenderableValue) {
+    return [title];
+  }
+  return [new Form.RenderableValue(title as Form.RenderContentRef)];
+});
 
 watch(() => props.modelValue, (newValue, oldValue) => {
   if (newValue !== oldValue) onModelValueUpdate(newValue, true);

@@ -44,7 +44,11 @@ class ModalAPI {
     return installed.value;
   }
 
-  yesNo(title: Form.RenderContent, message: Form.RenderContent, options?: ModalOptions): CloseablePromise<string> {
+  yesNo(
+    title: Form.RenderContent | Form.RenderableValue,
+    message: Form.RenderContent | Form.RenderableValue,
+    options?: ModalOptions,
+  ): CloseablePromise<string> {
     const hasAction = Object.keys(options?.form?.fields ?? []).some((fieldName) => (
       options?.form?.field(fieldName) instanceof Form.Action
     )) || !isEmpty(options?.actions);
@@ -57,7 +61,11 @@ class ModalAPI {
     return this.messageInternal(title, message, hasAction ? { } : { yes, no }, options);
   }
 
-  message(title: Form.RenderContent, message: Form.RenderContent, options?: ModalOptions): CloseablePromise<string> {
+  message(
+    title: Form.RenderContent | Form.RenderableValue,
+    message: Form.RenderContent | Form.RenderableValue,
+    options?: ModalOptions,
+  ): CloseablePromise<string> {
     const hasAction = Object.keys(options?.form?.fields ?? []).some((fieldName) => (
       options?.form?.field(fieldName) instanceof Form.Action
     )) || !isEmpty(options?.actions);
@@ -77,8 +85,8 @@ class ModalAPI {
   }
 
   private messageInternal(
-    title: Form.RenderContent,
-    message: Form.RenderContent,
+    title: Form.RenderContent | Form.RenderableValue,
+    message: Form.RenderContent | Form.RenderableValue,
     defaultActions: FormActions,
     options?: ModalOptions,
   ): CloseablePromise<string> {
@@ -110,6 +118,25 @@ class ModalAPI {
       }));
     });
 
+    let renderableTitle;
+    let renderableMessage;
+    // noinspection SuspiciousTypeOfGuard
+    if (title instanceof Form.RenderableValue) {
+      renderableTitle = title;
+    } else {
+      renderableTitle = new Form.RenderableValue(title);
+    }
+
+    console.log('message1');
+    // noinspection SuspiciousTypeOfGuard
+    if (message instanceof Form.RenderableValue) {
+      console.log('message2');
+      renderableMessage = message;
+    } else {
+      console.log('message3');
+      renderableMessage = new Form.RenderableValue(message);
+    }
+
     const id = Symbol('modalstack');
     const promise = new Promise<string>((resolve) => {
       resolvePromise = (value: string) => {
@@ -120,8 +147,8 @@ class ModalAPI {
       dialogTracker.push(id);
       modalDefinitions[id] = {
         dialogId: id,
-        title,
-        message,
+        title: renderableTitle,
+        message: renderableMessage,
         form: options?.form,
         size: options?.size ?? DialogSize.DEFAULT,
         actions,

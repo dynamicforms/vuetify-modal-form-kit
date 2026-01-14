@@ -10,7 +10,7 @@
     :icon="currentModal.icon"
   >
     <template #body>
-      <messages-widget message=" " :errors="messages" classes=""/>
+      <messages-widget message=" " :errors="messages" :classes="renderableMessage.extraClasses"/>
     </template>
     <template #actions>
       <df-actions
@@ -36,7 +36,14 @@ watch(() => currentModal.value, (modal) => {
   isOpen.value = modal !== null;
 });
 
-const messages = computed(() => [new RenderableValue(currentModal?.value?.message as RenderContentRef)]);
+const renderableMessage = computed(() => {
+  const message = currentModal?.value?.message;
+  if (message && message instanceof RenderableValue) {
+    return message;
+  }
+  return new RenderableValue(message as RenderContentRef);
+});
+const messages = computed(() => [renderableMessage.value]);
 
 onMounted(() => {
   if (installed.value) {
