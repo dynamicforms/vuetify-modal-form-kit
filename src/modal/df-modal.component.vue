@@ -17,7 +17,7 @@
         >
           <v-icon v-if="icon" class="me-2" :icon="icon"/>
           <slot name="title">
-            <messages-widget message=" " :errors="dialogTitle" classes=""/>
+            <messages-widget message=" " :errors="[title]" classes=""/>
           </slot>
           <v-btn
             v-if="closable"
@@ -58,7 +58,7 @@ interface Props {
   size?: DialogSize;
   formControl?: Form.Group;
   dialogId?: symbol;
-  title?: Form.RenderContent;
+  title?: Form.RenderableValue;
   color?: string;
   icon?: string;
 }
@@ -118,15 +118,6 @@ function onModelValueUpdate(value: boolean, dontEmit = false) {
 }
 
 const isShown = computed(() => props.modelValue && isTop.value);
-
-const dialogTitle = computed(() => {
-  const title = props.title;
-  if (title && title instanceof Form.RenderableValue) {
-    return [title];
-  }
-  return [new Form.RenderableValue(title as Form.RenderContentRef)];
-});
-
 watch(() => props.modelValue, (newValue, oldValue) => {
   if (newValue !== oldValue) onModelValueUpdate(newValue, true);
 }, { immediate: true });

@@ -26,8 +26,8 @@ export interface ModalOptions {
 
 export interface ModalData extends ModalOptions {
   dialogId: symbol;
-  title: Form.RenderContent;
-  message: Form.RenderContent;
+  title: Form.RenderableValue;
+  message: Form.RenderableValue;
   size: DialogSize;
   resolve: (value: string) => void;
 }
@@ -84,6 +84,10 @@ class ModalAPI {
     return this.message(title, <Form.SimpleComponentDef>{ componentName, componentProps }, options);
   }
 
+  private getRenderableMessage(message: Form.RenderContent | Form.RenderableValue): Form.RenderableValue {
+    return message instanceof Form.RenderableValue ? message : new Form.RenderableValue(message);
+  }
+
   private messageInternal(
     title: Form.RenderContent | Form.RenderableValue,
     message: Form.RenderContent | Form.RenderableValue,
@@ -118,25 +122,6 @@ class ModalAPI {
       }));
     });
 
-    let renderableTitle;
-    let renderableMessage;
-    // noinspection SuspiciousTypeOfGuard
-    if (title instanceof Form.RenderableValue) {
-      renderableTitle = title;
-    } else {
-      renderableTitle = new Form.RenderableValue(title);
-    }
-
-    console.log('message1');
-    // noinspection SuspiciousTypeOfGuard
-    if (message instanceof Form.RenderableValue) {
-      console.log('message2');
-      renderableMessage = message;
-    } else {
-      console.log('message3');
-      renderableMessage = new Form.RenderableValue(message);
-    }
-
     const id = Symbol('modalstack');
     const promise = new Promise<string>((resolve) => {
       resolvePromise = (value: string) => {
@@ -147,8 +132,8 @@ class ModalAPI {
       dialogTracker.push(id);
       modalDefinitions[id] = {
         dialogId: id,
-        title: renderableTitle,
-        message: renderableMessage,
+        title: this.getRenderableMessage(title),
+        message: this.getRenderableMessage(message),
         form: options?.form,
         size: options?.size ?? DialogSize.DEFAULT,
         actions,

@@ -49,6 +49,33 @@ if (result === 'yes') {
 }
 ```
 
+### Dialog with Markdown string and custom CSS class
+```typescript
+import { MdString, RenderableValue} from '@dynamicforms/vue-forms';
+import { modal } from '@dynamicforms/vuetify-modal-form-kit';
+
+// Custom css class is defined in RenderableValue
+modal.message('Information', new RenderableValue(
+  new MdString(
+    'This is a **simple message** dialog with a close button.\n\nStyling can be changed with custom CSS class.'
+  ),
+  'md_extra_class'),
+);
+```
+
+If CSS is scoped, you need to use global selector to target the class:
+```css
+:global(.md_extra_class) {
+  color: blue;
+}
+```
+Otherwise, you can use the following selector:
+```css
+.md_extra_class {
+  color: blue;
+}
+```
+
 ### Form Dialog
 
 ```typescript

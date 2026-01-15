@@ -10,7 +10,7 @@
     :icon="currentModal.icon"
   >
     <template #body>
-      <messages-widget message=" " :errors="messages" :classes="renderableMessage.extraClasses"/>
+      <messages-widget v-if="message" message=" " :errors="[message]" :classes="messageClass"/>
     </template>
     <template #actions>
       <df-actions
@@ -23,7 +23,6 @@
 </template>
 
 <script setup lang="ts">
-import { RenderableValue, RenderContentRef } from '@dynamicforms/vue-forms';
 import { Action, DfActions, MessagesWidget } from '@dynamicforms/vuetify-inputs';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
@@ -36,14 +35,8 @@ watch(() => currentModal.value, (modal) => {
   isOpen.value = modal !== null;
 });
 
-const renderableMessage = computed(() => {
-  const message = currentModal?.value?.message;
-  if (message && message instanceof RenderableValue) {
-    return message;
-  }
-  return new RenderableValue(message as RenderContentRef);
-});
-const messages = computed(() => [renderableMessage.value]);
+const message = computed(() => currentModal.value?.message);
+const messageClass = computed(() => (message.value ? message.value.extraClasses : undefined));
 
 onMounted(() => {
   if (installed.value) {

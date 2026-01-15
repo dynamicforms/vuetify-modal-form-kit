@@ -98,7 +98,7 @@ async function showMessage() {
     'Information',
     new RenderableValue(
       new MdString(
-        'This is a **simple message** dialog with a close button.\nStyling can be changed with custom css class.'
+        'This is a **simple message** dialog with a close button.\n\nStyling can be changed with custom CSS class.'
       ),
       'md_extra_class'),
     { color: 'info', icon: 'mdi-information-outline' },
