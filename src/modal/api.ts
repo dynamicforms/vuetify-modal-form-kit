@@ -26,8 +26,8 @@ export interface ModalOptions {
 
 export interface ModalData extends ModalOptions {
   dialogId: symbol;
-  title: Form.RenderContent;
-  message: Form.RenderContent;
+  title: Form.RenderableValue;
+  message: Form.RenderableValue;
   size: DialogSize;
   resolve: (value: string) => void;
 }
@@ -44,7 +44,11 @@ class ModalAPI {
     return installed.value;
   }
 
-  yesNo(title: Form.RenderContent, message: Form.RenderContent, options?: ModalOptions): CloseablePromise<string> {
+  yesNo(
+    title: Form.RenderContent | Form.RenderableValue,
+    message: Form.RenderContent | Form.RenderableValue,
+    options?: ModalOptions,
+  ): CloseablePromise<string> {
     const hasAction = Object.keys(options?.form?.fields ?? []).some((fieldName) => (
       options?.form?.field(fieldName) instanceof Form.Action
     )) || !isEmpty(options?.actions);
@@ -57,7 +61,11 @@ class ModalAPI {
     return this.messageInternal(title, message, hasAction ? { } : { yes, no }, options);
   }
 
-  message(title: Form.RenderContent, message: Form.RenderContent, options?: ModalOptions): CloseablePromise<string> {
+  message(
+    title: Form.RenderContent | Form.RenderableValue,
+    message: Form.RenderContent | Form.RenderableValue,
+    options?: ModalOptions,
+  ): CloseablePromise<string> {
     const hasAction = Object.keys(options?.form?.fields ?? []).some((fieldName) => (
       options?.form?.field(fieldName) instanceof Form.Action
     )) || !isEmpty(options?.actions);
@@ -76,9 +84,13 @@ class ModalAPI {
     return this.message(title, <Form.SimpleComponentDef>{ componentName, componentProps }, options);
   }
 
+  private getRenderableMessage(message: Form.RenderContent | Form.RenderableValue): Form.RenderableValue {
+    return message instanceof Form.RenderableValue ? message : new Form.RenderableValue(message);
+  }
+
   private messageInternal(
-    title: Form.RenderContent,
-    message: Form.RenderContent,
+    title: Form.RenderContent | Form.RenderableValue,
+    message: Form.RenderContent | Form.RenderableValue,
     defaultActions: FormActions,
     options?: ModalOptions,
   ): CloseablePromise<string> {
@@ -120,8 +132,8 @@ class ModalAPI {
       dialogTracker.push(id);
       modalDefinitions[id] = {
         dialogId: id,
-        title,
-        message,
+        title: this.getRenderableMessage(title),
+        message: this.getRenderableMessage(message),
         form: options?.form,
         size: options?.size ?? DialogSize.DEFAULT,
         actions,

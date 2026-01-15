@@ -81,7 +81,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { Field, Group, MdString, Validators } from '@dynamicforms/vue-forms';
+import {Field, Group, MdString, RenderableValue, Validators} from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
 import { modal, DialogSize, ModalView } from '../../src';
 
@@ -96,7 +96,11 @@ const dialogResult = ref(null);
 async function showMessage() {
   dialogResult.value = await modal.message(
     'Information',
-    new MdString('This is a **simple message** dialog with a close button.'),
+    new RenderableValue(
+      new MdString(
+        'This is a **simple message** dialog with a close button.\n\nStyling can be changed with custom CSS class.'
+      ),
+      'md_extra_class'),
     { color: 'info', icon: 'mdi-information-outline' },
   );
 }
@@ -134,7 +138,7 @@ async function showFormDialog() {
   // Show dialog with form
   dialogResult.value = await modal.message(
     'User Information',
-    new RenderContent({ componentName: 'div', componentVHtml: '' }),
+    new RenderableValue({ componentName: 'div', componentVHtml: '' }),
     { form },
   );
 
@@ -175,5 +179,9 @@ async function showSizedDialog(size) {
 <style scoped>
 .demo-container {
   position: relative;
+}
+
+:global(.md_extra_class) {
+  color: blue;
 }
 </style>
