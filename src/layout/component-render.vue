@@ -3,7 +3,7 @@
   <component :is="resolvedComponent" v-if="resolvedComponent" v-bind="cProps">{{ cBody }}</component>
 
   <!-- if component is a nested form-builder -->
-  <form-renderer v-else-if="isFormBuilder" :layout="cProps" :components="components"/>
+  <form-renderer v-else-if="isFormBuilder" :layout="cProps" :components="components" />
 
   <!-- try a globally registered component -->
   <component :is="stringComponentName" v-else v-bind="cProps">{{ cBody }}</component>
@@ -23,7 +23,7 @@ interface ComponentRenderProps {
 const props = withDefaults(defineProps<ComponentRenderProps>(), { props: () => ({}), components: () => ({}) });
 
 const stringComponentName = computed(() => {
-  const uname = <symbol | string> props.name;
+  const uname = <symbol | string>props.name;
   return typeof uname === 'symbol' ? uname.description || 'SymbolComponent' : uname;
 });
 const cProps = computed(() => props.props);

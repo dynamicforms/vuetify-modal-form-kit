@@ -1,4 +1,3 @@
-/* eslint-disable vue/one-component-per-file */
 import { FormBuilder } from './form-builder';
 import { FormBuilderName } from './types';
 
@@ -17,38 +16,39 @@ describe('FormBuilder', () => {
 
   it('should add a row with columns', () => {
     const fb = new FormBuilder();
-    fb.row({}, (row) => row
-      .col({ cols: 6, offset: 0 })
-      .col({ cols: 6, offset: 0 }));
+    fb.row({}, (row) => row.col({ cols: 6, offset: 0 }).col({ cols: 6, offset: 0 }));
 
     expect(fb.toJSON()).toEqual({
-      rows: [{
-        props: {},
-        columns: [
-          { props: { cols: 6, offset: 0 }, components: [] },
-          { props: { cols: 6, offset: 0 }, components: [] },
-        ],
-      }],
+      rows: [
+        {
+          props: {},
+          columns: [
+            { props: { cols: 6, offset: 0 }, components: [] },
+            { props: { cols: 6, offset: 0 }, components: [] },
+          ],
+        },
+      ],
     });
   });
 
   it('should add components to columns', () => {
     const fb = new FormBuilder();
-    fb.row({}, (row) => row
-      .col({ cols: 6, offset: 0 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'Test' }))));
+    fb.row({}, (row) =>
+      row.col({ cols: 6, offset: 0 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'Test' }))),
+    );
 
     expect(fb.toJSON()).toEqual({
-      rows: [{
-        props: {},
-        columns: [
-          {
-            props: { cols: 6, offset: 0 },
-            components: [
-              { name: 'VTextField', props: { label: 'Test' } },
-            ],
-          },
-        ],
-      }],
+      rows: [
+        {
+          props: {},
+          columns: [
+            {
+              props: { cols: 6, offset: 0 },
+              components: [{ name: 'VTextField', props: { label: 'Test' } }],
+            },
+          ],
+        },
+      ],
     });
   });
 
@@ -56,74 +56,76 @@ describe('FormBuilder', () => {
     const fb = new FormBuilder();
 
     // Default layout
-    fb.row({}, (row) => row
-      .col({ cols: 6, offset: 0 })
-      .col({ cols: 6, offset: 0 }));
+    fb.row({}, (row) => row.col({ cols: 6, offset: 0 }).col({ cols: 6, offset: 0 }));
 
     // Small screen layout
-    fb.breakpoint('sm', (form) => form
-      .row({}, (row) => row
-        .col({ cols: 12, offset: 0 })));
+    fb.breakpoint('sm', (form) => form.row({}, (row) => row.col({ cols: 12, offset: 0 })));
 
     expect(fb.toJSON()).toEqual({
-      rows: [{
-        props: {},
-        columns: [
-          { props: { cols: 6, offset: 0 }, components: [] },
-          { props: { cols: 6, offset: 0 }, components: [] },
-        ],
-      }],
-      sm: {
-        rows: [{
+      rows: [
+        {
           props: {},
           columns: [
-            { props: { cols: 12, offset: 0 }, components: [] },
+            { props: { cols: 6, offset: 0 }, components: [] },
+            { props: { cols: 6, offset: 0 }, components: [] },
           ],
-        }],
+        },
+      ],
+      sm: {
+        rows: [
+          {
+            props: {},
+            columns: [{ props: { cols: 12, offset: 0 }, components: [] }],
+          },
+        ],
       },
     });
     expect(fb.toJSON('xs')).toEqual({
-      rows: [{
-        props: {},
-        columns: [
-          { props: { cols: 6, offset: 0 }, components: [] },
-          { props: { cols: 6, offset: 0 }, components: [] },
-        ],
-      }],
+      rows: [
+        {
+          props: {},
+          columns: [
+            { props: { cols: 6, offset: 0 }, components: [] },
+            { props: { cols: 6, offset: 0 }, components: [] },
+          ],
+        },
+      ],
     });
     expect(fb.toJSON('xl')).toEqual({
-      rows: [{
-        props: {},
-        columns: [
-          { props: { cols: 12, offset: 0 }, components: [] },
-        ],
-      }],
+      rows: [
+        {
+          props: {},
+          columns: [{ props: { cols: 12, offset: 0 }, components: [] }],
+        },
+      ],
     });
   });
 
   it('should allow nesting forms', () => {
     const nestedForm = new FormBuilder();
-    nestedForm.row({}, (row) => row
-      .col({ cols: 12, offset: 0 }, (col) => col
-        .component((cmpt) => cmpt
-          .generic('VTextField', { label: 'Nested' }))));
+    nestedForm.row({}, (row) =>
+      row.col({ cols: 12, offset: 0 }, (col) =>
+        col.component((cmpt) => cmpt.generic('VTextField', { label: 'Nested' })),
+      ),
+    );
 
     const mainForm = new FormBuilder();
-    mainForm.row({}, (row) => row
-      .col({ cols: 12, offset: 0 }, (col) => col
-        .component((cmpt) => cmpt
-          .nestedForm(nestedForm))));
+    mainForm.row({}, (row) =>
+      row.col({ cols: 12, offset: 0 }, (col) => col.component((cmpt) => cmpt.nestedForm(nestedForm))),
+    );
 
     expect(mainForm.toJSON()).toEqual({
-      rows: [{
-        props: {},
-        columns: [
-          {
-            props: { cols: 12, offset: 0 },
-            components: [{ name: FormBuilderName, props: nestedForm.toJSON() }],
-          },
-        ],
-      }],
+      rows: [
+        {
+          props: {},
+          columns: [
+            {
+              props: { cols: 12, offset: 0 },
+              components: [{ name: FormBuilderName, props: nestedForm.toJSON() }],
+            },
+          ],
+        },
+      ],
     });
   });
 
@@ -131,23 +133,32 @@ describe('FormBuilder', () => {
     const fb = new FormBuilder();
 
     // Row 1: two equal columns
-    fb.row({}, (row) => row
-      .col({ cols: 6, offset: 0 }, (col) => col
-        .component((cmpt) => cmpt.generic('VTextField', { label: 'First name' })))
-      .col({ cols: 6, offset: 0 }, (col) => col
-        .component((cmpt) => cmpt.generic('VTextField', { label: 'Last name' }))));
+    fb.row({}, (row) =>
+      row
+        .col({ cols: 6, offset: 0 }, (col) =>
+          col.component((cmpt) => cmpt.generic('VTextField', { label: 'First name' })),
+        )
+        .col({ cols: 6, offset: 0 }, (col) =>
+          col.component((cmpt) => cmpt.generic('VTextField', { label: 'Last name' })),
+        ),
+    );
 
     // Row 2: single column
-    fb.row({}, (row) => row
-      .col({ cols: 12, offset: 0 }, (col) => col
-        .component((cmpt) => cmpt.generic('VTextarea', { label: 'Comments' }))));
+    fb.row({}, (row) =>
+      row.col({ cols: 12, offset: 0 }, (col) =>
+        col.component((cmpt) => cmpt.generic('VTextarea', { label: 'Comments' })),
+      ),
+    );
 
     // Row 3: three equal columns
-    fb.row({}, (row) => row
-      .col({ cols: 4, offset: 0 }, (col) => col.component((cmpt) => cmpt.generic('VSelect', { label: 'Country' })))
-      .col({ cols: 4, offset: 0 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'City' })))
-      .col({ cols: 4, offset: 0 }, (col) => col
-        .component((cmpt) => cmpt.generic('VTextField', { label: 'Postal code' }))));
+    fb.row({}, (row) =>
+      row
+        .col({ cols: 4, offset: 0 }, (col) => col.component((cmpt) => cmpt.generic('VSelect', { label: 'Country' })))
+        .col({ cols: 4, offset: 0 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'City' })))
+        .col({ cols: 4, offset: 0 }, (col) =>
+          col.component((cmpt) => cmpt.generic('VTextField', { label: 'Postal code' })),
+        ),
+    );
 
     const json = fb.toJSON();
     expect(json.rows.length).toBe(3);
@@ -159,9 +170,7 @@ describe('FormBuilder', () => {
   it('should add components using simple() API', () => {
     const fb = new FormBuilder();
 
-    fb.simple()
-      .generic('VTextField', { label: 'First Name' })
-      .generic('VTextField', { label: 'Last Name' });
+    fb.simple().generic('VTextField', { label: 'First Name' }).generic('VTextField', { label: 'Last Name' });
 
     const json = fb.toJSON();
 

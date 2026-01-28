@@ -1,4 +1,3 @@
-// eslint-disable-next-line max-classes-per-file
 import { BreakpointNames, responsiveBreakpoints, ResponsiveRenderOptions } from '@dynamicforms/vuetify-inputs';
 import { isArray, isObjectLike } from 'lodash-es';
 
@@ -58,7 +57,6 @@ class FormBase implements ComponentProps {
   }
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export class FormBuilder extends ResponsiveRenderOptions<FormBase> {
   row(rowProps: RowPropsPartial, rowCallback: (row: Row) => Row): this {
     this._value.row(rowProps, rowCallback);
@@ -88,11 +86,12 @@ export class FormBuilder extends ResponsiveRenderOptions<FormBase> {
       return { rows: res.rows.map((row) => row.toJSON(breakpoint)) };
     }
     const res: FormJSONResponsive = { rows: this._value.rows.map((row) => row.toJSON()) };
-    responsiveBreakpoints.forEach((bp) => { if (this._value[bp]) res[bp] = this._value[bp].toJSON(); });
+    responsiveBreakpoints.forEach((bp) => {
+      if (this._value[bp]) res[bp] = this._value[bp].toJSON();
+    });
     return res;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   protected cleanBreakpoint(bp?: FormBase, defaultIfEmpty: boolean = false): FormBase | null {
     if ((!bp || !isObjectLike(bp)) && !defaultIfEmpty) return null;
 

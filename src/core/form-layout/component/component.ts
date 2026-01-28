@@ -1,4 +1,3 @@
-// eslint-disable-next-line max-classes-per-file
 import type { FormBuilder } from '../form-builder';
 import { ComponentJSON, ComponentProps, FormBuilderName } from '../types';
 

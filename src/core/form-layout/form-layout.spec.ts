@@ -1,4 +1,3 @@
-/* eslint-disable vue/one-component-per-file */
 import { FormBuilder } from './form-builder';
 import { FormBuilderName } from './types';
 
@@ -6,18 +5,35 @@ describe('Layout Integration Tests', () => {
   it('should build a complete form', () => {
     const form = new FormBuilder();
 
-    form.row({ }, (row) => row
-      .col({ cols: 6, offset: 0 }, (col) => col
-        .component((cmpt) => cmpt
-          .generic('VTextField', { label: 'First name', placeholder: 'Enter your first name', rules: ['required'] })))
-      .col({ cols: 6, offset: 0 }, (col) => col
-        .component((cmpt) => cmpt
-          .generic('VTextField', { label: 'Last name', placeholder: 'Enter your last name', rules: ['required'] }))));
+    form.row({}, (row) =>
+      row
+        .col({ cols: 6, offset: 0 }, (col) =>
+          col.component((cmpt) =>
+            cmpt.generic('VTextField', {
+              label: 'First name',
+              placeholder: 'Enter your first name',
+              rules: ['required'],
+            }),
+          ),
+        )
+        .col({ cols: 6, offset: 0 }, (col) =>
+          col.component((cmpt) =>
+            cmpt.generic('VTextField', {
+              label: 'Last name',
+              placeholder: 'Enter your last name',
+              rules: ['required'],
+            }),
+          ),
+        ),
+    );
 
-    form.row({ }, (row) => row
-      .col({ cols: 12, offset: 0 }, (col) => col
-        .component((cmpt) => cmpt
-          .generic('VTextarea', { label: 'Comments', placeholder: 'Enter any additional comments', rows: 3 }))));
+    form.row({}, (row) =>
+      row.col({ cols: 12, offset: 0 }, (col) =>
+        col.component((cmpt) =>
+          cmpt.generic('VTextarea', { label: 'Comments', placeholder: 'Enter any additional comments', rows: 3 }),
+        ),
+      ),
+    );
 
     const json = form.toJSON();
 
@@ -53,37 +69,45 @@ describe('Layout Integration Tests', () => {
     const form = new FormBuilder();
 
     // Default layout (md and up)
-    form.row({ }, (row) => row
-      .col({ cols: 6, offset: 0 }, (col) => col
-        .component((cmpt) => cmpt
-          .generic('VTextField', { label: 'First name' })))
-      .col({ cols: 6, offset: 0 }, (col) => col
-        .component((cmpt) => cmpt
-          .generic('VTextField', { label: 'Last name' }))));
+    form.row({}, (row) =>
+      row
+        .col({ cols: 6, offset: 0 }, (col) =>
+          col.component((cmpt) => cmpt.generic('VTextField', { label: 'First name' })),
+        )
+        .col({ cols: 6, offset: 0 }, (col) =>
+          col.component((cmpt) => cmpt.generic('VTextField', { label: 'Last name' })),
+        ),
+    );
 
     // Small screen layout (sm)
-    form
-      .breakpoint('sm', (frm) => frm
-        .row({ }, (row) => row
-          .col({ cols: 12, offset: 0 }, (col) => col
-            .component((cmpt) => cmpt
-              .generic('VTextField', { label: 'First name' }))))
-        .row({ }, (row) => row
-          .col({ cols: 12, offset: 0 }, (col) => col
-            .component((cmpt) => cmpt
-              .generic('VTextField', { label: 'Last name' })))));
+    form.breakpoint('sm', (frm) =>
+      frm
+        .row({}, (row) =>
+          row.col({ cols: 12, offset: 0 }, (col) =>
+            col.component((cmpt) => cmpt.generic('VTextField', { label: 'First name' })),
+          ),
+        )
+        .row({}, (row) =>
+          row.col({ cols: 12, offset: 0 }, (col) =>
+            col.component((cmpt) => cmpt.generic('VTextField', { label: 'Last name' })),
+          ),
+        ),
+    );
 
     // Extra small screen layout (xs)
-    form
-      .breakpoint('xs', (frm) => frm
-        .row({ }, (row) => row
-          .col({ cols: 12, offset: 0 }, (col) => col
-            .component((cmpt) => cmpt
-              .generic('VTextField', { label: 'First name', dense: true }))))
-        .row({ }, (row) => row
-          .col({ cols: 12, offset: 0 }, (col) => col
-            .component((cmpt) => cmpt
-              .generic('VTextField', { label: 'Last name', dense: true })))));
+    form.breakpoint('xs', (frm) =>
+      frm
+        .row({}, (row) =>
+          row.col({ cols: 12, offset: 0 }, (col) =>
+            col.component((cmpt) => cmpt.generic('VTextField', { label: 'First name', dense: true })),
+          ),
+        )
+        .row({}, (row) =>
+          row.col({ cols: 12, offset: 0 }, (col) =>
+            col.component((cmpt) => cmpt.generic('VTextField', { label: 'Last name', dense: true })),
+          ),
+        ),
+    );
 
     const json = form.toJSON();
 
@@ -107,32 +131,47 @@ describe('Layout Integration Tests', () => {
     // Create an address form
     const addressForm = new FormBuilder();
     addressForm
-      .row({ }, (row) => row
-        .col({ cols: 8, offset: 0 }, (col) => col
-          .component((cmpt) => cmpt.generic('VTextField', { label: 'Street' })))
-        .col({ cols: 4, offset: 0 }, (col) => col
-          .component((cmpt) => cmpt.generic('VTextField', { label: 'Number' }))))
-      .row({ }, (row) => row
-        .col({ cols: 6, offset: 0 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'City' })))
-        .col({ cols: 3, offset: 0 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'Zip' })))
-        .col({ cols: 3, offset: 0 }, (col) => col
-          .component((cmpt) => cmpt.generic('VTextField', { label: 'Country' }))));
+      .row({}, (row) =>
+        row
+          .col({ cols: 8, offset: 0 }, (col) =>
+            col.component((cmpt) => cmpt.generic('VTextField', { label: 'Street' })),
+          )
+          .col({ cols: 4, offset: 0 }, (col) =>
+            col.component((cmpt) => cmpt.generic('VTextField', { label: 'Number' })),
+          ),
+      )
+      .row({}, (row) =>
+        row
+          .col({ cols: 6, offset: 0 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'City' })))
+          .col({ cols: 3, offset: 0 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'Zip' })))
+          .col({ cols: 3, offset: 0 }, (col) =>
+            col.component((cmpt) => cmpt.generic('VTextField', { label: 'Country' })),
+          ),
+      );
 
     // Create a main form with personal info and nested address
     const personalForm = new FormBuilder();
     personalForm
-      .row({}, (row) => row
-        .col({ cols: 6, offset: 0 }, (col) => col
-          .component((cmpt) => cmpt.generic('VTextField', { label: 'First name' })))
-        .col({ cols: 6, offset: 0 }, (col) => col
-          .component((cmpt) => cmpt.generic('VTextField', { label: 'Last name' }))))
-      .row({ }, (row) => row
-        .col({ cols: 12, offset: 0 }, (col) => col.component((cmpt) => cmpt.generic('VDivider', { class: 'my-4' }))))
-      .row({ }, (row) => row
-        .col({ cols: 12, offset: 0 }, (col) => col
-          .component((cmpt) => cmpt.generic('VSubheader', { text: 'Address Information' }))))
-      .row({ }, (row) => row.col({ cols: 12, offset: 0 }, (col) => col
-        .component((cmpt) => cmpt.nestedForm(addressForm))));
+      .row({}, (row) =>
+        row
+          .col({ cols: 6, offset: 0 }, (col) =>
+            col.component((cmpt) => cmpt.generic('VTextField', { label: 'First name' })),
+          )
+          .col({ cols: 6, offset: 0 }, (col) =>
+            col.component((cmpt) => cmpt.generic('VTextField', { label: 'Last name' })),
+          ),
+      )
+      .row({}, (row) =>
+        row.col({ cols: 12, offset: 0 }, (col) => col.component((cmpt) => cmpt.generic('VDivider', { class: 'my-4' }))),
+      )
+      .row({}, (row) =>
+        row.col({ cols: 12, offset: 0 }, (col) =>
+          col.component((cmpt) => cmpt.generic('VSubheader', { text: 'Address Information' })),
+        ),
+      )
+      .row({}, (row) =>
+        row.col({ cols: 12, offset: 0 }, (col) => col.component((cmpt) => cmpt.nestedForm(addressForm))),
+      );
 
     const json = personalForm.toJSON();
 
@@ -148,36 +187,50 @@ describe('Layout Integration Tests', () => {
   it('should handle form with multiple nested layouts and breakpoints', () => {
     // Create a contact form with responsive layout
     const contactForm = new FormBuilder();
-    contactForm.row({ }, (row) => row
-      .col({ cols: 6, offset: 0 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'Email' })))
-      .col({ cols: 6, offset: 0 }, (col) => col
-        .component((cmpt) => cmpt.generic('VTextField', { label: 'Phone' }))));
+    contactForm.row({}, (row) =>
+      row
+        .col({ cols: 6, offset: 0 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'Email' })))
+        .col({ cols: 6, offset: 0 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'Phone' }))),
+    );
     // Small screen layout for contact form
-    contactForm.breakpoint('sm', (form) => form
-      .row({ }, (row) => row
-        .col({ cols: 12, offset: 0 }, (col) => col
-          .component((cmpt) => cmpt.generic('VTextField', { label: 'Email' }))))
-      .row({ }, (row) => row
-        .col({ cols: 12, offset: 0 }, (col) => col
-          .component((cmpt) => cmpt.generic('VTextField', { label: 'Phone' })))));
+    contactForm.breakpoint('sm', (form) =>
+      form
+        .row({}, (row) =>
+          row.col({ cols: 12, offset: 0 }, (col) =>
+            col.component((cmpt) => cmpt.generic('VTextField', { label: 'Email' })),
+          ),
+        )
+        .row({}, (row) =>
+          row.col({ cols: 12, offset: 0 }, (col) =>
+            col.component((cmpt) => cmpt.generic('VTextField', { label: 'Phone' })),
+          ),
+        ),
+    );
 
     // Create the main form with nested contact form
     const mainForm = new FormBuilder();
     mainForm
-      .row({ }, (row) => row
-        .col({ cols: 12, offset: 0 }, (col) => col
-          .component((cmpt) => cmpt.generic('VTextField', { label: 'Name' }))))
-      .row({ }, (row) => row
-        .col({ cols: 12, offset: 0 }, (col) => col.component((cmpt) => cmpt.nestedForm(contactForm))));
+      .row({}, (row) =>
+        row.col({ cols: 12, offset: 0 }, (col) =>
+          col.component((cmpt) => cmpt.generic('VTextField', { label: 'Name' })),
+        ),
+      )
+      .row({}, (row) =>
+        row.col({ cols: 12, offset: 0 }, (col) => col.component((cmpt) => cmpt.nestedForm(contactForm))),
+      );
 
     // Small screen layout for main form
-    mainForm
-      .breakpoint('sm', (form) => form
-        .row({ }, (row) => row
-          .col({ cols: 12, offset: 0 }, (col) => col
-            .component((cmpt) => cmpt.generic('VTextField', { label: 'Name', dense: true }))))
-        .row({ }, (row) => row
-          .col({ cols: 12, offset: 0 }, (col) => col.component((cmpt) => cmpt.nestedForm(contactForm)))));
+    mainForm.breakpoint('sm', (form) =>
+      form
+        .row({}, (row) =>
+          row.col({ cols: 12, offset: 0 }, (col) =>
+            col.component((cmpt) => cmpt.generic('VTextField', { label: 'Name', dense: true })),
+          ),
+        )
+        .row({}, (row) =>
+          row.col({ cols: 12, offset: 0 }, (col) => col.component((cmpt) => cmpt.nestedForm(contactForm))),
+        ),
+    );
 
     const json = mainForm.toJSON();
 

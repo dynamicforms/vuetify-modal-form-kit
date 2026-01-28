@@ -2,7 +2,6 @@ import { DfInputComponentProps } from '@dynamicforms/vuetify-inputs';
 
 import { ComponentBuilderBase } from './component';
 
-// eslint-disable-next-line import/prefer-default-export
 export class VuetifyInputsComponentBuilder extends ComponentBuilderBase {
   dfActions(props: Partial<DfInputComponentProps.DfActionsProps>) {
     return this.generic('df-actions', props);

@@ -1,12 +1,10 @@
-/* eslint-disable class-methods-use-this */
-// eslint-disable-next-line max-classes-per-file
 import * as Form from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
 import { isEmpty } from 'lodash-es';
 import { computed, ref } from 'vue';
 
 // import { Action, ActionCollection, FilteredActions } from '@/actions';
-import DialogSize from './dialog-size';
+import { DialogSize } from './dialog-size';
 import dialogTracker from './top-modal-tracker';
 
 export type FormActions = Record<string, Action>;
@@ -49,16 +47,17 @@ class ModalAPI {
     message: Form.RenderContent | Form.RenderableValue,
     options?: ModalOptions,
   ): CloseablePromise<string> {
-    const hasAction = Object.keys(options?.form?.fields ?? []).some((fieldName) => (
-      options?.form?.field(fieldName) instanceof Form.Action
-    )) || !isEmpty(options?.actions);
+    const hasAction =
+      Object.keys(options?.form?.fields ?? []).some(
+        (fieldName) => options?.form?.field(fieldName) instanceof Form.Action,
+      ) || !isEmpty(options?.actions);
 
     const yes = Action.yesAction();
     Object.defineProperty(yes, 'defaultConfirm', { value: true });
     const no = Action.noAction();
     Object.defineProperty(no, 'defaultReject', { value: true });
 
-    return this.messageInternal(title, message, hasAction ? { } : { yes, no }, options);
+    return this.messageInternal(title, message, hasAction ? {} : { yes, no }, options);
   }
 
   message(
@@ -66,9 +65,10 @@ class ModalAPI {
     message: Form.RenderContent | Form.RenderableValue,
     options?: ModalOptions,
   ): CloseablePromise<string> {
-    const hasAction = Object.keys(options?.form?.fields ?? []).some((fieldName) => (
-      options?.form?.field(fieldName) instanceof Form.Action
-    )) || !isEmpty(options?.actions);
+    const hasAction =
+      Object.keys(options?.form?.fields ?? []).some(
+        (fieldName) => options?.form?.field(fieldName) instanceof Form.Action,
+      ) || !isEmpty(options?.actions);
 
     const close = Action.closeAction();
     Object.defineProperties(close, {
@@ -76,11 +76,15 @@ class ModalAPI {
       defaultReject: { value: true },
     });
 
-    return this.messageInternal(title, message, hasAction ? { } : { close }, options);
+    return this.messageInternal(title, message, hasAction ? {} : { close }, options);
   }
 
-  custom(title: Form.RenderContent, componentName: string, componentProps: Record<any, any>, options?: ModalOptions)
-    : CloseablePromise<string> {
+  custom(
+    title: Form.RenderContent,
+    componentName: string,
+    componentProps: Record<any, any>,
+    options?: ModalOptions,
+  ): CloseablePromise<string> {
     return this.message(title, <Form.SimpleComponentDef>{ componentName, componentProps }, options);
   }
 
@@ -100,26 +104,30 @@ class ModalAPI {
 
     let resolvePromise: (value: string) => void;
 
-    const actions: FormActions = { ...defaultActions, ...(options?.actions ?? { }) };
+    const actions: FormActions = { ...defaultActions, ...(options?.actions ?? {}) };
 
     Object.keys(options?.form?.fields ?? []).forEach((fieldName) => {
       const action = options?.form?.field(fieldName);
       if (action instanceof Form.Action) {
         if (!actions[fieldName]) {
-          actions[fieldName] = <Action><any> action;
+          actions[fieldName] = <Action>(<any>action);
         } else {
-          action.registerAction(new Form.ExecuteAction(async (field, supr, ...params) => {
-            await supr(field, ...params);
-            resolvePromise(field.fieldName!);
-          }));
+          action.registerAction(
+            new Form.ExecuteAction(async (field, supr, ...params) => {
+              await supr(field, ...params);
+              resolvePromise(field.fieldName!);
+            }),
+          );
         }
       }
     });
     Object.entries(actions).forEach(([name, action]) => {
-      action.registerAction(new Form.ExecuteAction(async (field, supr, ...params) => {
-        await supr(field, ...params);
-        resolvePromise(field.fieldName || name);
-      }));
+      action.registerAction(
+        new Form.ExecuteAction(async (field, supr, ...params) => {
+          await supr(field, ...params);
+          resolvePromise(field.fieldName || name);
+        }),
+      );
     });
 
     const id = Symbol('modalstack');
