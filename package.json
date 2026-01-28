@@ -42,7 +42,7 @@
   "issues": "https://github.com/velis74/dynamicforms-vuetify-modal-form-kit/issues",
   "peerDependencies": {
     "@dynamicforms/vue-forms": "^0.5.0",
-    "@dynamicforms/vuetify-inputs": "^0.7.0",
+    "@dynamicforms/vuetify-inputs": "^0.7.1",
     "@mdi/font": "^7.4.47",
     "lodash-es": "^4.17.12",
     "vue": "^3.4",
