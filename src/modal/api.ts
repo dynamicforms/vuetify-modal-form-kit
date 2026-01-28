@@ -4,7 +4,7 @@ import { isEmpty } from 'lodash-es';
 import { computed, ref } from 'vue';
 
 // import { Action, ActionCollection, FilteredActions } from '@/actions';
-import { DialogSize } from './dialog-size';
+import DialogSize from './dialog-size';
 import dialogTracker from './top-modal-tracker';
 
 export type FormActions = Record<string, Action>;

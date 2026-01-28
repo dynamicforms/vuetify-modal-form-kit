@@ -49,7 +49,7 @@ import { MessagesWidget } from '@dynamicforms/vue-forms';
 import { computed, onUnmounted, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 
-import { DialogSize } from './dialog-size';
+import DialogSize from './dialog-size';
 import dialogTracker from './top-modal-tracker';
 
 interface Props {

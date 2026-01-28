@@ -1,33 +1,34 @@
-export enum DialogSize {
-  DEFAULT = 0,
+enum DialogSize {
   SMALL = 1,
   MEDIUM = 2,
   LARGE = 3,
   X_LARGE = 4,
+  DEFAULT = 0,
 }
 
-export const defaultDialogSize = DialogSize.DEFAULT;
+export const defaultDialogSize: DialogSize = DialogSize.DEFAULT;
 
-const largeIdentifiers = ['large', 'lg', 'modal-lg'] as const;
-const mediumIdentifiers = ['medium', 'md', 'modal-md'] as const;
-const smallIdentifiers = ['small', 'sm', 'modal-sm'] as const;
-const xLargeIdentifiers = ['x-large', 'xl', 'modal-xl'] as const;
+// eslint-disable-next-line @typescript-eslint/no-namespace,no-redeclare
+namespace DialogSize {
+  const largeIdentifiers: string[] = ['large', 'lg', 'modal-lg'];
+  const mediumIdentifiers: string[] = ['medium', 'md', 'modal-md'];
+  const smallIdentifiers: string[] = ['small', 'sm', 'modal-sm'];
+  const xLargeIdentifiers: string[] = ['x-large', 'xl', 'modal-xl'];
 
-export const DialogSizeUtils = {
-  fromString(size?: string): DialogSize {
-    if (!size) return defaultDialogSize;
-    if (largeIdentifiers.includes(size as any)) return DialogSize.LARGE;
-    if (mediumIdentifiers.includes(size as any)) return DialogSize.MEDIUM;
-    if (smallIdentifiers.includes(size as any)) return DialogSize.SMALL;
-    if (xLargeIdentifiers.includes(size as any)) return DialogSize.X_LARGE;
+  export function fromString(size?: string): DialogSize {
+    if (size === undefined) return defaultDialogSize;
+    if (largeIdentifiers.includes(size)) return DialogSize.LARGE;
+    if (mediumIdentifiers.includes(size)) return DialogSize.MEDIUM;
+    if (smallIdentifiers.includes(size)) return DialogSize.SMALL;
+    if (xLargeIdentifiers.includes(size)) return DialogSize.X_LARGE;
     return defaultDialogSize;
-  },
+  }
 
-  isDefined(size: number | string): boolean {
-    const value = typeof size === 'number' ? size : DialogSizeUtils.fromString(size);
+  export function isDefined(size: number | string) {
+    const check = typeof size === 'number' ? size : DialogSize.fromString(size as string);
+    return Object.values(DialogSize).includes(check);
+  }
+}
 
-    return Object.values(DialogSize)
-      .filter((v) => typeof v === 'number')
-      .includes(value);
-  },
-};
+Object.freeze(DialogSize);
+export default DialogSize;
