@@ -81,9 +81,9 @@
 
 <script setup>
 import { ref } from 'vue';
-import {Field, Group, MdString, RenderableValue, Validators} from '@dynamicforms/vue-forms';
+import { Field, Group, MdString, RenderableValue, Validators } from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
-import { modal, DialogSize, ModalView } from '../../src';
+import { DialogSize, modal, ModalView } from '../../src';
 
 // Flag to control whether to show modal API component in this demo
 // In a real app, this would be in your App.vue
@@ -121,13 +121,11 @@ async function showFormDialog() {
   // Create a form with validation
   const form = new Group({
     name: Field.create({
-      // component: 'VTextField',
-      value: { label: 'Name' },
+      value: '',
       validators: [new Validators.Required()],
     }),
     email: Field.create({
-      // component: 'VTextField',
-      value: { label: 'Email' },
+      value: '',
       validators: [new Validators.Required(), emailAction],
     }),
     // Add action buttons
@@ -145,8 +143,8 @@ async function showFormDialog() {
   // If form was submitted successfully, display the entered values
   if (dialogResult.value === 'submit') {
     const userData = {
-      name: field('name').value,
-      email: field('email').value,
+      name: form.fields.name.value,
+      email: form.fields.email.value,
     };
 
     // Show the results in another dialog

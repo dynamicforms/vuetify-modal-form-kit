@@ -1,7 +1,7 @@
 import * as Form from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
 import { isEmpty } from 'lodash-es';
-import { computed, ref } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 
 // import { Action, ActionCollection, FilteredActions } from '@/actions';
 import DialogSize from './dialog-size';
@@ -133,9 +133,11 @@ class ModalAPI {
     const id = Symbol('modalstack');
     const promise = new Promise<string>((resolve) => {
       resolvePromise = (value: string) => {
-        resolve(value);
         dialogTracker.remove(id);
         delete modalDefinitions[id];
+        // Use nextTick to ensure Vue updates the DOM before cleanup
+        // This prevents race conditions when opening a new dialog immediately after closing one
+        nextTick(() => resolve(value));
       };
       dialogTracker.push(id);
       modalDefinitions[id] = {
