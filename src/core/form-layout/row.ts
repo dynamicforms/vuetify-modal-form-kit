@@ -1,7 +1,6 @@
-// eslint-disable-next-line max-classes-per-file
 import { BreakpointNames, responsiveBreakpoints, ResponsiveRenderOptions } from '@dynamicforms/vuetify-inputs';
+import { BreakpointsJSON } from '@dynamicforms/vuetify-inputs';
 import { isArray, isBoolean, isNumber, isObjectLike, isString } from 'lodash-es';
-import { BreakpointsJSON } from '~/@dynamicforms/vuetify-inputs';
 
 import { Column } from './column';
 import { ComponentBuilderBase, VuetifyInputsComponentBuilder } from './component';
@@ -39,12 +38,12 @@ class RowBase implements ComponentProps {
    */
   simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(cols: TwelveDivisible = 1): T {
     const res = new Proxy({} as T, {
-      get: (target: T, prop: string | symbol) => (
+      get:
+        (target: T, prop: string | symbol) =>
         (...args: any[]) => {
           this.col({ cols: 12 / cols }, (col) => col.component((cmpt: any) => cmpt[prop](...args)));
           return res;
-        }
-      ),
+        },
     });
     return res;
   }
@@ -54,7 +53,6 @@ class RowBase implements ComponentProps {
   }
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export class Row extends ResponsiveRenderOptions<RowBase> {
   constructor(props?: RowPropsPartial) {
     super({ props } as BreakpointsJSON<RowBase>);
@@ -91,24 +89,22 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
       props: this._value.props,
       columns: this._value.columns.map((col) => col.toJSON()),
     };
-    responsiveBreakpoints.forEach((bp) => { if (this._value[bp]) res[bp] = this._value[bp].toJSON(); });
+    responsiveBreakpoints.forEach((bp) => {
+      if (this._value[bp]) res[bp] = this._value[bp].toJSON();
+    });
     return res;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   protected cleanBreakpoint(bp?: RowBase, defaultIfEmpty: boolean = false): RowBase | null {
     if ((!bp || !isObjectLike(bp)) && !defaultIfEmpty) return null;
 
-    const result: RowPropsPartial = { };
+    const result: RowPropsPartial = {};
     const AllowedAlign = ['start', 'center', 'end', 'baseline', 'stretch'];
     const AllowedAlignContent = ['start', 'center', 'end', 'stretch', 'space-between', 'space-around', 'space-evenly'];
     const AllowedJustify = ['start', 'center', 'end', 'space-between', 'space-around', 'space-evenly'];
 
-    const isValidClass = (v: unknown): boolean => (
-      isString(v) ||
-      (isArray(v) && v.every((i) => isString(i))) ||
-      (isObjectLike(v) && !Array.isArray(v))
-    );
+    const isValidClass = (v: unknown): boolean =>
+      isString(v) || (isArray(v) && v.every((i) => isString(i))) || (isObjectLike(v) && !Array.isArray(v));
 
     const isValidStyle = (v: unknown): boolean => {
       if (isString(v)) return true;
@@ -129,7 +125,7 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
       'style',
     ]);
 
-    const bpProps: RowPropsPartial = (bp ?? {}).props ?? { };
+    const bpProps: RowPropsPartial = (bp ?? {}).props ?? {};
     Object.keys(bpProps).forEach((key) => {
       const val = bpProps[key as keyof RowPropsPartial];
       if (!validKeys.has(key) || val === undefined) return;
@@ -143,7 +139,7 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
       } else if (key === 'style') {
         if (isValidStyle(val)) result[key] = val as any;
       } else if (key.startsWith('align')) {
-        if (isString(val) && AllowedAlign.includes(val)) (<any> result)[key] = val;
+        if (isString(val) && AllowedAlign.includes(val)) (<any>result)[key] = val;
       } else if (key.startsWith('align-content')) {
         if (isString(val) && AllowedAlignContent.includes(val)) (<any>result)[key] = val;
       } else if (key.startsWith('justify')) {

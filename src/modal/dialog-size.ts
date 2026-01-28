@@ -8,6 +8,7 @@ enum DialogSize {
 
 export const defaultDialogSize: DialogSize = DialogSize.DEFAULT;
 
+// eslint-disable-next-line @typescript-eslint/no-namespace,no-redeclare
 namespace DialogSize {
   const largeIdentifiers: string[] = ['large', 'lg', 'modal-lg'];
   const mediumIdentifiers: string[] = ['medium', 'md', 'modal-md'];
@@ -24,7 +25,7 @@ namespace DialogSize {
   }
 
   export function isDefined(size: number | string) {
-    const check = (typeof size === 'number') ? size : DialogSize.fromString(size as string);
+    const check = typeof size === 'number' ? size : DialogSize.fromString(size as string);
     return Object.values(DialogSize).includes(check);
   }
 }

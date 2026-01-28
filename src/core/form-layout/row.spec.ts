@@ -1,3 +1,5 @@
+import { vi } from 'vitest';
+
 import { FormBuilder } from './form-builder';
 import { Row } from './row';
 
@@ -37,18 +39,14 @@ describe('Row', () => {
 
   it('should allow adding components to columns', () => {
     const row = new Row();
-    row.col({ cols: 12, offset: 0 }, (col) => col
-      .component((cmpt) => cmpt
-        .generic('VTextField', { label: 'Test' })));
+    row.col({ cols: 12, offset: 0 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'Test' })));
 
     expect(row.toJSON()).toEqual({
       props: {},
       columns: [
         {
           props: { cols: 12, offset: 0 },
-          components: [
-            { name: 'VTextField', props: { label: 'Test' } },
-          ],
+          components: [{ name: 'VTextField', props: { label: 'Test' } }],
         },
       ],
     });
@@ -72,9 +70,7 @@ describe('Row', () => {
       ],
       sm: {
         props: {},
-        columns: [
-          { props: { cols: 12 }, components: [] },
-        ],
+        columns: [{ props: { cols: 12 }, components: [] }],
       },
     });
     expect(row.toJSON('xs')).toEqual({
@@ -86,9 +82,7 @@ describe('Row', () => {
     });
     expect(row.toJSON('md')).toEqual({
       props: {},
-      columns: [
-        { props: { cols: 12 }, components: [] },
-      ],
+      columns: [{ props: { cols: 12 }, components: [] }],
     });
   });
 
@@ -123,9 +117,7 @@ describe('Row', () => {
       },
       xs: {
         props: {},
-        columns: [
-          { props: { cols: 12 }, components: [] },
-        ],
+        columns: [{ props: { cols: 12 }, components: [] }],
       },
     });
   });
@@ -144,9 +136,7 @@ describe('Row', () => {
     const fb = new FormBuilder();
 
     fb.row({}, (row) => {
-      row.simple()
-        .generic('VTextField', { label: 'First Name' })
-        .generic('VTextField', { label: 'Last Name' });
+      row.simple().generic('VTextField', { label: 'First Name' }).generic('VTextField', { label: 'Last Name' });
       return row;
     });
 
@@ -173,7 +163,8 @@ describe('Row', () => {
     const fb = new FormBuilder();
 
     fb.row({}, (row) => {
-      row.simple(2)
+      row
+        .simple(2)
         .generic('VTextField', { label: 'First Name' })
         .generic('VTextField', { label: 'Middle Name' })
         .generic('VTextField', { label: 'Last Name' });

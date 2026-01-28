@@ -10,20 +10,21 @@
     :icon="currentModal.icon"
   >
     <template #body>
-      <messages-widget v-if="message" message=" " :errors="[message]" :classes="messageClass"/>
+      <messages-widget v-if="message" :message="[message]" :classes="messageClass" />
     </template>
     <template #actions>
       <df-actions
-        :actions="Object.values(currentModal.actions ?? [] as Action[])"
+        :actions="Object.values(currentModal.actions ?? ([] as Action[]))"
         class="d-flex justify-end"
-        style="gap: .5em"
+        style="gap: 0.5em"
       />
     </template>
   </df-modal>
 </template>
 
 <script setup lang="ts">
-import { Action, DfActions, MessagesWidget } from '@dynamicforms/vuetify-inputs';
+import { MessagesWidget } from '@dynamicforms/vue-forms';
+import { Action, DfActions } from '@dynamicforms/vuetify-inputs';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 import { currentModal, installed } from './api';
@@ -31,9 +32,12 @@ import DfModal from './df-modal.component.vue';
 
 const isOpen = ref(false);
 
-watch(() => currentModal.value, (modal) => {
-  isOpen.value = modal !== null;
-});
+watch(
+  () => currentModal.value,
+  (modal) => {
+    isOpen.value = modal !== null;
+  },
+);
 
 const message = computed(() => currentModal.value?.message);
 const messageClass = computed(() => (message.value ? message.value.extraClasses : undefined));

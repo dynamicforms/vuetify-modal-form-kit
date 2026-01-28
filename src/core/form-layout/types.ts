@@ -13,14 +13,16 @@ export type FormJSONResponsive = FormJSON & {
 };
 
 // row declarations
-interface CSSProperties { [key: string]: string | number; }
+interface CSSProperties {
+  [key: string]: string | number;
+}
 
 type Align = 'start' | 'center' | 'end' | 'baseline' | 'stretch';
 type AlignProps = { [K in BaseBkpt as K extends 'base' ? 'align' : `align-${K}`]?: Align };
 
 type AlignContent = 'start' | 'center' | 'end' | 'stretch' | 'space-between' | 'space-around' | 'space-evenly';
 type AlignContentProps = {
-  [K in BaseBkpt as K extends 'base' ? 'align-content' : `align-content-${K}`]?: AlignContent
+  [K in BaseBkpt as K extends 'base' ? 'align-content' : `align-content-${K}`]?: AlignContent;
 };
 
 type Justify = 'start' | 'center' | 'end' | 'space-between' | 'space-around' | 'space-evenly';
@@ -45,9 +47,9 @@ export type RowJSONResponsive = RowJSON & {
 
 // column declaractions
 
-type ColsProps = { [K in BaseBkpt as K extends 'base' ? 'cols' : `cols-${K}`]?: number | 'auto' | boolean; };
-type OffsetProps = { [K in BaseBkpt as K extends 'base' ? 'offset' : `offset-${K}`]?: number | 'auto' | boolean; };
-type OrderProps = { [K in BaseBkpt as K extends 'base' ? 'order' : `order-${K}`]?: number | 'auto' | boolean; };
+type ColsProps = { [K in BaseBkpt as K extends 'base' ? 'cols' : `cols-${K}`]?: number | 'auto' | boolean };
+type OffsetProps = { [K in BaseBkpt as K extends 'base' ? 'offset' : `offset-${K}`]?: number | 'auto' | boolean };
+type OrderProps = { [K in BaseBkpt as K extends 'base' ? 'order' : `order-${K}`]?: number | 'auto' | boolean };
 
 export interface ColumnProps extends ColsProps, OffsetProps, OrderProps {
   alignSelf?: 'start' | 'end' | 'center' | 'auto' | 'baseline' | 'stretch';

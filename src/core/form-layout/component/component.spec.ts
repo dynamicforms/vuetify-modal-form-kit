@@ -1,3 +1,5 @@
+import { vi } from 'vitest';
+
 import { Column } from '../column';
 
 import { Component, ComponentBuilderBase } from './component';
@@ -104,12 +106,7 @@ describe('Custom ComponentBuilder', () => {
     const column = new Column({ cols: 12 });
 
     // Use our custom builder class
-    column.component(
-      CustomComponentBuilder,
-      (builder) => builder
-        .button('Save')
-        .button('Cancel', 'error'),
-    );
+    column.component(CustomComponentBuilder, (builder) => builder.button('Save').button('Cancel', 'error'));
 
     // Check results
     const json = column.toJSON();
@@ -134,9 +131,7 @@ describe('Custom ComponentBuilder', () => {
     const mockAddCallback = vi.fn();
     const builder = new CustomComponentBuilder(mockAddCallback);
 
-    builder
-      .button('Button 1')
-      .labeledField('Name', true);
+    builder.button('Button 1').labeledField('Name', true);
 
     expect(mockAddCallback).toHaveBeenCalledTimes(2);
 
@@ -160,12 +155,8 @@ describe('Custom ComponentBuilder', () => {
   it('should work with existing ComponentBuilderBase API', () => {
     const column = new Column({ cols: 12 });
 
-    column.component(
-      CustomComponentBuilder,
-      (builder) => builder
-        .generic('VCheckbox', { label: 'Active' })
-        .labeledField('Address')
-        .button('Submit'),
+    column.component(CustomComponentBuilder, (builder) =>
+      builder.generic('VCheckbox', { label: 'Active' }).labeledField('Address').button('Submit'),
     );
 
     const json = column.toJSON();
