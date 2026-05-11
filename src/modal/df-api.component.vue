@@ -108,14 +108,36 @@ const components = {
   'df-actions': DfActions,
 };
 
+function onKeydown(e: KeyboardEvent) {
+  if (!currentModal.value || e.defaultPrevented) return;
+  const actions = Object.values(currentModal.value.actions ?? {});
+  if (e.key === 'Enter') {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+    const action = actions.find((a: any) => a.defaultConfirm);
+    if (action) {
+      e.preventDefault();
+      (action as any).execute(e);
+    }
+  } else if (e.key === 'Escape') {
+    const action = actions.find((a: any) => a.defaultReject);
+    if (action) {
+      e.preventDefault();
+      (action as any).execute(e);
+    }
+  }
+}
+
 onMounted(() => {
   if (installed.value) {
     console.warn('Seems like there is more than one df-modal-api in the v-dom');
   }
   installed.value = true;
+  document.addEventListener('keydown', onKeydown);
 });
 
 onUnmounted(() => {
   installed.value = false;
+  document.removeEventListener('keydown', onKeydown);
 });
 </script>

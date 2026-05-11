@@ -21,9 +21,8 @@ features:
   - title: Programmatic Form Builder
     details: Define responsive Vuetify grid layouts (rows → columns → components) entirely in TypeScript using a fluent
              FormBuilder API, without writing any template markup.
-  - title: Keyboard Shortcuts (planned)
-    details: Press Enter to confirm or Esc to cancel the active dialog — consistent keyboard navigation without extra 
-             wiring.
+  - title: Keyboard Shortcuts
+    details: Press Enter to confirm or Esc to cancel the active dialog — no extra wiring needed.
 ---
 
 # @dynamicforms/vuetify-modal-form-kit
@@ -35,7 +34,7 @@ features:
 1. **Programmatic & template-based dialog API** — open dialogs from code with a promise-based API (`await modal.message()`, `await modal.yesNo()`) and get the result back directly, without events or callbacks. Or declare dialogs in Vue templates with `<DfModal>`.
 2. **One dialog on screen at a time** — an internal queue ensures a second dialog never interrupts the first; it simply waits.
 3. **Programmatic form builder** — a fluent `FormBuilder` API lets you define responsive Vuetify grid layouts entirely in TypeScript, with no template markup required.
-4. **Keyboard shortcuts** *(planned)* — `<Enter>` to confirm, `<Esc>` to cancel the active dialog.
+4. **Keyboard shortcuts** — `<Enter>` confirms and `<Esc>` cancels the active dialog.
 
 ## Simple Example
 

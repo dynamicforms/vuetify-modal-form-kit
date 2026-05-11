@@ -9,7 +9,7 @@ A Vue 3 + Vuetify 3 library built around four design goals:
    while one is already open, it waits until the first is closed.
 3. **Programmatic form builder** — define responsive Vuetify grid layouts (rows → columns → components) entirely in
    TypeScript using a fluent `FormBuilder` API, without writing any template markup.
-4. **Keyboard shortcuts** — `<Enter>` confirms and `<Esc>` cancels the active dialog *(planned)*.
+4. **Keyboard shortcuts** — `<Enter>` confirms and `<Esc>` cancels the active dialog.
 
 The dialog manager and form builder are designed to work together: a `FormBuilder` layout can be passed directly into a
 dialog for inline validation and submission.

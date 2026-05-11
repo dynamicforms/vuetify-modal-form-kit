@@ -101,7 +101,7 @@ async function showMessage() {
         'This is a **simple message** dialog with a close button.\n\nStyling can be changed with custom CSS class.'
       ),
       'md_extra_class'),
-    { color: 'info', icon: 'mdi-information-outline' },
+    { color: 'info', icon: 'mdi-information' },
   );
 }
 
@@ -157,12 +157,15 @@ async function showFormDialog() {
 
 // Dialog with different sizes
 async function showSizedDialog(size) {
-  // Create a form with a size field
+  const okAction = Action.create({ value: { label: 'OK', icon: 'mdi-check' } });
+  Object.defineProperty(okAction, 'defaultConfirm', { value: true });
+
+    // Create a form with a size field
   const form = new Group({
     // Size field controls dialog size
     size: Field.create({ value: size }),
     // Action button
-    ok: Action.create({ value: { label: 'OK', icon: 'mdi-check' } }),
+    ok: okAction,
   });
 
   // Show sized dialog
