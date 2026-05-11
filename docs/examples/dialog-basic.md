@@ -79,37 +79,34 @@ Otherwise, you can use the following selector:
 ### Form Dialog
 
 ```typescript
+import { Field, Group, Validators } from '@dynamicforms/vue-forms';
+import { Action } from '@dynamicforms/vuetify-inputs';
 import { modal } from '@dynamicforms/vuetify-modal-form-kit';
-import * as Form from '@dynamicforms/vue-forms';
+
+const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 // Create a form with validation
-const form = new Form.Group({
-  name: new Form.Field({
-    label: 'Name',
-    rules: [Form.Rules.required()],
+const form = new Group({
+  name: Field.create({
+    value: '',
+    validators: [new Validators.Required()],
   }),
-  email: new Form.Field({
-    label: 'Email',
-    rules: [Form.Rules.required(), Form.Rules.email()],
+  email: Field.create({
+    value: '',
+    validators: [new Validators.Required(), new Validators.Pattern(emailPattern)],
   }),
-  submit: new Form.Action({
-    label: 'Submit',
-    icon: 'check',
-  }),
-  cancel: new Form.Action({
-    label: 'Cancel',
-    icon: 'close',
-  }),
+  submit: Action.create({ value: { label: 'Submit', icon: 'mdi-check' } }),
+  cancel: Action.create({ value: { label: 'Cancel', icon: 'mdi-close' } }),
 });
 
-// Show dialog with form
-const result = await modal.message('User Information', 'Please enter your details:', form);
+// Show dialog with form — pass the form inside an options object
+const result = await modal.message('User Information', 'Please enter your details:', { form });
 
 if (result === 'submit') {
   // Form was submitted with valid data
   const userData = {
-    name: form.field('name').value,
-    email: form.field('email').value,
+    name: form.fields.name.value,
+    email: form.fields.email.value,
   };
 }
 ```
@@ -132,40 +129,22 @@ const result = await modal.custom(
 
 ### Dialog Sizing
 
-The modal system supports four different sizes:
+The modal system supports four different sizes via the `size` option:
 
 ```typescript
 import { modal, DialogSize } from '@dynamicforms/vuetify-modal-form-kit';
 
-// Different size options
-const smallDialog = modal.message(
-  'Information', 
-  'This is a small dialog', 
-  new Form.Group({ size: new Form.Field({ defaultValue: DialogSize.SMALL }) })
-);
-
-const mediumDialog = modal.message(
-  'Information', 
-  'This is a medium dialog', 
-  new Form.Group({ size: new Form.Field({ defaultValue: DialogSize.MEDIUM }) })
-);
-
-const largeDialog = modal.message(
-  'Information', 
-  'This is a large dialog', 
-  new Form.Group({ size: new Form.Field({ defaultValue: DialogSize.LARGE }) })
-);
-
-const xLargeDialog = modal.message(
-  'Information', 
-  'This is an extra large dialog', 
-  new Form.Group({ size: new Form.Field({ defaultValue: DialogSize.X_LARGE }) })
-);
+await modal.message('Information', 'This is a small dialog', { size: DialogSize.SMALL });
+await modal.message('Information', 'This is a medium dialog', { size: DialogSize.MEDIUM });
+await modal.message('Information', 'This is a large dialog', { size: DialogSize.LARGE });
+await modal.message('Information', 'This is an extra large dialog', { size: DialogSize.X_LARGE });
 ```
+
+On small screens the dialog automatically switches to fullscreen regardless of the configured size.
 
 ## Installation
 
-To use the modal system, register the API component in your main app:
+To use the modal system, register the `ModalView` component in your root app component:
 
 ```vue
 <template>
@@ -175,12 +154,12 @@ To use the modal system, register the API component in your main app:
     </v-main>
     
     <!-- Register modal API component -->
-    <df-modal />
+    <ModalView />
   </v-app>
 </template>
 
 <script setup>
-import { DfModal } from '../../src';
+import { ModalView } from '@dynamicforms/vuetify-modal-form-kit';
 </script>
 ```
 

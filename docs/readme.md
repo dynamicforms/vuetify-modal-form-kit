@@ -22,7 +22,6 @@ The site will be available at `http://localhost:5173/`
   - `theme/` - Custom theme configuration
   - `config.ts` - VitePress configuration
 - `guide/` - User guide documentation
-- `api/` - API reference documentation
 - `examples/` - Interactive examples
 - `components/` - Vue components used in the documentation
 
@@ -39,6 +38,6 @@ The built site will be in the `docs/.vitepress/dist` directory.
 
 ## Adding New Examples
 
-1. Create a new Vue component in `.vitepress/components/`
+1. Create a new Vue component in `docs/components/`
 2. Create a new markdown page in `examples/`
 3. Import and use the component in your markdown page
