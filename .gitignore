@@ -4,4 +4,5 @@
 /dist
 /package-lock.json
 /docs/.vitepress/cache
+/docs/.vitepress/dist
 /docs/dist

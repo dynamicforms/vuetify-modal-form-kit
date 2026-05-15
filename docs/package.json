@@ -11,10 +11,11 @@
   },
   "dependencies": {
     "vue": "^3.4.19",
-    "vuetify": "^3.8"
+    "vuetify": "^3.9"
   },
   "devDependencies": {
     "sass": "^1.85.1",
-    "vitepress": "^1.6.3"
+    "vitepress": "^1.6.3",
+    "vite-plugin-vuetify": "^2.1.1"
   }
 }

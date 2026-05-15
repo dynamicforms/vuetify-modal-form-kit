@@ -1,4 +1,7 @@
+import vuetify from 'vite-plugin-vuetify';
 import { defineConfig } from 'vitepress';
+
+import ssrCkeditorStub from './ssr-ckeditor-stub';
 
 export default defineConfig({
   title: 'DynamicForms Vuetify modal form kit',
@@ -38,6 +41,17 @@ export default defineConfig({
       message: 'Released under the MIT License.',
       copyright: 'Copyright © 2025 Jure Erznožnik'
     }
-  }
+  },
+  vite: {
+    plugins: [vuetify(), ssrCkeditorStub],
+    optimizeDeps: {
+      include: ['vuetify'],
+    },
+    ssr: {
+      noExternal: [
+        /vuetify/,
+      ],
+    }
+  },
 });
 
