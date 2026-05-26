@@ -14,8 +14,8 @@ Below is an example of a basic form layout created with FormBuilder:
 
 - Programmatic API for defining form layouts
 - Full support for responsive designs with breakpoint-specific layouts
-- Integration with `@dynamicforms/vue-forms` for state management and validation
-- Default editors supported from `@dynamicforms/vuetify-inputs`
+- Integration with [`@dynamicforms/vue-forms`](:vue-forms:) for state management and validation
+- Default editors supported from [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:)
 - Nesting capabilities for complex form structures
 - Integration with all Vuetify input components
 

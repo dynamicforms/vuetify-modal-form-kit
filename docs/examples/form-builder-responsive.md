@@ -15,8 +15,8 @@ The FormBuilder component supports responsive layouts with different configurati
 - Programmatic API for defining form layouts
 - Full support for responsive designs with breakpoint-specific layouts
   - responsive designs supported at any level (form, row or column)
-- Integration with `@dynamicforms/vue-forms` for state management and validation
-- Default editors supported from `@dynamicforms/vuetify-inputs`
+- Integration with [`@dynamicforms/vue-forms`](:vue-forms:) for state management and validation
+- Default editors supported from [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:)
 - Nesting capabilities for complex form structures
 - Integration with all Vuetify input components
 

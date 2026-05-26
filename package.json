@@ -1,9 +1,9 @@
 {
   "name": "@dynamicforms/vuetify-modal-form-kit",
   "private": false,
-  "version": "0.5.2",
+  "version": "0.5.3",
   "type": "module",
-  "description": "Form layout and modal helpers",
+  "description": "Vue 3 + Vuetify 3 library providing a promise-based programmatic dialog API with a sequential dialog queue, a TypeScript fluent form layout builder (FormBuilder), and built-in keyboard shortcuts for dialog (Enter/Esc).",
   "author": "Jure Erznožnik",
   "files": [
     "dist/*"
@@ -29,17 +29,24 @@
   },
   "keywords": [
     "vue",
+    "vue3",
+    "vuetify",
     "dynamicforms",
     "velis",
     "form-layout",
-    "modal"
+    "form-builder",
+    "modal",
+    "dialog"
   ],
   "license": "MIT",
+  "homepage": "https://docs.velis.si/dynamicforms/vuetify-modal-form-kit/",
   "repository": {
     "type": "git",
-    "url": "git@github.com:velis74/dynamicforms-vuetify-modal-form-kit.git"
+    "url": "git+https://github.com/velis74/dynamicforms-vuetify-modal-form-kit.git"
   },
-  "issues": "https://github.com/velis74/dynamicforms-vuetify-modal-form-kit/issues",
+  "bugs": {
+    "url": "https://github.com/velis74/dynamicforms-vuetify-modal-form-kit/issues"
+  },
   "peerDependencies": {
     "@dynamicforms/vue-forms": "^0.5.0",
     "@dynamicforms/vuetify-inputs": "^0.7.11",

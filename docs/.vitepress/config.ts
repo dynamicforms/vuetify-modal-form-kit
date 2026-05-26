@@ -1,11 +1,20 @@
 import vuetify from 'vite-plugin-vuetify';
 import { defineConfig } from 'vitepress';
+import { crosslinksConfig } from 'vitepress-plugin-crosslinks';
 
 import ssrCkeditorStub from './ssr-ckeditor-stub';
 
 export default defineConfig({
   title: 'DynamicForms Vuetify modal form kit',
   description: 'One dialog onscreen at any one time plus a programmatic (vs template) form builder.',
+  markdown: {
+    config: crosslinksConfig({
+      projects: {
+        'vue-forms': 'https://docs.velis.si/dynamicforms/vue-forms',
+        'vuetify-inputs': 'https://docs.velis.si/dynamicforms/vuetify-inputs',
+      },
+    }),
+  },
   themeConfig: {
     logo: '/logo.png',
     nav: [

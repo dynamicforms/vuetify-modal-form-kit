@@ -12,7 +12,7 @@ Below is an example of using the modal dialog system:
 
 - **Only One Dialog At A Time** - Even with nested dialog calls, only one dialog is shown (others are queued)
 - **Promise API** - All dialogs return Promises that resolve when the dialog is closed
-- **Form Integration** - Seamless integration with `@dynamicforms/vue-forms` for validation
+- **Form Integration** - Seamless integration with [`@dynamicforms/vue-forms`](:vue-forms:) for validation
 - **Responsive Design** - Automatically adapts to screen size, switches to fullscreen on mobile
 - **Markdown Support** - Supports Markdown in dialog titles and content
 - **Custom Components** - Can display any component inside the dialog

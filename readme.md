@@ -16,6 +16,12 @@ dialog for inline validation and submission.
 
 ---
 
+## Documentation
+
+Full documentation is available at **https://docs.velis.si/dynamicforms/vuetify-modal-form-kit/**.
+
+---
+
 ## Installation
 
 ```bash
