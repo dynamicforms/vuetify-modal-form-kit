@@ -20,6 +20,7 @@ export default defineConfig({
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Guide', link: '/guide/getting-started' },
+      { text: 'API', link: '/api/' },
       { text: 'Examples', link: '/examples/' }
     ],
     sidebar: {
@@ -32,13 +33,26 @@ export default defineConfig({
           ]
         }
       ],
+      '/api/': [
+        {
+          text: 'API Reference',
+          items: [
+            { text: 'Overview', link: '/api/' },
+            { text: 'modal-view', link: '/api/modal-view' },
+            { text: 'df-modal', link: '/api/df-modal' },
+            { text: 'modal service', link: '/api/modal-service' },
+            { text: 'FormBuilder', link: '/api/form-builder' },
+          ]
+        }
+      ],
       '/examples/': [
         {
-          text: 'API with Examples',
+          text: 'Examples',
           items: [
             { text: 'form builder - simple', link: '/examples/form-builder' },
             { text: 'form builder - responsive', link: '/examples/form-builder-responsive' },
             { text: 'modal', link: '/examples/dialog-basic' },
+            { text: 'modal - template dialog', link: '/examples/dialog-template' },
           ]
         }
       ]

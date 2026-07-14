@@ -23,13 +23,13 @@ app.use(DynamicFormsModalFormKit);
 
 ### Modal dialogs
 
-Add `<ModalView />` to your root component to enable the modal system:
+Add `<modal-view />` to your root component to enable the modal system:
 
 ```vue
 <template>
   <v-app>
     <router-view />
-    <ModalView />
+    <modal-view />
   </v-app>
 </template>
 ```

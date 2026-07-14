@@ -8,17 +8,14 @@
     :title="currentModal.title"
     :color="currentModal.color"
     :icon="currentModal.icon"
+    :actions="actionsArray"
   >
     <template #body>
       <messages-widget v-if="message" :message="[message]" :classes="messageClass" />
       <form-render v-if="formLayout" :layout="formLayout" :components="components" />
     </template>
     <template #actions>
-      <df-actions
-        :actions="Object.values(currentModal.actions ?? ([] as Action[]))"
-        class="d-flex justify-end"
-        style="gap: 0.5em"
-      />
+      <df-actions :actions="actionsArray" class="d-flex justify-end" style="gap: 0.5em" />
     </template>
   </df-modal>
 </template>
@@ -27,7 +24,6 @@
 import * as Form from '@dynamicforms/vue-forms';
 import { MessagesWidget } from '@dynamicforms/vue-forms';
 import {
-  Action,
   DfActions,
   DfInput,
   DfTextArea,
@@ -57,6 +53,7 @@ watch(
 
 const message = computed(() => currentModal.value?.message);
 const messageClass = computed(() => (message.value ? message.value.extraClasses : undefined));
+const actionsArray = computed(() => Object.values(currentModal.value?.actions ?? {}));
 
 // Helper function to convert fieldName to a readable label
 function generateLabel(fieldName: string): string {
@@ -108,36 +105,14 @@ const components = {
   'df-actions': DfActions,
 };
 
-function onKeydown(e: KeyboardEvent) {
-  if (!currentModal.value || e.defaultPrevented) return;
-  const actions = Object.values(currentModal.value.actions ?? {});
-  if (e.key === 'Enter') {
-    const target = e.target as HTMLElement;
-    if (target.tagName === 'TEXTAREA' || target.isContentEditable) return;
-    const action = actions.find((a: any) => a.defaultConfirm);
-    if (action) {
-      e.preventDefault();
-      (action as any).execute(e);
-    }
-  } else if (e.key === 'Escape') {
-    const action = actions.find((a: any) => a.defaultReject);
-    if (action) {
-      e.preventDefault();
-      (action as any).execute(e);
-    }
-  }
-}
-
 onMounted(() => {
   if (installed.value) {
     console.warn('Seems like there is more than one df-modal-api in the v-dom');
   }
   installed.value = true;
-  document.addEventListener('keydown', onKeydown);
 });
 
 onUnmounted(() => {
   installed.value = false;
-  document.removeEventListener('keydown', onKeydown);
 });
 </script>

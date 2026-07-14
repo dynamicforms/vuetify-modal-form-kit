@@ -46,7 +46,8 @@
 <script setup lang="ts">
 import * as Form from '@dynamicforms/vue-forms';
 import { MessagesWidget } from '@dynamicforms/vue-forms';
-import { computed, onUnmounted, watch } from 'vue';
+import { Action } from '@dynamicforms/vuetify-inputs';
+import { computed, onMounted, onUnmounted, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 
 import DialogSize from './dialog-size';
@@ -62,6 +63,9 @@ interface Props {
   title?: Form.RenderableValue;
   color?: string;
   icon?: string;
+  // Actions considered for the Enter (defaultConfirm) / Esc (defaultReject) keyboard shortcuts. Rendering them is
+  // still up to the `actions` slot - this prop only drives the keyboard handling.
+  actions?: Action[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -73,6 +77,7 @@ const props = withDefaults(defineProps<Props>(), {
   title: undefined,
   color: undefined,
   icon: undefined,
+  actions: () => [],
 });
 const display = useDisplay();
 const size = computed(() => props.size);
@@ -127,7 +132,31 @@ watch(
   { immediate: true },
 );
 
+function onKeydown(e: KeyboardEvent) {
+  if (!isShown.value || e.defaultPrevented) return;
+  if (e.key === 'Enter') {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+    const action = props.actions.find((a: any) => a.defaultConfirm);
+    if (action) {
+      e.preventDefault();
+      (action as any).execute(e);
+    }
+  } else if (e.key === 'Escape') {
+    const action = props.actions.find((a: any) => a.defaultReject);
+    if (action) {
+      e.preventDefault();
+      (action as any).execute(e);
+    }
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', onKeydown);
+});
+
 onUnmounted(() => {
+  document.removeEventListener('keydown', onKeydown);
   dialogTracker.remove(sym.value);
 });
 

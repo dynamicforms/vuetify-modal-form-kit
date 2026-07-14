@@ -4,164 +4,37 @@ The Modal Dialog component provides a powerful alternative to standard Vuetify d
 
 ## Basic Usage
 
-Below is an example of using the modal dialog system:
+A message dialog, a yes/no confirmation, a validated form dialog, and sized dialogs, all driven from code via the
+`modal` service. Requires a single `<modal-view />` mounted in your app root - see
+[Installation](/guide/getting-started#modal-dialogs).
 
 <modal-basic/>
 
 ## Features
 
-- **Only One Dialog At A Time** - Even with nested dialog calls, only one dialog is shown (others are queued)
-- **Promise API** - All dialogs return Promises that resolve when the dialog is closed
-- **Form Integration** - Seamless integration with [`@dynamicforms/vue-forms`](:vue-forms:) for validation
-- **Responsive Design** - Automatically adapts to screen size, switches to fullscreen on mobile
-- **Markdown Support** - Supports Markdown in dialog titles and content
-- **Custom Components** - Can display any component inside the dialog
+- **One dialog at a time** - nested `modal.*` calls queue instead of stacking.
+- **Message dialogs** - `modal.message('Title', 'Text')` shows an info dialog with a single `close` action. The
+  demo's message also shows Markdown content (via `MdString`) with a custom CSS class attached through
+  `RenderableValue`.
+- **Confirmations** - `modal.yesNo('Title', 'Text')` shows `yes` / `no` actions and resolves to whichever was
+  clicked.
+- **Form dialogs** - pass a [`@dynamicforms/vue-forms`](:vue-forms:) `Group` (with validation) as `options.form`;
+  its `Action` fields (e.g. `submit`, `cancel`) become the dialog's buttons, and the returned promise resolves to
+  whichever one was clicked.
+- **Custom components** - `modal.custom('Title', componentName, componentProps)` renders any registered component
+  as the dialog body instead of a message/form.
+- **Sizing** - `options.size` picks `DialogSize.SMALL` / `MEDIUM` / `LARGE` / `X_LARGE`; on small screens the
+  dialog always goes fullscreen regardless.
 
-## API Usage
+Full method signatures, `ModalOptions`, and `DialogSize` are documented in the
+[`modal` service API reference](/api/modal-service).
 
-### Message Dialog
+## See also
 
-```typescript
-import { modal } from '@dynamicforms/vuetify-modal-form-kit';
-
-// Simple information dialog
-modal.message('Information', 'Operation completed successfully.');
-
-// Wait for dialog to close
-const result = await modal.message('Success', 'Your changes have been saved.');
-console.log('Dialog closed with action:', result); // 'close'
-```
-
-### Confirmation Dialog
-
-```typescript
-import { modal } from '@dynamicforms/vuetify-modal-form-kit';
-
-// Ask for confirmation
-const result = await modal.yesNo('Confirm Delete', 'Are you sure you want to delete this item?');
-
-if (result === 'yes') {
-  // User confirmed
-  deleteItem();
-} else {
-  // User canceled
-  console.log('Deletion canceled');
-}
-```
-
-### Dialog with Markdown string and custom CSS class
-```typescript
-import { MdString, RenderableValue} from '@dynamicforms/vue-forms';
-import { modal } from '@dynamicforms/vuetify-modal-form-kit';
-
-// Custom css class is defined in RenderableValue
-modal.message('Information', new RenderableValue(
-  new MdString(
-    'This is a **simple message** dialog with a close button.\n\nStyling can be changed with custom CSS class.'
-  ),
-  'md_extra_class'),
-);
-```
-
-If CSS is scoped, you need to use global selector to target the class:
-```css
-:global(.md_extra_class) {
-  color: blue;
-}
-```
-Otherwise, you can use the following selector:
-```css
-.md_extra_class {
-  color: blue;
-}
-```
-
-### Form Dialog
-
-```typescript
-import { Field, Group, Validators } from '@dynamicforms/vue-forms';
-import { Action } from '@dynamicforms/vuetify-inputs';
-import { modal } from '@dynamicforms/vuetify-modal-form-kit';
-
-const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-// Create a form with validation
-const form = new Group({
-  name: Field.create({
-    value: '',
-    validators: [new Validators.Required()],
-  }),
-  email: Field.create({
-    value: '',
-    validators: [new Validators.Required(), new Validators.Pattern(emailPattern)],
-  }),
-  submit: Action.create({ value: { label: 'Submit', icon: 'mdi-check' } }),
-  cancel: Action.create({ value: { label: 'Cancel', icon: 'mdi-close' } }),
-});
-
-// Show dialog with form — pass the form inside an options object
-const result = await modal.message('User Information', 'Please enter your details:', { form });
-
-if (result === 'submit') {
-  // Form was submitted with valid data
-  const userData = {
-    name: form.fields.name.value,
-    email: form.fields.email.value,
-  };
-}
-```
-
-### Custom Component Dialog
-
-```typescript
-import { modal } from '@dynamicforms/vuetify-modal-form-kit';
-
-// Show a dialog with a custom component
-const result = await modal.custom(
-  'Color Picker',
-  'ColorPickerComponent', // Name of your registered component
-  { 
-    initialColor: '#FF5733',
-    // Any props your component needs
-  }
-);
-```
-
-### Dialog Sizing
-
-The modal system supports four different sizes via the `size` option:
-
-```typescript
-import { modal, DialogSize } from '@dynamicforms/vuetify-modal-form-kit';
-
-await modal.message('Information', 'This is a small dialog', { size: DialogSize.SMALL });
-await modal.message('Information', 'This is a medium dialog', { size: DialogSize.MEDIUM });
-await modal.message('Information', 'This is a large dialog', { size: DialogSize.LARGE });
-await modal.message('Information', 'This is an extra large dialog', { size: DialogSize.X_LARGE });
-```
-
-On small screens the dialog automatically switches to fullscreen regardless of the configured size.
-
-## Installation
-
-To use the modal system, register the `ModalView` component in your root app component:
-
-```vue
-<template>
-  <v-app>
-    <v-main>
-      <!-- Your app content -->
-    </v-main>
-    
-    <!-- Register modal API component -->
-    <ModalView />
-  </v-app>
-</template>
-
-<script setup>
-import { ModalView } from '@dynamicforms/vuetify-modal-form-kit';
-</script>
-```
+- [Template Dialog](./dialog-template) - declaring a dialog directly in an SFC template with `<df-modal>`, instead
+  of opening it from code.
+- [API Reference](/api/) - full prop/method/option tables for the `modal` service, `<df-modal>`, `<modal-view>` and
+  `DialogSize`.
 
 <script setup>
 import ModalBasic from '../components/modal-basic.vue';
