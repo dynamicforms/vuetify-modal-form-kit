@@ -5,8 +5,9 @@ A Vue 3 + Vuetify 3 library built around four design goals:
 1. **Programmatic & template-based dialog API** — open dialogs from code with a promise-based API
    (`await modal.message()`, `await modal.yesNo()`, `await modal.custom()`) and get the result back directly, without
    events or callbacks. Dialogs can also be declared directly in Vue templates using `<DfModal>`.
-2. **One dialog on screen at a time** — the library maintains an internal queue; if code tries to open a second dialog
-   while one is already open, it waits until the first is closed.
+2. **One dialog on screen at a time** — the library maintains an internal stack; if code tries to open a second dialog
+   while one is already open, the first is suspended (hidden, not closed) until the second is closed, at which point
+   it reappears.
 3. **Programmatic form builder** — define responsive Vuetify grid layouts (rows → columns → components) entirely in
    TypeScript using a fluent `FormBuilder` API, without writing any template markup.
 4. **Keyboard shortcuts** — `<Enter>` confirms and `<Esc>` cancels the active dialog.
@@ -63,8 +64,9 @@ Add `<ModalView />` (or `<df-modal />`) somewhere in your root template to enabl
 ## Modal Dialog Manager
 
 The `modal` object provides a Promise-based API for showing dialogs. Because the library manages a dialog stack
-internally, you never have to worry about two dialogs trying to appear at the same time — the second one waits until the
-first is closed.
+internally, you never have to worry about two dialogs trying to appear at the same time — opening a second dialog
+suspends the first (it stays open but hidden) and shows the second on top; the first reappears once the second is
+closed.
 
 ### Simple message
 

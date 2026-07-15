@@ -12,7 +12,8 @@ A message dialog, a yes/no confirmation, a validated form dialog, and sized dial
 
 ## Features
 
-- **One dialog at a time** - nested `modal.*` calls queue instead of stacking.
+- **One dialog at a time** - a nested `modal.*` call suspends the dialog that opened it (kept open but hidden) and
+  shows the new one on top; the suspended dialog reappears once the new one closes.
 - **Message dialogs** - `modal.message('Title', 'Text')` shows an info dialog with a single `close` action. The
   demo's message also shows Markdown content (via `MdString`) with a custom CSS class attached through
   `RenderableValue`.

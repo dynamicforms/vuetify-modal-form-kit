@@ -19,7 +19,7 @@ import { ModalView } from '@dynamicforms/vuetify-modal-form-kit';
 </script>
 ```
 
-It takes no props and exposes no slots - it reads the currently queued dialog straight from the `modal` service's
+It takes no props and exposes no slots - it reads the currently active (top-of-stack) dialog straight from the `modal` service's
 internal state, so you control what it shows entirely through `modal.*` calls elsewhere in your code, not through
 anything you pass to `<modal-view>` itself.
 
