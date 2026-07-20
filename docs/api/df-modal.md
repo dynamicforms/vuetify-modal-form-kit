@@ -56,12 +56,12 @@ shown dialog:
 - **Escape** executes the action with `defaultReject` set to `true`. The dialog is `persistent`, so nothing
   happens on Escape if no action is flagged `defaultReject`.
 
-`defaultConfirm` / `defaultReject` aren't typed props of `Action` - set them the same way the `modal` service does
-internally:
+Set `defaultConfirm` / `defaultReject` on the action's `value`, the same way the `modal` service does internally
+(they also drive that action's color - `primary` / `secondary` - in `<df-actions>`, see
+[`@dynamicforms/vuetify-inputs`](:vuetify-inputs:)):
 
 ```typescript
-const loginAction = Action.create({ value: { name: 'login', label: 'Log in' /* ... */ } });
-Object.defineProperty(loginAction, 'defaultConfirm', { value: true });
+const loginAction = Action.create({ value: { name: 'login', label: 'Log in', defaultConfirm: true /* ... */ } });
 ```
 
 The `actions` prop and the `actions` slot are fed the *same* `Action` instances - pressing Enter/Esc calls

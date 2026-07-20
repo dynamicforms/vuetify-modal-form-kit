@@ -9,10 +9,15 @@
     persistent
   >
     <v-card>
-      <v-card-title>
+      <!--
+      Inline `padding: 0` to reset any VitePress or otherwise padding so that v-sheet's default padding
+      is always the same
+      -->
+      <v-card-title style="padding: 0">
         <v-sheet
           :color="props.color || undefined"
-          :class="{ 'mx-n4 mt-n3 mb-3 d-flex align-center px-4 py-6': !!props.color, 'position-relative': closable }"
+          class="d-flex align-center px-4 py-4"
+          :class="{ 'position-relative': closable }"
           :elevation="!!props.color ? 4 : 0"
         >
           <v-icon v-if="icon" class="me-2" :icon="icon" />
@@ -137,16 +142,16 @@ function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Enter') {
     const target = e.target as HTMLElement;
     if (target.tagName === 'TEXTAREA' || target.isContentEditable) return;
-    const action = props.actions.find((a: any) => a.defaultConfirm);
+    const action = props.actions.find((a) => a.defaultConfirm);
     if (action) {
       e.preventDefault();
-      (action as any).execute(e);
+      action.execute(e);
     }
   } else if (e.key === 'Escape') {
-    const action = props.actions.find((a: any) => a.defaultReject);
+    const action = props.actions.find((a) => a.defaultReject);
     if (action) {
       e.preventDefault();
-      (action as any).execute(e);
+      action.execute(e);
     }
   }
 }

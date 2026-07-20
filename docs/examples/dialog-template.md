@@ -35,26 +35,26 @@ const isOpen = ref(false);
 const username = ref('');
 const password = ref('');
 
+// defaultConfirm/defaultReject wire Enter/Esc (via `:actions` below) and color the action primary/secondary
+// in <df-actions> - see @dynamicforms/vuetify-inputs's Action API.
 const cancelAction = Action.create({
-  value: { name: 'cancel', label: 'Cancel', renderAs: ActionDisplayStyle.TEXT, showLabel: true },
+  value: { name: 'cancel', label: 'Cancel', renderAs: ActionDisplayStyle.TEXT, showLabel: true, defaultReject: true },
 });
 cancelAction.registerAction(new ExecuteAction((action, supr, ...params) => {
   isOpen.value = false;
   return supr(action, ...params);
 }));
-// Esc triggers whichever action in `:actions` is marked defaultReject
-Object.defineProperty(cancelAction, 'defaultReject', { value: true });
 
 const loginAction = Action.create({
-  value: { name: 'login', label: 'Log in', icon: 'mdi-check', showIcon: true, showLabel: true },
+  value: {
+    name: 'login', label: 'Log in', icon: 'mdi-check', showIcon: true, showLabel: true, defaultConfirm: true,
+  },
 });
 loginAction.registerAction(new ExecuteAction((action, supr, ...params) => {
   // ... perform the login, then:
   isOpen.value = false;
   return supr(action, ...params);
 }));
-// Enter triggers whichever action in `:actions` is marked defaultConfirm
-Object.defineProperty(loginAction, 'defaultConfirm', { value: true });
 
 const actions = [cancelAction, loginAction];
 </script>

@@ -48,8 +48,10 @@ function close(result) {
 }
 
 // Cancel is rendered as a text link, Log in as a tonal button - the same visual rules df-actions applies everywhere
+// defaultConfirm/defaultReject wire the action to Enter/Esc (see <df-modal>'s `actions` prop) and color it
+// primary/secondary in <df-actions>.
 const cancelAction = Action.create({
-  value: { name: 'cancel', label: 'Cancel', renderAs: ActionDisplayStyle.TEXT, showLabel: true },
+  value: { name: 'cancel', label: 'Cancel', renderAs: ActionDisplayStyle.TEXT, showLabel: true, defaultReject: true },
 });
 cancelAction.registerAction(
   new ExecuteAction((action, supr, ...params) => {
@@ -57,11 +59,11 @@ cancelAction.registerAction(
     return supr(action, ...params);
   }),
 );
-// Esc triggers whichever action is marked defaultReject - see <df-modal>'s `actions` prop
-Object.defineProperty(cancelAction, 'defaultReject', { value: true });
 
 const loginAction = Action.create({
-  value: { name: 'login', label: 'Log in', icon: 'mdi-check', showIcon: true, showLabel: true },
+  value: {
+    name: 'login', label: 'Log in', icon: 'mdi-check', showIcon: true, showLabel: true, defaultConfirm: true,
+  },
 });
 loginAction.registerAction(
   new ExecuteAction((action, supr, ...params) => {
@@ -69,8 +71,6 @@ loginAction.registerAction(
     return supr(action, ...params);
   }),
 );
-// Enter triggers whichever action is marked defaultConfirm
-Object.defineProperty(loginAction, 'defaultConfirm', { value: true });
 
 const actions = [cancelAction, loginAction];
 </script>

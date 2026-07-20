@@ -52,10 +52,8 @@ class ModalAPI {
         (fieldName) => options?.form?.field(fieldName) instanceof Form.Action,
       ) || !isEmpty(options?.actions);
 
-    const yes = Action.yesAction();
-    Object.defineProperty(yes, 'defaultConfirm', { value: true });
-    const no = Action.noAction();
-    Object.defineProperty(no, 'defaultReject', { value: true });
+    const yes = Action.yesAction({ value: { defaultConfirm: true } });
+    const no = Action.noAction({ value: { defaultReject: true } });
 
     return this.messageInternal(title, message, hasAction ? {} : { yes, no }, options);
   }
@@ -70,11 +68,7 @@ class ModalAPI {
         (fieldName) => options?.form?.field(fieldName) instanceof Form.Action,
       ) || !isEmpty(options?.actions);
 
-    const close = Action.closeAction();
-    Object.defineProperties(close, {
-      defaultConfirm: { value: true },
-      defaultReject: { value: true },
-    });
+    const close = Action.closeAction({ value: { defaultConfirm: true, defaultReject: true } });
 
     return this.messageInternal(title, message, hasAction ? {} : { close }, options);
   }
