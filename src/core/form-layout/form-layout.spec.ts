@@ -251,4 +251,70 @@ describe('Layout Integration Tests', () => {
     // And the nested form itself should have its own responsive layout
     expect(contactForm.toJSON().sm?.rows.length).toBe(2);
   });
+
+  it('resolves column breakpoints the way <form-render> asks for them', () => {
+    const form = new FormBuilder();
+
+    form.row({}, (row) =>
+      row.col({ cols: 8 }, (col) =>
+        col
+          .breakpoint('sm', (bpCol) => {
+            bpCol.props.cols = 12;
+            return bpCol;
+          })
+          .component((cmpt) => cmpt.generic('VTextField', { label: 'Street' })),
+      ),
+    );
+
+    // this is the pair of calls <form-render> makes: getOptionsForBreakpoint resolves the form-level
+    // breakpoints, the argument to toJSON the row- and column-level ones
+    const base = form.getOptionsForBreakpoint('xs').toJSON('xs');
+    expect(base.rows[0].columns[0].props).toEqual({ cols: 8 });
+
+    // breakpoints are mobile-first: what sm sets holds from sm upwards
+    const small = form.getOptionsForBreakpoint('sm').toJSON('sm');
+    expect(small.rows[0].columns[0].props).toEqual({ cols: 12 });
+    expect(small.rows[0].columns[0].components[0].props.label).toBe('Street');
+
+    const large = form.getOptionsForBreakpoint('lg').toJSON('lg');
+    expect(large.rows[0].columns[0].props).toEqual({ cols: 12 });
+  });
+
+  it('keeps the columns of a row whose breakpoint only overrides props', () => {
+    const form = new FormBuilder();
+
+    form.row({}, (row) =>
+      row
+        .breakpoint('sm', (bpRow) => {
+          bpRow.props.dense = true;
+          return bpRow;
+        })
+        .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'City' }))),
+    );
+
+    const small = form.getOptionsForBreakpoint('sm').toJSON('sm');
+    expect(small.rows[0].props).toEqual({ dense: true });
+    expect(small.rows[0].columns.length).toBe(1);
+    expect(small.rows[0].columns[0].components[0].props.label).toBe('City');
+  });
+
+  it('replaces a row wholesale when its breakpoint declares columns', () => {
+    const form = new FormBuilder();
+
+    form.row({}, (row) =>
+      row
+        .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'City' })))
+        .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'Zip' })))
+        // a row breakpoint carries its own columns - it does not merge into the ones above it
+        .breakpoint('sm', (bpRow) =>
+          bpRow.col({ cols: 12 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'City' }))),
+        ),
+    );
+
+    expect(form.getOptionsForBreakpoint('xs').toJSON('xs').rows[0].columns.length).toBe(2);
+
+    const small = form.getOptionsForBreakpoint('sm').toJSON('sm');
+    expect(small.rows[0].columns.length).toBe(1);
+    expect(small.rows[0].columns[0].props).toEqual({ cols: 12 });
+  });
 });

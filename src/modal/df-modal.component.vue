@@ -110,8 +110,14 @@ const width = computed<'unset' | number>(() => {
   }
 });
 
-const sym = computed(() => props.dialogId ?? Symbol('df-dialog'));
-const isTop = dialogTracker.isTop(sym.value);
+// Identity of a template dialog, which has no dialogId of its own. It has to outlive every recomputation of
+// `sym`: the stack is keyed by symbol, so a fresh one would never match the entry this component pushed.
+const ownSym = Symbol('df-dialog');
+const sym = computed(() => props.dialogId ?? ownSym);
+// `sym` is read inside the computed rather than passed to dialogTracker.isTop(): <modal-view> keeps one
+// <df-modal> alive across dialogs and only swaps `dialogId`, so a comparison bound to the symbol seen at setup
+// would hide every dialog after the first.
+const isTop = computed(() => dialogTracker.currentRef.value === sym.value);
 const emit = defineEmits<{
   'update:model-value': [value: boolean];
 }>();
@@ -137,18 +143,24 @@ watch(
   { immediate: true },
 );
 
+// The keyboard reaches exactly the actions the user could click: <df-actions> disables an action that is not
+// enabled and renders anything below FULL as hidden or invisible.
+function isReachable(action: Action) {
+  return action.enabled && action.visibility === Form.DisplayMode.FULL;
+}
+
 function onKeydown(e: KeyboardEvent) {
   if (!isShown.value || e.defaultPrevented) return;
   if (e.key === 'Enter') {
     const target = e.target as HTMLElement;
     if (target.tagName === 'TEXTAREA' || target.isContentEditable) return;
-    const action = props.actions.find((a) => a.defaultConfirm);
+    const action = props.actions.find((a) => a.defaultConfirm && isReachable(a));
     if (action) {
       e.preventDefault();
       action.execute(e);
     }
   } else if (e.key === 'Escape') {
-    const action = props.actions.find((a) => a.defaultReject);
+    const action = props.actions.find((a) => a.defaultReject && isReachable(a));
     if (action) {
       e.preventDefault();
       action.execute(e);

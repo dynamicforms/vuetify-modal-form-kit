@@ -99,9 +99,12 @@ export class Column extends ResponsiveRenderOptions<ColBase> {
   toJSON(breakpoint?: BreakpointNames): ColumnJSONResponsive {
     if (breakpoint != null) {
       const res = this.getOptionsForBreakpoint(breakpoint);
+      // a breakpoint that declares no components of its own overrides the props only - the column keeps what it
+      // holds at its base. Declaring components in the breakpoint replaces the whole set.
+      const components = res.components.length ? res.components : this._value.components;
       return {
         props: res.props,
-        components: res.components.map((cmpt) => cmpt.toJSON()),
+        components: components.map((cmpt) => cmpt.toJSON()),
       };
     }
     const res: ColumnJSONResponsive = {

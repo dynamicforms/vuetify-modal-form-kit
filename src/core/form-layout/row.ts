@@ -83,7 +83,10 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
   toJSON(breakpoint?: BreakpointNames): RowJSONResponsive {
     if (breakpoint != null) {
       const res = this.getOptionsForBreakpoint(breakpoint);
-      return { props: res.props, columns: res.columns.map((col) => col.toJSON(breakpoint)) };
+      // a breakpoint that declares no columns of its own overrides the props only - the row keeps the columns it
+      // holds at its base. Declaring columns in the breakpoint replaces the whole set.
+      const columns = res.columns.length ? res.columns : this._value.columns;
+      return { props: res.props, columns: columns.map((col) => col.toJSON(breakpoint)) };
     }
     const res: RowJSONResponsive = {
       props: this._value.props,
@@ -120,7 +123,7 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
       ...baseKeys,
       ...responsiveBreakpoints.flatMap((b) => baseKeys.map((k) => `${k}-${b}`)),
       'dense',
-      'no-gutters',
+      'noGutters',
       'class',
       'style',
     ]);
@@ -138,10 +141,11 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
         if (isValidClass(val)) result[key] = val as any;
       } else if (key === 'style') {
         if (isValidStyle(val)) result[key] = val as any;
-      } else if (key.startsWith('align')) {
-        if (isString(val) && AllowedAlign.includes(val)) (<any>result)[key] = val;
+        // align-content before align: the former also starts with the latter
       } else if (key.startsWith('align-content')) {
         if (isString(val) && AllowedAlignContent.includes(val)) (<any>result)[key] = val;
+      } else if (key.startsWith('align')) {
+        if (isString(val) && AllowedAlign.includes(val)) (<any>result)[key] = val;
       } else if (key.startsWith('justify')) {
         if (isString(val) && AllowedJustify.includes(val)) (<any>result)[key] = val;
       }

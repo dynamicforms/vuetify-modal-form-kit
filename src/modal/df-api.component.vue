@@ -39,7 +39,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { FormBuilder } from '../core/form-layout';
 import { FormRender } from '../layout';
 
-import { currentModal, installed } from './api';
+import { currentModal, installed, installedCount } from './api';
 import DfModal from './df-modal.component.vue';
 
 const isOpen = ref(false);
@@ -49,6 +49,9 @@ watch(
   (modal) => {
     isOpen.value = modal !== null;
   },
+  // a dialog opened before this component mounts is already on the stack, and without the immediate run
+  // nothing would ever set isOpen for it
+  { immediate: true },
 );
 
 const message = computed(() => currentModal.value?.message);
@@ -109,10 +112,10 @@ onMounted(() => {
   if (installed.value) {
     console.warn('Seems like there is more than one df-modal-api in the v-dom');
   }
-  installed.value = true;
+  installedCount.value += 1;
 });
 
 onUnmounted(() => {
-  installed.value = false;
+  installedCount.value -= 1;
 });
 </script>
