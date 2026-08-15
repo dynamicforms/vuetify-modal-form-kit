@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Lint, test & build (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        node-version: ['lts/*', 'latest']
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build library
+        run: npm run build
+
+      - name: Verify declaration output
+        run: |
+          size=$(wc -c < dist/index.d.ts)
+          if [ "$size" -lt 10000 ]; then
+            echo "::error::dist/index.d.ts is only $size bytes - declarations were rolled up empty"
+            exit 1
+          fi
+          grep -q 'export declare class FormBuilder' dist/index.d.ts
+
+      - name: Build docs
+        run: npm run docs:build
+
+      - name: Incremental coverage check
+        uses: velis74/incremental-coverage-check@v2
+        with:
+          coverage-files: coverage/coverage-final.json
+          # docs/ holds the VitePress site and its demo components - not library code, and not covered by
+          # vitest, whose coverage is scoped to src/
+          extra-ignore-patterns: docs/**
+          log-level: INFO
+          base-ref: ${{ github.base_ref }}
+          head-ref: HEAD
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pr-number: ${{ github.event.pull_request.number }}
+        if: github.event_name == 'pull_request'
