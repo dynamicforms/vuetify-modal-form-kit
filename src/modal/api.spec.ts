@@ -86,6 +86,15 @@ describe('modal service', () => {
     expect(currentModal.value).toBeNull();
   });
 
+  it('takes the dialog off the stack when it is resolved through its own record', async () => {
+    const promise = modal.message('Working', 'Please wait...');
+
+    currentModal.value!.resolve('done');
+
+    expect(await settled(promise)).toBe('done');
+    expect(currentModal.value).toBeNull();
+  });
+
   it('renders a custom component as the dialog body', async () => {
     const promise = modal.custom('Settings', 'MySettingsPanel', { userId: 42 });
 
