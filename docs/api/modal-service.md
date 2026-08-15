@@ -9,8 +9,10 @@ import { modal } from '@dynamicforms/vuetify-modal-form-kit';
 const result = await modal.message('Done', 'Your changes have been saved.');
 ```
 
-Every method returns a `CloseablePromise<string>` - a `Promise` that resolves to the name of the action that closed
-the dialog (e.g. `'close'`, `'yes'`, `'no'`, or a custom action's name), plus:
+Every method returns a `CloseablePromise<string>` - a `Promise` that resolves to the key the action that closed the
+dialog is registered under: its field name when it is part of `options.form`, otherwise its key in
+`options.actions` (e.g. `'close'`, `'yes'`, `'no'`). An `Action`'s own `name` value is informational and plays no
+part in this, so keep the two in sync if you set both. The promise also carries:
 
 | Member | Description |
 |---|---|
@@ -24,6 +26,8 @@ the dialog (e.g. `'close'`, `'yes'`, `'no'`, or a custom action's name), plus:
 | `message` | `message(title, message, options?)` | Shows a message dialog. Gets a single `close` action unless `options.form` or `options.actions` define their own. |
 | `yesNo` | `yesNo(title, message, options?)` | Shows a confirmation dialog with `yes` / `no` actions unless `options.form` or `options.actions` define their own. |
 | `custom` | `custom(title, componentName, componentProps, options?)` | Shorthand for `message()` that renders a registered component (`componentName`) with `componentProps` as the body. |
+| `isTop` | `isTop(promise)` | `true` while the dialog behind that promise is the one on top of the stack. |
+| `isInstalled` | `isInstalled()` | `true` once a `<modal-view>` is mounted. Without one, no dialog renders and no promise ever settles. |
 
 `title` and `message` accept a plain string, `MdString` (Markdown), a `SimpleComponentDef`, or a `RenderableValue`
 wrapping any of those (e.g. to attach an extra CSS class).
@@ -45,8 +49,12 @@ Passed as the last argument to `message()` / `yesNo()` / `custom()`.
 `import { DialogSize } from '@dynamicforms/vuetify-modal-form-kit'`
 
 Enum with `SMALL`, `MEDIUM`, `LARGE`, `X_LARGE` and `DEFAULT` members, accepted by both `ModalOptions.size` and
-`df-modal`'s [`size` prop](./df-modal#props). On small screens the dialog automatically switches to fullscreen
-regardless of the configured size.
+`df-modal`'s [`size` prop](./df-modal#props). Each of the four explicit sizes switches to fullscreen below its own
+breakpoint; `DEFAULT` sizes itself to its content and never does.
+
+`defaultDialogSize` is exported alongside it as the value `DEFAULT` stands for. `DialogSize.fromString('lg')`
+turns a `'large'` / `'lg'` / `'modal-lg'`-style string into the enum, and `DialogSize.isDefined(size)` reports
+whether a value is one of the members.
 
 ```typescript
 import { modal, DialogSize } from '@dynamicforms/vuetify-modal-form-kit';

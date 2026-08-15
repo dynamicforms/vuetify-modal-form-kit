@@ -4,7 +4,7 @@
       <v-card-title class="text-subtitle-1 px-0">Template Dialog (&lt;df-modal&gt;)</v-card-title>
       <v-card-text class="px-0">
         Declared directly in the component's template instead of being opened from code. The actions are still
-        built with <code>Action.create()</code> and rendered through <code>&lt;df-actions&gt;</code>, so they look
+        built with <code>new Action()</code> and rendered through <code>&lt;df-actions&gt;</code>, so they look
         and behave exactly like the dialogs opened via <code>modal.*</code> above.
       </v-card-text>
       <v-card-actions class="px-0">
@@ -50,7 +50,7 @@ function close(result) {
 // Cancel is rendered as a text link, Log in as a tonal button - the same visual rules df-actions applies everywhere
 // defaultConfirm/defaultReject wire the action to Enter/Esc (see <df-modal>'s `actions` prop) and color it
 // primary/secondary in <df-actions>.
-const cancelAction = Action.create({
+const cancelAction = new Action({
   value: { name: 'cancel', label: 'Cancel', renderAs: ActionDisplayStyle.TEXT, showLabel: true, defaultReject: true },
 });
 cancelAction.registerAction(
@@ -60,7 +60,7 @@ cancelAction.registerAction(
   }),
 );
 
-const loginAction = Action.create({
+const loginAction = new Action({
   value: {
     name: 'login', label: 'Log in', icon: 'mdi-check', showIcon: true, showLabel: true, defaultConfirm: true,
   },

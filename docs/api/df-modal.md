@@ -7,7 +7,8 @@ It's also what [`<modal-view>`](./modal-view) renders internally for dialogs ope
 if that's your use case, you don't need to touch `df-modal` directly, see [`modal` service](./modal-service) instead.
 
 ```vue
-<df-modal v-model="isOpen" title="Log in" :actions="actions" closable icon="mdi-login">
+<!-- title is a RenderableValue: const title = new RenderableValue('Log in') -->
+<df-modal v-model="isOpen" :title="title" :actions="actions" closable icon="mdi-login">
   <template #body>...</template>
   <template #actions>
     <df-actions :actions="actions" class="d-flex justify-end" style="gap: 0.5em" />
@@ -21,7 +22,7 @@ if that's your use case, you don't need to touch `df-modal` directly, see [`moda
 |------|------|---------|-------------|
 | `modelValue` | `boolean` | `false` | Controls visibility. Use with `v-model`. |
 | `closable` | `boolean` | `false` | Shows a close (`x`) button in the title bar that sets `modelValue` to `false`. |
-| `size` | `DialogSize` | `DialogSize.DEFAULT` | One of `DialogSize.SMALL` / `MEDIUM` / `LARGE` / `X_LARGE`. On small screens the dialog switches to fullscreen regardless of the configured size. |
+| `size` | `DialogSize` | `DialogSize.DEFAULT` | One of `DialogSize.SMALL` / `MEDIUM` / `LARGE` / `X_LARGE`. Each of those switches to fullscreen below its own breakpoint; `DEFAULT` sizes itself to its content and never does. |
 | `formControl` | `Form.Group` | — | Exposed to the `body` slot as `formControl`; `df-modal` itself doesn't render a form from it. |
 | `dialogId` | `symbol` | — | Used internally by the `modal` service to manage the one-dialog-at-a-time stack. Leave unset for template dialogs. |
 | `title` | `Form.RenderableValue` | — | Dialog title. Accepts plain text, Markdown (`MdString`), or a custom component. Falls back to the `title` slot if omitted. |
@@ -61,7 +62,7 @@ Set `defaultConfirm` / `defaultReject` on the action's `value`, the same way the
 [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:)):
 
 ```typescript
-const loginAction = Action.create({ value: { name: 'login', label: 'Log in', defaultConfirm: true /* ... */ } });
+const loginAction = new Action({ value: { name: 'login', label: 'Log in', defaultConfirm: true /* ... */ } });
 ```
 
 The `actions` prop and the `actions` slot are fed the *same* `Action` instances - pressing Enter/Esc calls

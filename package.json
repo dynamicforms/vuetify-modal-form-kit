@@ -1,7 +1,7 @@
 {
   "name": "@dynamicforms/vuetify-modal-form-kit",
   "private": false,
-  "version": "0.5.5",
+  "version": "0.6.0",
   "type": "module",
   "description": "Vue 3 + Vuetify 3 library providing a promise-based programmatic dialog API with a sequential dialog queue, a TypeScript fluent form layout builder (FormBuilder), and built-in keyboard shortcuts for dialog (Enter/Esc).",
   "author": "Jure Erznožnik",
@@ -12,17 +12,25 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "require": "./dist/dynamicforms-vuetify-modal-form-kit.umd.cjs",
-      "import": "./dist/dynamicforms-vuetify-modal-form-kit.js"
-    }
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/dynamicforms-vuetify-modal-form-kit.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/dynamicforms-vuetify-modal-form-kit.umd.cjs"
+      }
+    },
+    "./package.json": "./package.json"
   },
   "workspaces": [
     "docs"
   ],
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && node -e \"require('fs').copyFileSync('dist/index.d.ts', 'dist/index.d.cts')\"",
     "test": "vitest run --coverage",
-    "lint": "eslint src && vue-tsc --noEmit",
+    "lint": "eslint src --fix && vue-tsc --noEmit",
+    "lint:ci": "eslint src && vue-tsc --noEmit",
     "docs:dev": "npm run docs:dev -w docs",
     "docs:build": "npm run docs:build -w docs",
     "docs:preview": "npm run docs:preview -w docs"
@@ -42,19 +50,19 @@
   "homepage": "https://docs.velis.si/dynamicforms/vuetify-modal-form-kit/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/velis74/dynamicforms-vuetify-modal-form-kit.git"
+    "url": "git+https://github.com/dynamicforms/vuetify-modal-form-kit.git"
   },
   "bugs": {
-    "url": "https://github.com/velis74/dynamicforms-vuetify-modal-form-kit/issues"
+    "url": "https://github.com/dynamicforms/vuetify-modal-form-kit/issues"
   },
   "peerDependencies": {
-    "@dynamicforms/vue-forms": "^0.5.0",
-    "@dynamicforms/vuetify-inputs": "^0.7.13",
+    "@dynamicforms/vue-forms": "^0.6.0",
+    "@dynamicforms/vuetify-inputs": "^0.8.0",
     "@mdi/font": "^7.4.47",
     "lodash-es": "^4.17.12",
     "vue": "^3.4",
     "vue-markdown-render": "^2.2.1",
-    "vuetify": "^3.8"
+    "vuetify": "^3.9"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.12",

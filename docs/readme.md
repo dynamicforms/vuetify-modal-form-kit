@@ -1,4 +1,4 @@
-# DynamicForms Vue Forms Documentation
+# DynamicForms Vuetify Modal Form Kit Documentation
 
 This directory contains the VitePress documentation for `@dynamicforms/vuetify-modal-form-kit`.
 

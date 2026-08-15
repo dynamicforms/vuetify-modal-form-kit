@@ -31,6 +31,12 @@ export default defineConfig({
             { text: 'Installation', link: '/guide/getting-started#installation' },
             { text: 'Basic Usage', link: '/guide/getting-started#basic-usage' },
           ]
+        },
+        {
+          text: 'Migration',
+          items: [
+            { text: 'Migration guide', link: '/guide/migration' },
+          ]
         }
       ],
       '/api/': [
@@ -58,7 +64,7 @@ export default defineConfig({
       ]
     },
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/velis74/dynamicforms-vuetify-modal-form-kit' }
+      { icon: 'github', link: 'https://github.com/dynamicforms/vuetify-modal-form-kit' }
     ],
     footer: {
       message: 'Released under the MIT License.',

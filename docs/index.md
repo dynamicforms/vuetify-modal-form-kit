@@ -10,7 +10,7 @@ hero:
       link: /guide/getting-started
     - theme: alt
       text: View on GitHub
-      link: https://github.com/velis74/dynamicforms-vuetify-modal-form-kit
+      link: https://github.com/dynamicforms/vuetify-modal-form-kit
 features:
   - title: Programmatic & Template Dialog API
     details: Open dialogs from code with a promise-based API (e.g. await modal.message()) and get the result back 
@@ -38,10 +38,8 @@ features:
 3. **Programmatic form builder** — a fluent `FormBuilder` API lets you define responsive Vuetify grid layouts entirely in TypeScript, with no template markup required.
 4. **Keyboard shortcuts** — `<Enter>` confirms and `<Esc>` cancels the active dialog.
 
-## Simple Example
+## Next steps
 
-Ready to get started? Check out the [Getting Started](/guide/getting-started) guide or dive into the 
-[Examples](/examples/) for more detailed usage patterns.
-
-<script setup>
-</script>
+Ready to get started? Check out the [Getting Started](/guide/getting-started) guide or dive into the
+[Examples](/examples/) for more detailed usage patterns. Coming from 0.5.x? The
+[migration guide](/guide/migration) lists the breaking changes with before/after code.

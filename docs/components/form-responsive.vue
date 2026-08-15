@@ -236,14 +236,14 @@ formBuilder.breakpoint('md', (form) => form
     .row({ }, (row) => row
       .col({ cols: 8, offset: 0 }, (col) => col
         .breakpoint('sm', (col) => {
-          col.cols = 12;
+          col.props.cols = 12;
           return col;
         })  // Column adapts for sm
         .component((cmpt) => cmpt
           .generic('VTextField', { label: 'Street', placeholder: 'Enter street name' })))
       .col({ cols: 4, offset: 0 }, (col) => col
         .breakpoint('sm', (col) => {
-          col.cols = 12;
+          col.props.cols = 12;
           return col;
         })  // Column adapts for sm
         .component((cmpt) => cmpt
