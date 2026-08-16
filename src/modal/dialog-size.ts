@@ -15,18 +15,24 @@ namespace DialogSize {
   const smallIdentifiers: string[] = ['small', 'sm', 'modal-sm'];
   const xLargeIdentifiers: string[] = ['x-large', 'xl', 'modal-xl'];
 
-  export function fromString(size?: string): DialogSize {
-    if (size === undefined) return defaultDialogSize;
+  // Resolves a string identifier, or undefined when the string names no size. There is no string
+  // identifier for DEFAULT: it is the fallback fromString applies, not a size anyone can name.
+  function lookup(size: string): DialogSize | undefined {
     if (largeIdentifiers.includes(size)) return DialogSize.LARGE;
     if (mediumIdentifiers.includes(size)) return DialogSize.MEDIUM;
     if (smallIdentifiers.includes(size)) return DialogSize.SMALL;
     if (xLargeIdentifiers.includes(size)) return DialogSize.X_LARGE;
-    return defaultDialogSize;
+    return undefined;
+  }
+
+  export function fromString(size?: string): DialogSize {
+    if (size === undefined) return defaultDialogSize;
+    return lookup(size) ?? defaultDialogSize;
   }
 
   export function isDefined(size: number | string) {
-    const check = typeof size === 'number' ? size : DialogSize.fromString(size as string);
-    return Object.values(DialogSize).includes(check);
+    if (typeof size === 'number') return Object.values(DialogSize).includes(size);
+    return lookup(size) !== undefined;
   }
 }
 

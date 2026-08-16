@@ -44,6 +44,32 @@ describe('DialogSize', () => {
     expect(DialogSize.isDefined('modal-xl')).toBe(true);
 
     expect(DialogSize.isDefined(100)).toBe(false);
-    expect(DialogSize.isDefined('THIS WILL NEVER BE A SIZE')).toBe(true);
+    expect(DialogSize.isDefined('THIS WILL NEVER BE A SIZE')).toBe(false);
+  });
+  it('Check Is Defined Reports Actual Existence', () => {
+    const identifiers = [
+      'small',
+      'sm',
+      'modal-sm',
+      'medium',
+      'md',
+      'modal-md',
+      'large',
+      'lg',
+      'modal-lg',
+      'x-large',
+      'xl',
+      'modal-xl',
+    ];
+    identifiers.forEach((identifier) => expect(DialogSize.isDefined(identifier)).toBe(true));
+
+    // DEFAULT has no string identifier, so no string resolves to it
+    expect(DialogSize.isDefined('default')).toBe(false);
+    expect(DialogSize.isDefined('')).toBe(false);
+    expect(DialogSize.isDefined('modal-xxl')).toBe(false);
+
+    // fromString falls back to defaultDialogSize for an unrecognised string
+    expect(DialogSize.fromString('default')).toBe(defaultDialogSize);
+    expect(DialogSize.fromString('modal-xxl')).toBe(defaultDialogSize);
   });
 });

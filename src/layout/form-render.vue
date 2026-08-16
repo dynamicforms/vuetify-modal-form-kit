@@ -31,9 +31,7 @@ interface FormRenderProps {
 
 const props = withDefaults(defineProps<FormRenderProps>(), { components: () => ({}) });
 
-const responsiveLayout = computed(() =>
-  props.layout instanceof FormBuilder ? props.layout : new FormBuilder(props.layout as any),
-);
+const responsiveLayout = computed(() => FormBuilder.fromJSON(props.layout));
 const display = useDisplay();
 const layoutToRender = computed(() => {
   const breakpoint = getBreakpointName(display);

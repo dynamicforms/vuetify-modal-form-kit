@@ -11,6 +11,17 @@ export class Component<T extends Record<string, any> = Record<string, any>> {
     this.props = props;
   }
 
+  /**
+   * Lifts a serialized component into a Component and leaves an existing one alone.
+   *
+   * `props` passes through by reference and is never inspected: a nested layout is either a FormBuilder or the
+   * JSON it serializes to, and the <form-render> that receives it takes both.
+   */
+  static fromJSON(json: ComponentJSON | Component): Component {
+    if (json instanceof Component) return json;
+    return new Component(json.name, json.props ?? undefined);
+  }
+
   toJSON(): ComponentJSON {
     return {
       name: this.name,

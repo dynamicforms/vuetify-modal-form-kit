@@ -222,4 +222,65 @@ describe('Row', () => {
     expect(json.rows[0].columns[2].components[0].name).toBe('VTextField');
     expect(json.rows[0].columns[2].components[0].props.label).toBe('Last Name');
   });
+
+  describe('fromJSON', () => {
+    it('round-trips a serialized row', () => {
+      const json = {
+        props: { dense: true },
+        columns: [{ props: { cols: 6 }, components: [{ name: 'VTextField', props: { label: 'City' } }] }],
+      };
+
+      expect(Row.fromJSON(json).toJSON()).toEqual(json);
+    });
+
+    it('reads a plain props bag', () => {
+      expect(new Row({ dense: true }).toJSON()).toEqual({ props: { dense: true }, columns: [] });
+    });
+
+    it('reads a row whose JSON names a breakpoint and nothing else', () => {
+      const row = Row.fromJSON(<any>{ sm: { props: { dense: true } } });
+
+      // `sm` is a breakpoint, not a Vuetify prop: taking the object for a props bag would file it under `props`,
+      // where the props filter drops it and the override is gone
+      expect(row.toJSON('sm').props).toEqual({ dense: true });
+      expect(row.toJSON().props).toEqual({});
+    });
+
+    it('validates the props of a breakpoint it hydrates', () => {
+      const row = Row.fromJSON({
+        props: {},
+        columns: [],
+        // 'baseline' is an align value; justify has no such alignment
+        md: { props: { justify: 'baseline' as any, dense: true } },
+      });
+
+      expect(row.toJSON('md').props).toEqual({ dense: true });
+    });
+
+    it('keeps the columns a breakpoint says nothing about', () => {
+      const row = Row.fromJSON({
+        props: {},
+        columns: [{ props: { cols: 6 }, components: [] }],
+        md: { props: { dense: true } },
+      });
+
+      expect(row.toJSON('md')).toEqual({ props: { dense: true }, columns: [{ props: { cols: 6 }, components: [] }] });
+    });
+
+    it('lets a breakpoint state that the row has no columns', () => {
+      const row = Row.fromJSON({
+        props: {},
+        columns: [{ props: { cols: 6 }, components: [] }],
+        md: { props: {}, columns: [] },
+      });
+
+      expect(row.toJSON('sm').columns.length).toBe(1);
+      expect(row.toJSON('md').columns).toEqual([]);
+    });
+
+    it('hands back a Row it is given', () => {
+      const row = new Row();
+      expect(Row.fromJSON(row)).toBe(row);
+    });
+  });
 });

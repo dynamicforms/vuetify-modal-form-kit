@@ -1,4 +1,9 @@
-import { BreakpointNames, responsiveBreakpoints, ResponsiveRenderOptions } from '@dynamicforms/vuetify-inputs';
+import {
+  BreakpointNames,
+  BreakpointsJSON,
+  responsiveBreakpoints,
+  ResponsiveRenderOptions,
+} from '@dynamicforms/vuetify-inputs';
 import { isArray, isObjectLike } from 'lodash-es';
 
 import { type ComponentBuilderBase, VuetifyInputsComponentBuilder } from './component';
@@ -60,6 +65,20 @@ class FormBase implements ComponentProps {
 }
 
 export class FormBuilder extends ResponsiveRenderOptions<FormBase> {
+  // FormJSON names its rows the way FormBase does, so a serialized layout goes straight in: the base constructor
+  // runs it, and every breakpoint it declares, through cleanBreakpoint
+  constructor(layout?: FormJSONResponsive) {
+    super(<BreakpointsJSON<FormBase>>(<unknown>layout));
+  }
+
+  /**
+   * Lifts a serialized layout - the base and every breakpoint it declares, rows, columns and components alike -
+   * into a FormBuilder, and leaves an existing one alone.
+   */
+  static fromJSON(json?: FormJSONResponsive | FormBuilder): FormBuilder {
+    return json instanceof FormBuilder ? json : new FormBuilder(json);
+  }
+
   row(rowProps: RowPropsPartial, rowCallback: (row: Row) => Row): this {
     this._value.row(rowProps, rowCallback);
     return this;
@@ -89,7 +108,9 @@ export class FormBuilder extends ResponsiveRenderOptions<FormBase> {
     }
     const res: FormJSONResponsive = { rows: (this._value.rows ?? []).map((row) => row.toJSON()) };
     responsiveBreakpoints.forEach((bp) => {
-      if (this._value[bp]) res[bp] = this._value[bp].toJSON();
+      // a form breakpoint is nothing but its rows, so one that states nothing about them is left out entirely:
+      // serializing an empty list would state that the form has no rows there
+      if (this._value[bp]?.rows) res[bp] = this._value[bp].toJSON();
     });
     return res;
   }
@@ -104,9 +125,13 @@ export class FormBuilder extends ResponsiveRenderOptions<FormBase> {
     if (defaultIfEmpty) result.rows = [];
 
     if (bp) {
-      if (isArray(bp.rows)) result.rows = bp.rows;
+      // a serialized layout holds plain objects where the builder API holds Rows; lifting them here covers every
+      // way data reaches _value, and leaves a Row that is already an instance alone
+      if (isArray(bp.rows)) result.rows = bp.rows.map((row) => Row.fromJSON(row));
     }
 
-    return result.rows?.length || defaultIfEmpty ? result : null;
+    // a breakpoint carrying an empty list states that the form has no rows there, and is kept; one that says
+    // nothing about them has no rows field at all and is dropped
+    return result.rows || defaultIfEmpty ? result : null;
   }
 }

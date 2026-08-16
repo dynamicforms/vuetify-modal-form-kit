@@ -55,9 +55,28 @@ class RowBase implements ComponentProps {
   }
 }
 
+// a serialized row names `props`, `columns` or a breakpoint; RowProps declares none of those keys, so the two
+// shapes cannot be mistaken for one another. A row whose JSON states nothing at the base and only overrides a
+// breakpoint names none of the first two, which is why the breakpoints count.
+function isRowJSON(data?: RowPropsPartial | RowJSONResponsive): data is RowJSONResponsive {
+  if (!isObjectLike(data)) return false;
+  const keys = <object>data;
+  return 'props' in keys || 'columns' in keys || responsiveBreakpoints.some((bp) => bp in keys);
+}
+
 export class Row extends ResponsiveRenderOptions<RowBase> {
-  constructor(props?: RowPropsPartial) {
-    super({ props } as BreakpointsJSON<RowBase>);
+  constructor(props?: RowPropsPartial);
+  constructor(json: RowJSONResponsive);
+  constructor(data?: RowPropsPartial | RowJSONResponsive) {
+    super(<BreakpointsJSON<RowBase>>(<unknown>(isRowJSON(data) ? data : { props: data })));
+  }
+
+  /**
+   * Lifts a serialized row - the base and every breakpoint it declares - into a Row, and leaves an existing one
+   * alone.
+   */
+  static fromJSON(json: RowJSONResponsive | Row): Row {
+    return json instanceof Row ? json : new Row(json);
   }
 
   col(colProps?: ColumnPropsPartial, colCallback?: (col: Column) => Column): this {
@@ -92,7 +111,11 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
       columns: (this._value.columns ?? []).map((col) => col.toJSON()),
     };
     responsiveBreakpoints.forEach((bp) => {
-      if (this._value[bp]) res[bp] = this._value[bp].toJSON();
+      const value = this._value[bp];
+      if (!value) return;
+      // a breakpoint that states nothing about the columns must not serialize an empty list: read back, that
+      // would state that the row has no columns there
+      res[bp] = value.columns ? value.toJSON() : { props: value.props };
     });
     return res;
   }
@@ -151,8 +174,10 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
     });
 
     const res = new RowBase(result);
-    // undefined, not [], where the breakpoint holds no columns - an empty list would state that it has none
-    res.columns = bp?.columns ? [...bp.columns] : undefined;
+    // undefined, not [], where the breakpoint holds no columns - an empty list would state that it has none.
+    // Serialized columns are lifted here, which is the one funnel both the constructor and every
+    // getOptionsForBreakpoint call pass through; a Column already in the list is left as it is.
+    res.columns = bp?.columns ? bp.columns.map((col) => Column.fromJSON(col)) : undefined;
     return res;
   }
 }

@@ -239,7 +239,8 @@ form.row({}, (row) =>
 )
 ```
 
-A nested layout is part of the serialized form, but `<FormRender>` does not render it yet.
+A nested layout is part of the serialized form, and `<FormRender>` renders it as a form of its own: it resolves the
+nested layout's breakpoints itself and inherits the outer `:components` map.
 
 ### Serialisation
 
@@ -249,7 +250,9 @@ A nested layout is part of the serialized form, but `<FormRender>` does not rend
 const json = form.toJSON()
 ```
 
-`<FormRender>` takes the builder, not the JSON: a serialized layout is not hydrated back into rows and columns.
+`<FormRender>` takes either the builder or that JSON on `:layout` - `FormBuilder.fromJSON()` hydrates it back into
+rows, columns and components, so the two render the same thing. A `symbol` component name survives an in-memory copy
+of the JSON but not a `JSON.stringify()` / `JSON.parse()` round trip.
 
 ---
 

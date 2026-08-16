@@ -99,6 +99,20 @@ class ModalAPI {
     //   if (form.field(actionName) == null) form.fields[actionName] = defaultActions[actionName] as Action;
     // });
 
+    if (!installed.value) {
+      // deferred to the end of the tick: opening a dialog from a setup() that runs before the sibling
+      // <modal-view> mounts is supported, and the dialog on the stack is picked up as soon as the view is there
+      nextTick(() => {
+        if (installed.value) return;
+        // the dialog goes onto the stack regardless, but with nothing rendering it there is no action to resolve it
+        console.warn(
+          'No <modal-view> (ModalView) is mounted, so this dialog is not displayed and no action can resolve it: ' +
+            'the returned promise settles only through its own .close(value). Mount <modal-view> once, somewhere ' +
+            'in the app, to render dialogs.',
+        );
+      });
+    }
+
     let resolvePromise: (value: string) => void;
 
     const actions: FormActions = { ...defaultActions, ...(options?.actions ?? {}) };

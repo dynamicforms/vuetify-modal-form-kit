@@ -83,10 +83,20 @@ describe('Column', () => {
       return col;
     });
 
+    // sm states a width, not a component list, so it serializes without one and inherits the base components
     expect(column.toJSON()).toEqual({
       props: { cols: 6 },
       components: [],
-      sm: { props: { cols: 12, offset: 0 }, components: [] },
+      sm: { props: { cols: 12, offset: 0 } },
+    });
+  });
+
+  it('should drop a cols-md key but keep offset-md and order-md', () => {
+    const column = new Column({ cols: 6, 'offset-md': 2, 'order-md': 3, 'cols-md': 12 } as any);
+
+    expect(column.toJSON('md')).toEqual({
+      props: { cols: 6, 'offset-md': 2, 'order-md': 3 },
+      components: [],
     });
   });
 
@@ -162,5 +172,67 @@ describe('Column', () => {
     // Second component
     expect(json.rows[0].columns[0].components[1].name).toBe('VTextField');
     expect(json.rows[0].columns[0].components[1].props.label).toBe('Last Name');
+  });
+
+  describe('fromJSON', () => {
+    it('round-trips a serialized column', () => {
+      const json = {
+        props: { cols: 12 },
+        components: [{ name: 'VTextField', props: { label: 'City' } }],
+      };
+
+      expect(Column.fromJSON(json).toJSON()).toEqual(json);
+    });
+
+    it('reads a plain props bag', () => {
+      expect(new Column({ cols: 6 }).toJSON()).toEqual({ props: { cols: 6 }, components: [] });
+    });
+
+    it('keeps the components a breakpoint says nothing about', () => {
+      const column = Column.fromJSON({
+        props: { cols: 6 },
+        components: [{ name: 'VTextField', props: { label: 'City' } }],
+        md: { props: { cols: 4 } },
+      });
+
+      expect(column.toJSON('md')).toEqual({
+        props: { cols: 4 },
+        components: [{ name: 'VTextField', props: { label: 'City' } }],
+      });
+    });
+
+    it('lets a breakpoint state that the column has no components', () => {
+      const column = Column.fromJSON({
+        props: { cols: 6 },
+        components: [{ name: 'VTextField', props: { label: 'City' } }],
+        md: { props: {}, components: [] },
+      });
+
+      expect(column.toJSON('sm').components.length).toBe(1);
+      expect(column.toJSON('md').components).toEqual([]);
+    });
+
+    it('reads a column whose JSON names a breakpoint and nothing else', () => {
+      const column = Column.fromJSON(<any>{ sm: { props: { cols: 6 } } });
+
+      // `sm` is a breakpoint, not a Vuetify prop: taking the object for a props bag would file it under `props`,
+      // where the props filter drops it and the override is gone
+      expect(column.toJSON('sm').props).toEqual({ cols: 6 });
+      expect(column.toJSON().props).toEqual({});
+    });
+
+    it('hydrates a nested form component without touching its layout', () => {
+      const nested = new FormBuilder();
+      nested.row({}, (row) => row.col({ cols: 12 }));
+
+      const json = { props: { cols: 12 }, components: [{ name: FormBuilderName, props: nested.toJSON() }] };
+
+      expect(Column.fromJSON(json).toJSON()).toEqual(json);
+    });
+
+    it('hands back a Column it is given', () => {
+      const column = new Column();
+      expect(Column.fromJSON(column)).toBe(column);
+    });
   });
 });

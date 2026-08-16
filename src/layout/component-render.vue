@@ -1,9 +1,10 @@
 <template>
-  <!-- If the component is found in the provided component list -->
-  <component :is="resolvedComponent" v-if="resolvedComponent" v-bind="cProps">{{ cBody }}</component>
+  <!-- if component is a nested form-builder: the renderer registers itself in the component map under
+       FormBuilderName, so this has to be settled before the map is consulted -->
+  <form-renderer v-if="isFormBuilder" :layout="nestedLayout" :components="components" />
 
-  <!-- if component is a nested form-builder -->
-  <form-renderer v-else-if="isFormBuilder" :layout="cProps" :components="components" />
+  <!-- If the component is found in the provided component list -->
+  <component :is="resolvedComponent" v-else-if="resolvedComponent" v-bind="cProps">{{ cBody }}</component>
 
   <!-- try a globally registered component -->
   <component :is="stringComponentName" v-else v-bind="cProps">{{ cBody }}</component>
@@ -12,7 +13,7 @@
 <script setup lang="ts">
 import { computed, unref } from 'vue';
 
-import { FormBuilderBodyProp, FormBuilderName } from '../core/form-layout/types';
+import { FormBuilderBodyProp, FormBuilderName, FormJSONResponsive } from '../core/form-layout/types';
 
 interface ComponentRenderProps {
   name: string | symbol;
@@ -32,4 +33,6 @@ const resolvedComponent = computed(() => props.components[props.name] || null);
 
 const FormRenderer = unref(props.components)[FormBuilderName];
 const isFormBuilder = computed(() => props.name === FormBuilderName);
+// a nested form arrives as the layout of a form of its own, on the `layout` prop rather than spread as attrs
+const nestedLayout = computed(() => <FormJSONResponsive>(<unknown>cProps.value));
 </script>

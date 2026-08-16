@@ -1,8 +1,9 @@
 import * as Form from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
+import { vi } from 'vitest';
 import { nextTick } from 'vue';
 
-import modal, { currentModal } from './api';
+import modal, { currentModal, installedCount } from './api';
 import DialogSize from './dialog-size';
 
 // the promise is resolved from a nextTick callback, so one flush is not enough to see it settle
@@ -13,6 +14,15 @@ async function settled<T>(promise: Promise<T>): Promise<T> {
 }
 
 describe('modal service', () => {
+  // no view is mounted here, so every dialog this spec opens warns about it
+  beforeEach(() => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('opens a message dialog with a single close action', async () => {
     const promise = modal.message('Done', 'Your changes have been saved.');
 
@@ -103,6 +113,39 @@ describe('modal service', () => {
     expect(message.componentName).toBe('MySettingsPanel');
     expect(message.componentBindings).toEqual({ userId: 42 });
 
+    promise.close('close');
+    await settled(promise);
+  });
+
+  it('warns about the missing view only while none is installed', async () => {
+    const warn = vi.mocked(console.warn);
+
+    const unrendered = modal.message('Nobody home', 'no view is mounted');
+    await nextTick();
+    expect(warn).toHaveBeenCalledOnce();
+
+    warn.mockClear();
+    installedCount.value = 1;
+    const rendered = modal.message('On screen', 'a view is mounted');
+    await nextTick();
+    expect(warn).not.toHaveBeenCalled();
+    installedCount.value = 0;
+
+    rendered.close('close');
+    await settled(rendered);
+    unrendered.close('close');
+    await settled(unrendered);
+  });
+
+  it('stays silent when a view is installed within the same tick as the open', async () => {
+    const warn = vi.mocked(console.warn);
+
+    const promise = modal.message('Opened first', 'the view mounts right after');
+    installedCount.value = 1;
+    await nextTick();
+    expect(warn).not.toHaveBeenCalled();
+
+    installedCount.value = 0;
     promise.close('close');
     await settled(promise);
   });

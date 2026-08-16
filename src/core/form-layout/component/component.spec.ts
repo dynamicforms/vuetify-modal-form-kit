@@ -1,6 +1,7 @@
 import { vi } from 'vitest';
 
 import { Column } from '../column';
+import { FormBuilderBodyProp } from '../types';
 
 import { Component, ComponentBuilderBase } from './component';
 
@@ -64,6 +65,31 @@ describe('Component', () => {
     expect(json.props).toEqual({ label: 'Test', value: 'Initial' });
     // But the component instance should reference the same object
     expect(component.props!.value).toBe('Changed');
+  });
+
+  it('should round-trip through fromJSON', () => {
+    const name = Symbol('Nested');
+    const props = { label: 'Test', [FormBuilderBodyProp]: 'body text' };
+
+    const component = Component.fromJSON({ name, props });
+
+    expect(component).toBeInstanceOf(Component);
+    expect(component.name).toBe(name);
+    // props pass through by reference, which is what carries a symbol key across
+    expect(component.props).toBe(props);
+    expect(component.toJSON()).toEqual({ name, props });
+  });
+
+  it('should read a serialized component without props back as one without props', () => {
+    const component = Component.fromJSON(new Component('VDivider').toJSON());
+
+    expect(component.props).toBeUndefined();
+    expect(component.toJSON()).toEqual({ name: 'VDivider', props: null });
+  });
+
+  it('should hand back a Component it is given', () => {
+    const component = new Component('VTextField', { label: 'Test' });
+    expect(Component.fromJSON(component)).toBe(component);
   });
 
   it('should handle object with toJSON method as props', () => {

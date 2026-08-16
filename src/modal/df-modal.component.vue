@@ -1,12 +1,17 @@
 <template>
   <!--https://stackoverflow.com/questions/55085735/vuetify-v-dialog-dynamic-width-->
+  <!--
+  `isShown` is derived from the prop and the dialog stack, so it takes no write: the update travels through
+  onModelValueUpdate instead.
+  -->
   <v-dialog
-    v-model="isShown"
+    :model-value="isShown"
     :width="width"
     :max-width="width"
     :fullscreen="fullScreen"
     :retain-focus="false"
     persistent
+    @update:model-value="(value: boolean) => onModelValueUpdate(value)"
   >
     <v-card>
       <!--

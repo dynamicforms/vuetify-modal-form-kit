@@ -105,6 +105,10 @@ formBuilder.row({ }, (row) => row
   .breakpoint('md', (bpRow) => { bpRow.columns = []; return bpRow; }));
 ```
 
+`toJSON()` keeps the difference: a breakpoint that states nothing about its content serializes without the
+`rows` / `columns` / `components` key, an empty list serializes as one, and reading the JSON back with
+`FormBuilder.fromJSON()` gives a layout that renders the same at every breakpoint.
+
 The rules come from `ResponsiveRenderOptions` in [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:), which this
 layout is built on - [its documentation](:vuetify-inputs:/examples/responsive-render-options.html) covers them in
 full, including how the merge treats values it cannot merge.
