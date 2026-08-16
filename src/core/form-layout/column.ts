@@ -69,10 +69,13 @@ class ColBase implements ComponentProps {
   }
 }
 
-// a serialized column names its own `props` and `components`; ColumnProps declares neither key, so the two shapes
-// cannot be mistaken for one another
+// a serialized column names `props`, `components` or a breakpoint; ColumnProps declares none of those keys, so the
+// two shapes cannot be mistaken for one another. A column whose JSON states nothing at the base and only overrides
+// a breakpoint names none of the first two, which is why the breakpoints count.
 function isColumnJSON(data?: ColumnPropsPartial | ColumnJSONResponsive): data is ColumnJSONResponsive {
-  return isObjectLike(data) && ('props' in <object>data || 'components' in <object>data);
+  if (!isObjectLike(data)) return false;
+  const keys = <object>data;
+  return 'props' in keys || 'components' in keys || responsiveBreakpoints.some((bp) => bp in keys);
 }
 
 export class Column extends ResponsiveRenderOptions<ColBase> {

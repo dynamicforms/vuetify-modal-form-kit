@@ -55,10 +55,13 @@ class RowBase implements ComponentProps {
   }
 }
 
-// a serialized row names its own `props` and `columns`; RowProps declares neither key, so the two shapes cannot be
-// mistaken for one another
+// a serialized row names `props`, `columns` or a breakpoint; RowProps declares none of those keys, so the two
+// shapes cannot be mistaken for one another. A row whose JSON states nothing at the base and only overrides a
+// breakpoint names none of the first two, which is why the breakpoints count.
 function isRowJSON(data?: RowPropsPartial | RowJSONResponsive): data is RowJSONResponsive {
-  return isObjectLike(data) && ('props' in <object>data || 'columns' in <object>data);
+  if (!isObjectLike(data)) return false;
+  const keys = <object>data;
+  return 'props' in keys || 'columns' in keys || responsiveBreakpoints.some((bp) => bp in keys);
 }
 
 export class Row extends ResponsiveRenderOptions<RowBase> {

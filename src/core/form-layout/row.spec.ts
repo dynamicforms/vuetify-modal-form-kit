@@ -237,6 +237,15 @@ describe('Row', () => {
       expect(new Row({ dense: true }).toJSON()).toEqual({ props: { dense: true }, columns: [] });
     });
 
+    it('reads a row whose JSON names a breakpoint and nothing else', () => {
+      const row = Row.fromJSON(<any>{ sm: { props: { dense: true } } });
+
+      // `sm` is a breakpoint, not a Vuetify prop: taking the object for a props bag would file it under `props`,
+      // where the props filter drops it and the override is gone
+      expect(row.toJSON('sm').props).toEqual({ dense: true });
+      expect(row.toJSON().props).toEqual({});
+    });
+
     it('validates the props of a breakpoint it hydrates', () => {
       const row = Row.fromJSON({
         props: {},

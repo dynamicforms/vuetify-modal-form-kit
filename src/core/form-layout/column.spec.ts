@@ -212,6 +212,15 @@ describe('Column', () => {
       expect(column.toJSON('md').components).toEqual([]);
     });
 
+    it('reads a column whose JSON names a breakpoint and nothing else', () => {
+      const column = Column.fromJSON(<any>{ sm: { props: { cols: 6 } } });
+
+      // `sm` is a breakpoint, not a Vuetify prop: taking the object for a props bag would file it under `props`,
+      // where the props filter drops it and the override is gone
+      expect(column.toJSON('sm').props).toEqual({ cols: 6 });
+      expect(column.toJSON().props).toEqual({});
+    });
+
     it('hydrates a nested form component without touching its layout', () => {
       const nested = new FormBuilder();
       nested.row({}, (row) => row.col({ cols: 12 }));
