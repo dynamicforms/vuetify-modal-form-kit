@@ -120,16 +120,16 @@ async function showFormDialog() {
 
   // Marking an action defaultConfirm/defaultReject also drives its color (primary/secondary) and wires it
   // to the Enter/Esc keyboard shortcuts - see <df-modal>'s `actions` prop.
-  const submitAction = Action.create({ value: { label: 'Submit', icon: 'mdi-check', defaultConfirm: true } });
-  const cancelAction = Action.create({ value: { label: 'Cancel', icon: 'mdi-close', defaultReject: true } });
+  const submitAction = new Action({ value: { label: 'Submit', icon: 'mdi-check', defaultConfirm: true } });
+  const cancelAction = new Action({ value: { label: 'Cancel', icon: 'mdi-close', defaultReject: true } });
 
   // Create a form with validation
   const form = new Group({
-    name: Field.create({
+    name: new Field({
       value: '',
       validators: [new Validators.Required()],
     }),
-    email: Field.create({
+    email: new Field({
       value: '',
       validators: [new Validators.Required(), emailAction],
     }),
@@ -162,12 +162,12 @@ async function showFormDialog() {
 
 // Dialog with different sizes
 async function showSizedDialog(size) {
-  const okAction = Action.create({ value: { label: 'OK', icon: 'mdi-check', defaultConfirm: true } });
+  const okAction = new Action({ value: { label: 'OK', icon: 'mdi-check', defaultConfirm: true } });
 
     // Create a form with a size field
   const form = new Group({
     // Size field controls dialog size
-    size: Field.create({ value: size }),
+    size: new Field({ value: size }),
     // Action button
     ok: okAction,
   });

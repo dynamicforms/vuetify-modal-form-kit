@@ -82,6 +82,33 @@ formBuilder.row({ }, (row) => row
       .generic('VTextarea', { label: 'Comments' }))));
 ```
 
+## What a breakpoint inherits
+
+Breakpoints are mobile-first: what you write without one is the smallest size, and each breakpoint changes what it
+states and inherits the rest from the nearest smaller one that stated it. That holds per element - a form, a row and
+a column each cascade on their own.
+
+A breakpoint states only what changes:
+
+- **Props are merged key by key.** `.breakpoint('sm', (col) => { col.props.cols = 12; return col; })` leaves the
+  `offset` and the classes the column was given in place.
+- **Content carries over.** A column keeps its components, and a row keeps its columns, unless the breakpoint adds
+  content of its own - in which case what it adds replaces the lot, as the row-level example above does.
+
+To state that there is nothing at a breakpoint, assign an empty list. It is a statement, not an omission:
+
+```typescript
+formBuilder.row({ }, (row) => row
+  .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'City' })))
+  .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'Zip' })))
+  // nothing in this row from md upwards
+  .breakpoint('md', (bpRow) => { bpRow.columns = []; return bpRow; }));
+```
+
+The rules come from `ResponsiveRenderOptions` in [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:), which this
+layout is built on - [its documentation](:vuetify-inputs:/examples/responsive-render-options.html) covers them in
+full, including how the merge treats values it cannot merge.
+
 <script setup>
 import FormResponsive from '../components/form-responsive.vue';
 </script>

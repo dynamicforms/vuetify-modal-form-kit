@@ -37,7 +37,7 @@ const password = ref('');
 
 // defaultConfirm/defaultReject wire Enter/Esc (via `:actions` below) and color the action primary/secondary
 // in <df-actions> - see @dynamicforms/vuetify-inputs's Action API.
-const cancelAction = Action.create({
+const cancelAction = new Action({
   value: { name: 'cancel', label: 'Cancel', renderAs: ActionDisplayStyle.TEXT, showLabel: true, defaultReject: true },
 });
 cancelAction.registerAction(new ExecuteAction((action, supr, ...params) => {
@@ -45,7 +45,7 @@ cancelAction.registerAction(new ExecuteAction((action, supr, ...params) => {
   return supr(action, ...params);
 }));
 
-const loginAction = Action.create({
+const loginAction = new Action({
   value: {
     name: 'login', label: 'Log in', icon: 'mdi-check', showIcon: true, showLabel: true, defaultConfirm: true,
   },
@@ -83,7 +83,7 @@ Hand-rolled `v-btn`s bypass the shared `Action` + `<df-actions>` rendering that 
 ad-hoc, per dialog, instead of coming from one place. The result is dialogs that don't visually match each other,
 even though they're all built with the same library.
 
-Instead, model actions the same way the rest of the library does: create them with `Action.create()`, attach
+Instead, model actions the same way the rest of the library does: create them with `new Action()`, attach
 behaviour with `registerAction`/`ExecuteAction`, and render them with `<df-actions>`, exactly as shown in the
 example above. See the [`<df-modal>` API Reference](/api/df-modal) for the full slot table, and
 [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) for the complete `Action` / `df-actions` API.

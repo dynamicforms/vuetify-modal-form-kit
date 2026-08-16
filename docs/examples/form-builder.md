@@ -86,6 +86,8 @@ mainForm.row({ }, (row) => row
       .nestedForm(addressForm))));
 ```
 
+A nested layout is part of what `toJSON()` serializes; `<FormRender>` does not render it yet.
+
 ## See also
 
 - [FormBuilder API Reference](/api/form-builder) - the complete `FormBuilder` / `Row` / `Column` / component

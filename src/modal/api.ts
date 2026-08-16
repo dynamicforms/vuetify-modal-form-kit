@@ -31,7 +31,10 @@ export interface ModalData extends ModalOptions {
 }
 
 const modalDefinitions = {} as Record<symbol, ModalData>;
-export const installed = ref(false);
+// counted, not a flag: one <modal-view> unmounting must not report the modal system as gone while another is
+// still mounted
+export const installedCount = ref(0);
+export const installed = computed(() => installedCount.value > 0);
 
 class ModalAPI {
   isTop(promise: CloseablePromise<any>) {
@@ -141,7 +144,8 @@ class ModalAPI {
         form: options?.form,
         size: options?.size ?? DialogSize.DEFAULT,
         actions,
-        resolve,
+        // the wrapper, not the bare resolver: settling without it leaves the dialog on the stack forever
+        resolve: (value: string) => resolvePromise(value),
         color: options?.color,
         icon: options?.icon,
       };

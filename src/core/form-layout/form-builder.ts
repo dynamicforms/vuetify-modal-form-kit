@@ -10,12 +10,14 @@ export type SimpleProxy<T extends ComponentBuilderBase> = T & {
 };
 
 class FormBase implements ComponentProps {
-  rows: Row[] = [];
+  // undefined until a row is added: a breakpoint holding an empty list states that the form has no rows there,
+  // while one that states nothing about them inherits the rows below it
+  rows?: Row[];
 
   row(rowProps: RowPropsPartial, rowCallback: (row: Row) => Row): this {
     const row = new Row(rowProps);
     rowCallback(row);
-    this.rows.push(row);
+    (this.rows ??= []).push(row);
     return this;
   }
 
@@ -53,7 +55,7 @@ class FormBase implements ComponentProps {
   }
 
   toJSON(breakpoint?: BreakpointNames): FormJSON {
-    return { rows: this.rows.map((row) => row.toJSON(breakpoint)) } as FormJSON;
+    return { rows: (this.rows ?? []).map((row) => row.toJSON(breakpoint)) } as FormJSON;
   }
 }
 
@@ -83,9 +85,9 @@ export class FormBuilder extends ResponsiveRenderOptions<FormBase> {
   toJSON(breakpoint?: BreakpointNames): FormJSONResponsive {
     if (breakpoint != null) {
       const res = this.getOptionsForBreakpoint(breakpoint);
-      return { rows: res.rows.map((row) => row.toJSON(breakpoint)) };
+      return { rows: (res.rows ?? []).map((row) => row.toJSON(breakpoint)) };
     }
-    const res: FormJSONResponsive = { rows: this._value.rows.map((row) => row.toJSON()) };
+    const res: FormJSONResponsive = { rows: (this._value.rows ?? []).map((row) => row.toJSON()) };
     responsiveBreakpoints.forEach((bp) => {
       if (this._value[bp]) res[bp] = this._value[bp].toJSON();
     });
@@ -96,12 +98,15 @@ export class FormBuilder extends ResponsiveRenderOptions<FormBase> {
     if ((!bp || !isObjectLike(bp)) && !defaultIfEmpty) return null;
 
     const result = new FormBase();
+    // the base carries the field even when it holds nothing: the merge takes its field set from what
+    // defaultIfEmpty returns. A breakpoint leaves it undefined instead, so that it states nothing about the
+    // rows rather than emptying the ones it inherits.
     if (defaultIfEmpty) result.rows = [];
 
     if (bp) {
       if (isArray(bp.rows)) result.rows = bp.rows;
     }
 
-    return result.rows.length || defaultIfEmpty ? result : null;
+    return result.rows?.length || defaultIfEmpty ? result : null;
   }
 }

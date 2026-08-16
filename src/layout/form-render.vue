@@ -1,7 +1,7 @@
 <!-- FormRenderer.vue -->
 <template>
   <div class="form-layout">
-    <v-row v-for="(row, rowIndex) in layoutToRender.rows" :key="rowIndex">
+    <v-row v-for="(row, rowIndex) in layoutToRender.rows" :key="rowIndex" v-bind="row.props as any">
       <v-col v-for="(column, colIndex) in row.columns" :key="colIndex" v-bind="column.props as any">
         <component-renderer
           v-for="(component, compIndex) in column.components"
@@ -37,7 +37,9 @@ const responsiveLayout = computed(() =>
 const display = useDisplay();
 const layoutToRender = computed(() => {
   const breakpoint = getBreakpointName(display);
-  return responsiveLayout.value.getOptionsForBreakpoint(breakpoint).toJSON();
+  // the breakpoint has to reach toJSON as well: it is what row- and column-level breakpoint overrides are
+  // resolved against, and getOptionsForBreakpoint only resolves the form-level ones
+  return responsiveLayout.value.getOptionsForBreakpoint(breakpoint).toJSON(breakpoint);
 });
 const componentsWithMe = computed(() => ({ ...props.components, [FormBuilderName]: getCurrentInstance()?.type }));
 </script>

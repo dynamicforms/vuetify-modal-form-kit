@@ -36,7 +36,7 @@ jobs:
         run: npm install
 
       - name: Lint
-        run: npm run lint
+        run: npm run lint:ci
 
       - name: Run tests
         run: npm test
@@ -46,11 +46,13 @@ jobs:
 
       - name: Verify declaration output
         run: |
-          size=$(wc -c < dist/index.d.ts)
-          if [ "$size" -lt 10000 ]; then
-            echo "::error::dist/index.d.ts is only $size bytes - declarations were rolled up empty"
-            exit 1
-          fi
+          for f in dist/index.d.ts dist/index.d.cts; do
+            size=$(wc -c < "$f")
+            if [ "$size" -lt 10000 ]; then
+              echo "::error::$f is only $size bytes - declarations were rolled up empty"
+              exit 1
+            fi
+          done
           grep -q 'export declare class FormBuilder' dist/index.d.ts
 
       - name: Build docs

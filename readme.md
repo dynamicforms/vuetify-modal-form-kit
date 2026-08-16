@@ -21,6 +21,10 @@ dialog for inline validation and submission.
 
 Full documentation is available at **https://docs.velis.si/dynamicforms/vuetify-modal-form-kit/**.
 
+Upgrading from 0.5.x? The
+[migration guide](https://docs.velis.si/dynamicforms/vuetify-modal-form-kit/guide/migration) lists every breaking
+change with before/after code.
+
 ---
 
 ## Installation
@@ -32,7 +36,8 @@ npm install @dynamicforms/vuetify-modal-form-kit
 **Peer dependencies** (must be installed separately):
 
 ```bash
-npm install vue vuetify @dynamicforms/vue-forms @dynamicforms/vuetify-inputs lodash-es vue-markdown-render @mdi/font
+npm install vue@^3.4 vuetify@^3.9 @dynamicforms/vue-forms@^0.6.0 @dynamicforms/vuetify-inputs@^0.8.1 \
+  lodash-es vue-markdown-render @mdi/font
 ```
 
 ### Register the plugin
@@ -40,15 +45,21 @@ npm install vue vuetify @dynamicforms/vue-forms @dynamicforms/vuetify-inputs lod
 ```typescript
 import { createApp } from 'vue'
 import { DynamicFormsModalFormKit } from '@dynamicforms/vuetify-modal-form-kit'
-import '@dynamicforms/vuetify-modal-form-kit/styles.css'
+// this library ships no stylesheet of its own; the inputs it renders bring theirs
+import '@dynamicforms/vuetify-inputs/styles.css'
 
 const app = createApp(App)
 app.use(vuetify)
-app.use(DynamicFormsModalFormKit)
+app.use(DynamicFormsModalFormKit, { registerComponents: true })
 app.mount('#app')
 ```
 
-Add `<ModalView />` (or `<df-modal />`) somewhere in your root template to enable the modal system:
+`registerComponents` (default `false`) registers `<modal-view>`, `<df-modal>`, `<form-render>` and
+`<component-render>` globally; `registerVuetifyComponents` (also `false`) registers the Vuetify components the
+library renders, for projects that do not install Vuetify globally. Without the first, import the components
+where you use them.
+
+Add `<ModalView />` somewhere in your root template to enable the modal system:
 
 ```html
 <template>
@@ -91,15 +102,21 @@ Pass a `@dynamicforms/vue-forms` form group to add validation and structured inp
 
 ```typescript
 import { modal } from '@dynamicforms/vuetify-modal-form-kit'
-import * as Form from '@dynamicforms/vue-forms'
+import { Field, Group, Validators } from '@dynamicforms/vue-forms'
+// buttons are rendered through <df-actions>, so they are vuetify-inputs' Action
+import { Action } from '@dynamicforms/vuetify-inputs'
 
-const form = new Form.Group({
-  email: new Form.Field({ label: 'Email', rules: [Form.Rules.required(), Form.Rules.email()] }),
-  submit: new Form.Action({ label: 'Send' }),
+const form = new Group({
+  email: new Field({ value: '', validators: [new Validators.Required(), new Validators.Pattern(/^[^@]+@[^@]+$/)] }),
+  submit: new Action({ value: { label: 'Send', defaultConfirm: true } }),
 })
 
+// resolves with 'submit' - the key the action is registered under
 await modal.message('Subscribe', 'Enter your email address:', { form })
 ```
+
+Each non-`Action` `Field` on the group is rendered as a `<df-input>`, labelled from its field name. Build the
+layout yourself with `FormBuilder` when you need anything else.
 
 ### Custom component dialog
 
@@ -131,7 +148,8 @@ import { DialogSize } from '@dynamicforms/vuetify-modal-form-kit'
 await modal.message('Title', 'Content', { size: DialogSize.LARGE })
 ```
 
-On small screens the dialog automatically switches to fullscreen regardless of the configured size.
+Each of the four explicit sizes switches to fullscreen below its own breakpoint; `DEFAULT` sizes itself to its
+content and never does.
 
 ---
 
@@ -181,10 +199,13 @@ form.row({}, (row) =>
 Define different layouts per breakpoint:
 
 ```typescript
+// the callback receives a bare layout for that breakpoint and has to return it
 form
-  .breakpoint('sm', (f) => f.simple(1).dfInput({ label: 'Name' }))
-  .breakpoint('md', (f) => f.simple(2).dfInput({ label: 'Name' }).dfInput({ label: 'Surname' }))
+  .breakpoint('sm', (f) => { f.simple(1).dfInput({ label: 'Name' }); return f; })
+  .breakpoint('md', (f) => { f.simple(2).dfInput({ label: 'Name' }).dfInput({ label: 'Surname' }); return f; })
 ```
+
+Rows and columns take breakpoints of their own, through the same method.
 
 ### Available component shortcuts
 
@@ -218,14 +239,17 @@ form.row({}, (row) =>
 )
 ```
 
+A nested layout is part of the serialized form, but `<FormRender>` does not render it yet.
+
 ### Serialisation
 
-Layouts can be serialised to JSON, which makes it possible to define them on the backend and send them over the wire:
+`toJSON()` serializes a layout, including its breakpoints:
 
 ```typescript
 const json = form.toJSON()
-// Send to server / store / reconstruct later
 ```
+
+`<FormRender>` takes the builder, not the JSON: a serialized layout is not hydrated back into rows and columns.
 
 ---
 
@@ -260,9 +284,9 @@ import {
 | Dependency | Version |
 |---|---|
 | Vue | ^3.4 |
-| Vuetify | ^3.8 |
-| @dynamicforms/vue-forms | ^0.5.0 |
-| @dynamicforms/vuetify-inputs | ^0.7.1 |
+| Vuetify | ^3.9 |
+| @dynamicforms/vue-forms | ^0.6.0 |
+| @dynamicforms/vuetify-inputs | ^0.8.1 |
 
 ---
 

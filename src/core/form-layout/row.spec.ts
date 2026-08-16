@@ -159,6 +159,33 @@ describe('Row', () => {
     expect(json.rows[0].columns[1].components[0].props.label).toBe('Last Name');
   });
 
+  it('keeps every row prop it declares', () => {
+    const row = new Row({
+      dense: true,
+      noGutters: true,
+      align: 'center',
+      'align-content': 'space-between',
+      'align-content-md': 'space-around',
+      justify: 'space-evenly',
+    });
+
+    expect(row.toJSON().props).toEqual({
+      dense: true,
+      noGutters: true,
+      align: 'center',
+      'align-content': 'space-between',
+      'align-content-md': 'space-around',
+      justify: 'space-evenly',
+    });
+  });
+
+  it('drops a value the prop does not accept', () => {
+    // 'space-between' is an align-content value; align has no such alignment
+    const row = new Row({ align: 'space-between' as any, justify: 'baseline' as any });
+
+    expect(row.toJSON().props).toEqual({});
+  });
+
   it('should add components using simple(cols = 2) API on Row', () => {
     const fb = new FormBuilder();
 

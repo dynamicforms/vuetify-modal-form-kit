@@ -35,7 +35,7 @@ currently active dialog and forwards its data straight into `df-modal`'s props a
 | `df-modal` prop/slot | Fed from |
 |---|---|
 | `formControl`, `size`, `dialogId`, `title`, `color`, `icon`, `actions` | The active dialog's data (set by whichever `modal.*` call opened it, see [`ModalOptions`](./modal-service#modaloptions)) |
-| `#body` | A `MessagesWidget` for the `message` text, plus a `FormRender` built from `options.form`'s non-`Action` fields, if a form was passed |
+| `#body` | A `MessagesWidget` for the `message` text, plus - if a form was passed - a `FormRender` in which every `Field` on `options.form` is rendered as a `<df-input>`, labelled from its field name. `Action` members go to the actions slot; nested `Group` and `List` members are not rendered, so build the layout yourself when you need anything else. |
 | `#actions` | A `<df-actions>` fed the same actions forwarded to the `actions` prop |
 
 Because the same `Action[]` reaches both `df-modal`'s `actions` prop and the `<df-actions>` inside `#actions`,

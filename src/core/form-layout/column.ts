@@ -12,11 +12,14 @@ import { ColumnJSON, ColumnJSONResponsive, ColumnPropsPartial, ComponentProps } 
 class ColBase implements ComponentProps {
   props: ColumnPropsPartial;
 
-  components: Component[] = [];
+  // undefined until something is added: a breakpoint that holds an empty list states that the column has no
+  // components there, while one that states nothing about them inherits the ones below it. `cols` is left out
+  // for the same reason - v-col defaults it to false on its own, and stating a width the caller never gave
+  // would override the one the column inherits at every breakpoint.
+  components?: Component[];
 
   constructor(props?: ColumnPropsPartial) {
     this.props = props ?? {};
-    if (this.props.cols === undefined) this.props.cols = false;
   }
 
   component<T extends ComponentBuilderBase>(
@@ -35,7 +38,7 @@ class ColBase implements ComponentProps {
       builderCallback = param1;
     }
     const builder = new BuilderClass((component: Component) => {
-      this.components.push(component);
+      (this.components ??= []).push(component);
     });
     builderCallback(builder);
     return this;
@@ -61,7 +64,7 @@ class ColBase implements ComponentProps {
   toJSON(): ColumnJSON {
     return {
       props: this.props,
-      components: this.components.map((cmpt) => cmpt.toJSON()),
+      components: (this.components ?? []).map((cmpt) => cmpt.toJSON()),
     };
   }
 }
@@ -101,12 +104,12 @@ export class Column extends ResponsiveRenderOptions<ColBase> {
       const res = this.getOptionsForBreakpoint(breakpoint);
       return {
         props: res.props,
-        components: res.components.map((cmpt) => cmpt.toJSON()),
+        components: (res.components ?? []).map((cmpt) => cmpt.toJSON()),
       };
     }
     const res: ColumnJSONResponsive = {
       props: this._value.props,
-      components: this._value.components.map((cmpt) => cmpt.toJSON()),
+      components: (this._value.components ?? []).map((cmpt) => cmpt.toJSON()),
     };
     responsiveBreakpoints.forEach((bp) => {
       if (this._value[bp]) res[bp] = this._value[bp].toJSON();
@@ -166,7 +169,8 @@ export class Column extends ResponsiveRenderOptions<ColBase> {
     });
 
     const res = new ColBase(result);
-    res.components = [...(bp?.components ?? [])];
+    // undefined, not [], where the breakpoint holds no components - an empty list would state that it has none
+    res.components = bp?.components ? [...bp.components] : undefined;
     return res;
   }
 }

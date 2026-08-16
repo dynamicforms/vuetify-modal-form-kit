@@ -16,7 +16,9 @@ import {
 class RowBase implements ComponentProps {
   props: RowPropsPartial;
 
-  columns: Column[] = [];
+  // undefined until a column is added: a breakpoint holding an empty list states that the row has no columns
+  // there, while one that states nothing about them inherits the columns below it
+  columns?: Column[];
 
   constructor(props?: RowPropsPartial) {
     this.props = props ?? {};
@@ -25,7 +27,7 @@ class RowBase implements ComponentProps {
   col(colProps?: ColumnPropsPartial, colCallback?: (col: Column) => Column): this {
     const column = new Column(colProps);
     colCallback?.(column);
-    this.columns.push(column);
+    (this.columns ??= []).push(column);
     return this;
   }
 
@@ -49,7 +51,7 @@ class RowBase implements ComponentProps {
   }
 
   toJSON(breakpoint?: BreakpointNames): RowJSON {
-    return { props: this.props, columns: this.columns.map((col) => col.toJSON(breakpoint)) };
+    return { props: this.props, columns: (this.columns ?? []).map((col) => col.toJSON(breakpoint)) };
   }
 }
 
@@ -83,11 +85,11 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
   toJSON(breakpoint?: BreakpointNames): RowJSONResponsive {
     if (breakpoint != null) {
       const res = this.getOptionsForBreakpoint(breakpoint);
-      return { props: res.props, columns: res.columns.map((col) => col.toJSON(breakpoint)) };
+      return { props: res.props, columns: (res.columns ?? []).map((col) => col.toJSON(breakpoint)) };
     }
     const res: RowJSONResponsive = {
       props: this._value.props,
-      columns: this._value.columns.map((col) => col.toJSON()),
+      columns: (this._value.columns ?? []).map((col) => col.toJSON()),
     };
     responsiveBreakpoints.forEach((bp) => {
       if (this._value[bp]) res[bp] = this._value[bp].toJSON();
@@ -120,7 +122,7 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
       ...baseKeys,
       ...responsiveBreakpoints.flatMap((b) => baseKeys.map((k) => `${k}-${b}`)),
       'dense',
-      'no-gutters',
+      'noGutters',
       'class',
       'style',
     ]);
@@ -138,17 +140,19 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
         if (isValidClass(val)) result[key] = val as any;
       } else if (key === 'style') {
         if (isValidStyle(val)) result[key] = val as any;
-      } else if (key.startsWith('align')) {
-        if (isString(val) && AllowedAlign.includes(val)) (<any>result)[key] = val;
+        // align-content before align: the former also starts with the latter
       } else if (key.startsWith('align-content')) {
         if (isString(val) && AllowedAlignContent.includes(val)) (<any>result)[key] = val;
+      } else if (key.startsWith('align')) {
+        if (isString(val) && AllowedAlign.includes(val)) (<any>result)[key] = val;
       } else if (key.startsWith('justify')) {
         if (isString(val) && AllowedJustify.includes(val)) (<any>result)[key] = val;
       }
     });
 
     const res = new RowBase(result);
-    res.columns = [...(bp?.columns ?? [])];
+    // undefined, not [], where the breakpoint holds no columns - an empty list would state that it has none
+    res.columns = bp?.columns ? [...bp.columns] : undefined;
     return res;
   }
 }

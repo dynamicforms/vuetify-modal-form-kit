@@ -56,6 +56,7 @@ export default defineConfig({
         'lodash-es',
         'vue',
         'vue-markdown-render',
+        'vuetify',
         /^vuetify\/.*/,
       ],
       output: {
