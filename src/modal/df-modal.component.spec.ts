@@ -2,6 +2,7 @@ import { DisplayMode, ExecuteAction } from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
 import { mount } from '@vue/test-utils';
 import { vi } from 'vitest';
+import { nextTick } from 'vue';
 import { createVuetify } from 'vuetify';
 
 import DfModal from './df-modal.component.vue';
@@ -73,6 +74,27 @@ describe('DfModal', () => {
     dialogTracker.remove(second);
     dialogTracker.remove(first);
     wrapper.unmount();
+  });
+
+  it('re-emits a close that comes from the dialog itself and drops it off the stack', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    // no dialogId: a template-driven dialog, the one whose stack entry <df-modal> owns
+    const wrapper = mountModal({ modelValue: true });
+    expect(isShown(wrapper)).toBe(true);
+
+    wrapper.findComponent(stubs.VDialog).vm.$emit('update:model-value', false);
+    await nextTick();
+
+    expect(wrapper.emitted('update:model-value')).toEqual([[false]]);
+    expect(dialogTracker.currentRef.value).toBeNull();
+    expect(warn).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
+
+    wrapper.unmount();
+    warn.mockRestore();
+    error.mockRestore();
   });
 
   describe('keyboard shortcuts', () => {

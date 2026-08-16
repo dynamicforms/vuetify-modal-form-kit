@@ -41,13 +41,20 @@ export interface RowJSON {
   props: RowPropsPartial;
   columns: ColumnJSON[];
 }
+// what a row breakpoint serializes to: it states only what it changes, so a missing `columns` inherits the list
+// from the breakpoint below it, while an empty one states that the row has no columns there
+export type RowJSONBreakpoint = Omit<RowJSON, 'columns'> & { columns?: ColumnJSON[] };
 export type RowJSONResponsive = RowJSON & {
-  [key in BreakpointNames]?: RowJSON;
+  [key in BreakpointNames]?: RowJSONBreakpoint;
 };
 
 // column declaractions
 
-type ColsProps = { [K in BaseBkpt as K extends 'base' ? 'cols' : `cols-${K}`]?: number | 'auto' | boolean };
+// no `cols-<bp>` variant: v-col takes per-breakpoint widths as the props sm/md/lg/xl/xxl, so a `cols-md` key would
+// only ever land as an inert DOM attribute. Per-breakpoint widths go through Column.breakpoint().
+interface ColsProps {
+  cols?: number | 'auto' | boolean;
+}
 type OffsetProps = { [K in BaseBkpt as K extends 'base' ? 'offset' : `offset-${K}`]?: number | 'auto' | boolean };
 type OrderProps = { [K in BaseBkpt as K extends 'base' ? 'order' : `order-${K}`]?: number | 'auto' | boolean };
 
@@ -62,8 +69,11 @@ export interface ColumnJSON {
   props: ColumnPropsPartial;
   components: ComponentJSON[];
 }
+// what a column breakpoint serializes to: it states only what it changes, so a missing `components` inherits the
+// list from the breakpoint below it, while an empty one states that the column has none there
+export type ColumnJSONBreakpoint = Omit<ColumnJSON, 'components'> & { components?: ComponentJSON[] };
 export type ColumnJSONResponsive = ColumnJSON & {
-  [key in BreakpointNames]?: ColumnJSON;
+  [key in BreakpointNames]?: ColumnJSONBreakpoint;
 };
 
 // component declarations

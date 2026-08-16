@@ -69,9 +69,25 @@ class ColBase implements ComponentProps {
   }
 }
 
+// a serialized column names its own `props` and `components`; ColumnProps declares neither key, so the two shapes
+// cannot be mistaken for one another
+function isColumnJSON(data?: ColumnPropsPartial | ColumnJSONResponsive): data is ColumnJSONResponsive {
+  return isObjectLike(data) && ('props' in <object>data || 'components' in <object>data);
+}
+
 export class Column extends ResponsiveRenderOptions<ColBase> {
-  constructor(props?: ColumnPropsPartial) {
-    super({ props } as BreakpointsJSON<ColBase>);
+  constructor(props?: ColumnPropsPartial);
+  constructor(json: ColumnJSONResponsive);
+  constructor(data?: ColumnPropsPartial | ColumnJSONResponsive) {
+    super(<BreakpointsJSON<ColBase>>(<unknown>(isColumnJSON(data) ? data : { props: data })));
+  }
+
+  /**
+   * Lifts a serialized column - the base and every breakpoint it declares - into a Column, and leaves an
+   * existing one alone.
+   */
+  static fromJSON(json: ColumnJSONResponsive | Column): Column {
+    return json instanceof Column ? json : new Column(json);
   }
 
   component<T extends ComponentBuilderBase>(
@@ -112,7 +128,11 @@ export class Column extends ResponsiveRenderOptions<ColBase> {
       components: (this._value.components ?? []).map((cmpt) => cmpt.toJSON()),
     };
     responsiveBreakpoints.forEach((bp) => {
-      if (this._value[bp]) res[bp] = this._value[bp].toJSON();
+      const value = this._value[bp];
+      if (!value) return;
+      // a breakpoint that states nothing about the components must not serialize an empty list: read back, that
+      // would state that the column has none there
+      res[bp] = value.components ? value.toJSON() : { props: value.props };
     });
     return res;
   }
@@ -139,10 +159,13 @@ export class Column extends ResponsiveRenderOptions<ColBase> {
       return false;
     };
 
-    const baseKeys = ['cols', 'offset', 'order'];
+    // `offset-<bp>` and `order-<bp>` camelize onto v-col's offsetMd / orderMd props; `cols` has no such variant,
+    // as v-col names per-breakpoint widths sm/md/lg/xl/xxl instead
+    const responsiveKeys = ['offset', 'order'];
     const validKeys = new Set<string>([
-      ...baseKeys,
-      ...responsiveBreakpoints.flatMap((b) => baseKeys.map((k) => `${k}-${b}`)),
+      'cols',
+      ...responsiveKeys,
+      ...responsiveBreakpoints.flatMap((b) => responsiveKeys.map((k) => `${k}-${b}`)),
       'alignSelf',
       'class',
       'style',
@@ -159,8 +182,8 @@ export class Column extends ResponsiveRenderOptions<ColBase> {
         if (isValidClass(val)) result[key] = val as any;
       } else if (key === 'style') {
         if (isValidStyle(val)) result[key] = val as any;
-      } else if (key.startsWith('cols')) {
-        if (isValidCols(val)) (<any>result)[key] = val;
+      } else if (key === 'cols') {
+        if (isValidCols(val)) result[key] = val as any;
       } else if (key.startsWith('offset')) {
         if (isValidOffset(val)) (<any>result)[key] = val;
       } else if (key.startsWith('order')) {
@@ -169,8 +192,10 @@ export class Column extends ResponsiveRenderOptions<ColBase> {
     });
 
     const res = new ColBase(result);
-    // undefined, not [], where the breakpoint holds no components - an empty list would state that it has none
-    res.components = bp?.components ? [...bp.components] : undefined;
+    // undefined, not [], where the breakpoint holds no components - an empty list would state that it has none.
+    // Serialized components are lifted here, which is the one funnel both the constructor and every
+    // getOptionsForBreakpoint call pass through; a Component already in the list is left as it is.
+    res.components = bp?.components ? bp.components.map((cmpt) => Component.fromJSON(cmpt)) : undefined;
     return res;
   }
 }

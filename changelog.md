@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-08-16
+
+### Fixed
+
+- `<form-render>` renders a plain JSON layout, which its `layout` prop has always declared it takes. The prop
+  wrapped anything that was not a `FormBuilder` in `new FormBuilder(json)`, which kept the plain objects, so the
+  first `row.toJSON()` threw `TypeError: row.toJSON is not a function`. A `FormBuilder` and the JSON its
+  `toJSON()` produces now render the same thing, breakpoints and all.
+- `.nestedForm(inner)` renders. `<component-render>` consulted the component map before the nested-form branch,
+  and the renderer registers itself in that map under `FormBuilderName`, so the map always won and the nested
+  layout was spread onto `<form-render>` as attrs instead of reaching its `layout` prop. Nested forms inherit the
+  `components` map and resolve their own breakpoints, at any depth.
+- `<df-modal>` binds its `<v-dialog>` one way. `v-model` wrote to a computed that has no setter; the update now
+  travels through `onModelValueUpdate`.
+- `FormBuilder.toJSON()` on a form with no rows produces a layout `<form-render>` renders.
+- A breakpoint that states nothing about its children serializes without the key. `Row.toJSON()` omits `columns`
+  and `Column.toJSON()` omits `components` for such a breakpoint, and `FormBuilder.toJSON()` leaves the
+  breakpoint out entirely. An empty list is how a breakpoint states that it has none, so emitting one where the
+  breakpoint said nothing erased what the breakpoint inherits the moment the JSON was read back.
+- `DialogSize.isDefined(size)` reports whether the value names a size. It was `true` for every string, because
+  the check routed through `fromString()`, whose fallback `DEFAULT` is itself a member of the enum. `fromString()`
+  is unchanged and still returns `defaultDialogSize` for anything it does not recognise: a size handed to a dialog
+  that is about to render ignores invalid values, while a caller asking whether a string names a size gets the
+  truth. `DEFAULT` has no string identifier, so `isDefined('default')` is `false`.
+- `cols-<breakpoint>` is gone from `ColumnProps`, and `Column.toJSON()` drops the key. `<v-col>` names
+  per-breakpoint widths `sm` / `md` / `lg` / `xl` / `xxl`, so `cols-md` only ever reached the DOM as an inert
+  attribute; naming one is now a type error rather than a layout that silently ignores it. Per-breakpoint widths
+  go through `Column.breakpoint(name, colCallback)`. `offset-<bp>` and `order-<bp>` camelize onto real `<v-col>`
+  props and are untouched.
+
+### Added
+
+- `FormBuilder.fromJSON()`, `Row.fromJSON()`, `Column.fromJSON()` and `Component.fromJSON()` lift a serialized
+  layout into instances, and leave one that is already an instance alone. `Row` and `Column` constructors take
+  either their props or their JSON.
+- `modal.yesNo()`, `modal.message()` and `modal.custom()` warn when no `<modal-view>` is mounted by the end of
+  the tick. The dialog goes onto the stack with nothing rendering it, so no action can resolve it and the
+  returned promise settles only through its own `.close(value)`. A dialog opened before a sibling `<modal-view>`
+  mounts is supported and does not warn.
+
 ## [0.6.0] - 2026-08-15
 
 ### Changed (breaking)
