@@ -5,7 +5,7 @@ import { FormBuilderName } from './types';
 describe('Column', () => {
   it('should create a column with defaults', () => {
     const column = new Column();
-    expect(column.toJSON()).toEqual({ props: { cols: false }, components: [] });
+    expect(column.toJSON()).toEqual({ props: {}, components: [] });
   });
 
   it('should create a column with specified cols', () => {
@@ -56,7 +56,7 @@ describe('Column', () => {
       props: { cols: 6 },
       components: [{ name: 'VTextField', props: { label: 'Test' } }],
       sm: {
-        props: { cols: false },
+        props: {},
         components: [{ name: 'VTextField', props: { label: 'Test', fullWidth: true } }],
       },
     });
@@ -64,8 +64,9 @@ describe('Column', () => {
       props: { cols: 6 },
       components: [{ name: 'VTextField', props: { label: 'Test' } }],
     });
+    // the sm breakpoint states a component, not a width, so the width carries over from the base
     expect(column.toJSON('lg')).toEqual({
-      props: { cols: false },
+      props: { cols: 6 },
       components: [{ name: 'VTextField', props: { label: 'Test', fullWidth: true } }],
     });
   });

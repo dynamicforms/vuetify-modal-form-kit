@@ -13,6 +13,14 @@ const stubs = {
 
 const myInput = markRaw({ props: ['label'], template: '<input :placeholder="label" />' });
 
+const defaultWidth = window.innerWidth;
+
+// vuetify's display reads window.innerWidth when it is created, so the width has to be set before the mount
+function setViewportWidth(width: number) {
+  window.innerWidth = width;
+  window.dispatchEvent(new Event('resize'));
+}
+
 function render(layout: FormBuilder) {
   return mount(FormRender, {
     props: { layout, components: { 'my-input': myInput } },
@@ -36,5 +44,48 @@ describe('FormRender', () => {
     expect(wrapper.find('input').attributes('placeholder')).toBe('City');
 
     wrapper.unmount();
+  });
+
+  describe('at a breakpoint', () => {
+    afterEach(() => {
+      setViewportWidth(defaultWidth);
+    });
+
+    function responsiveForm() {
+      const form = new FormBuilder();
+      form.row({}, (row) =>
+        row.col({ cols: 8 }, (col) =>
+          col
+            .breakpoint('sm', (bpCol) => {
+              bpCol.props.cols = 12;
+              return bpCol;
+            })
+            .component((cmpt) => cmpt.generic('my-input', { label: 'Street' })),
+        ),
+      );
+      return form;
+    }
+
+    it('renders the base layout below the breakpoint', () => {
+      setViewportWidth(400);
+
+      const wrapper = render(responsiveForm());
+
+      expect(wrapper.find('.col').attributes('cols')).toBe('8');
+      expect(wrapper.find('input').attributes('placeholder')).toBe('Street');
+
+      wrapper.unmount();
+    });
+
+    it('renders the column breakpoint above it, components and all', () => {
+      setViewportWidth(1400);
+
+      const wrapper = render(responsiveForm());
+
+      expect(wrapper.find('.col').attributes('cols')).toBe('12');
+      expect(wrapper.find('input').attributes('placeholder')).toBe('Street');
+
+      wrapper.unmount();
+    });
   });
 });

@@ -57,7 +57,7 @@
   },
   "peerDependencies": {
     "@dynamicforms/vue-forms": "^0.6.0",
-    "@dynamicforms/vuetify-inputs": "^0.8.0",
+    "@dynamicforms/vuetify-inputs": "^0.8.1",
     "@mdi/font": "^7.4.47",
     "lodash-es": "^4.17.12",
     "vue": "^3.4",

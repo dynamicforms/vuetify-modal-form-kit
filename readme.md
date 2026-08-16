@@ -36,7 +36,7 @@ npm install @dynamicforms/vuetify-modal-form-kit
 **Peer dependencies** (must be installed separately):
 
 ```bash
-npm install vue@^3.4 vuetify@^3.9 @dynamicforms/vue-forms@^0.6.0 @dynamicforms/vuetify-inputs@^0.8.0 \
+npm install vue@^3.4 vuetify@^3.9 @dynamicforms/vue-forms@^0.6.0 @dynamicforms/vuetify-inputs@^0.8.1 \
   lodash-es vue-markdown-render @mdi/font
 ```
 
@@ -205,6 +205,8 @@ form
   .breakpoint('md', (f) => { f.simple(2).dfInput({ label: 'Name' }).dfInput({ label: 'Surname' }); return f; })
 ```
 
+Rows and columns take breakpoints of their own, through the same method.
+
 ### Available component shortcuts
 
 The builder exposes convenience methods for all standard `@dynamicforms/vuetify-inputs` components:
@@ -284,7 +286,7 @@ import {
 | Vue | ^3.4 |
 | Vuetify | ^3.9 |
 | @dynamicforms/vue-forms | ^0.6.0 |
-| @dynamicforms/vuetify-inputs | ^0.8.0 |
+| @dynamicforms/vuetify-inputs | ^0.8.1 |
 
 ---
 

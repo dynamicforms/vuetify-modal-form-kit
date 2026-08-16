@@ -10,7 +10,7 @@ exists.
 
 ## Upgrading to v0.6.0 (from v0.5.x)
 
-This release follows `@dynamicforms/vue-forms` 0.6.0 and `@dynamicforms/vuetify-inputs` 0.8.0. Nothing this library
+This release follows `@dynamicforms/vue-forms` 0.6.0 and `@dynamicforms/vuetify-inputs` 0.8.1. Nothing this library
 exports was renamed or removed, so the work is in your own use of the two peer libraries — `Field.create()`,
 `Action.create()`, `reactiveValue` and `IField` are gone there — plus two lines of application setup that this
 documentation used to get wrong. There is a [checklist](#checklist-for-0-6-0) at the end of this section.
@@ -20,10 +20,10 @@ documentation used to get wrong. There is a [checklist](#checklist-for-0-6-0) at
 | Peer | Before | Now |
 |---|---|---|
 | `@dynamicforms/vue-forms` | `^0.5.0` | `^0.6.0` |
-| `@dynamicforms/vuetify-inputs` | `^0.7.13` | `^0.8.0` |
+| `@dynamicforms/vuetify-inputs` | `^0.7.13` | `^0.8.1` |
 | `vuetify` | `^3.8` | `^3.9` |
 
-The three are one upgrade: vuetify-inputs 0.8.0 requires vue-forms 0.6.0 and Vuetify 3.9, and 0.7.x cannot be
+The three are one upgrade: vuetify-inputs 0.8.1 requires vue-forms 0.6.0 and Vuetify 3.9, and 0.7.x cannot be
 combined with vue-forms 0.6.0. Installing them one at a time leaves npm reporting unsatisfiable peers.
 
 Your own code migrates at the same time. Both peers document their own breaking changes:
@@ -84,9 +84,12 @@ Four things this library documented but did not do:
 - **A second dialog opened while one is on screen.** The dialog on top is the one most recently opened, and the
   one underneath reappears when it closes. `<modal-view>` keeps a single `<df-modal>` alive across dialogs, and
   that component now follows the dialog it is given rather than the one it was created with.
-- **Row and column breakpoints.** `Row.breakpoint()` and `Column.breakpoint()` reach the rendered grid.
-  A breakpoint that only overrides props keeps the columns, and the components, declared on the element itself;
-  declaring columns or components inside the breakpoint replaces the whole set, as before.
+- **Row and column breakpoints.** `Row.breakpoint()` and `Column.breakpoint()` reach the rendered grid, and a
+  breakpoint states only what changes: props merge key by key rather than replacing what the element was given,
+  and its content carries over. Check your responsive layouts against
+  [what a breakpoint inherits](/examples/form-builder-responsive#what-a-breakpoint-inherits). A column given no
+  width also stops carrying `cols: false`, in `toJSON()` output as well — `<v-col>` defaults it to `false`
+  anyway, and stating it kept the column from ever inheriting a width.
 - **Row props.** `dense`, `align`, `align-content` and `justify` are bound onto `<v-row>`. `align-content` and
   `noGutters` also survive the props filter, which used to drop them — `align-content: 'space-between'` in
   particular was validated against the values of `align` and thrown away.
@@ -99,7 +102,7 @@ If your layout compensated for any of these — a breakpoint that restates every
 
 ### Checklist for 0.6.0
 
-1. Upgrade all three peers in one step: `@dynamicforms/vue-forms@^0.6.0`, `@dynamicforms/vuetify-inputs@^0.8.0`,
+1. Upgrade all three peers in one step: `@dynamicforms/vue-forms@^0.6.0`, `@dynamicforms/vuetify-inputs@^0.8.1`,
    `vuetify@^3.9`.
 2. Work through the two peer migration guides for your own code: `Field.create(` → `new Field(`, `Action.create(`
    → `new Action(`, delete `reactiveValue` reads, rename `IField` → `FieldBase` and `DFInputHint` → `DfInputHint`.

@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed (breaking)
 
-- The peer dependencies move to `@dynamicforms/vue-forms` `^0.6.0`, `@dynamicforms/vuetify-inputs` `^0.8.0` and
-  `vuetify` `^3.9`. The three go together: vuetify-inputs 0.8.0 requires the other two, and its 0.7.x line cannot be
+- The peer dependencies move to `@dynamicforms/vue-forms` `^0.6.0`, `@dynamicforms/vuetify-inputs` `^0.8.1` and
+  `vuetify` `^3.9`. The three go together: vuetify-inputs 0.8.1 requires the other two, and its 0.7.x line cannot be
   combined with vue-forms 0.6.0. Nothing this library exports was renamed or removed; the work is in the consuming
   application's own use of the peers, where `Field.create()`, `Action.create()`, `reactiveValue` and `IField` are gone.
 - `package.json` `exports` declares a `types` condition per branch and the build emits `dist/index.d.cts` beside
@@ -31,8 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `dialogId`; the component compared the stack against the id it was created with, so every dialog after the first
   stayed invisible and its promise could not settle.
 - Row and column breakpoints reach the rendered grid. `<form-render>` resolved the form-level breakpoint only and
-  serialized the rest without one. A breakpoint that overrides props alone now keeps the columns and components
-  declared on the element itself; declaring them inside the breakpoint replaces the set.
+  serialized the rest without one, so `Row.breakpoint()` and `Column.breakpoint()` changed nothing. What such a
+  breakpoint inherits follows from `@dynamicforms/vuetify-inputs` 0.8.1, which this release requires: props merge
+  key by key, and columns or components come from the nearest smaller breakpoint that adds any. A breakpoint that
+  adds none used to render an empty row or column; assigning an empty list is now the way to state that.
+- A `Column` given no width no longer serializes `cols: false`. `<v-col>` defaults `cols` to `false` on its own,
+  while stating it kept the column from inheriting a width at any breakpoint. `toJSON()` output changes
+  accordingly: `props` is `{}` where it used to be `{ cols: false }`.
 - Row props are bound onto `<v-row>`. `dense`, `align`, `align-content` and `justify` were serialized and dropped.
 - `noGutters` survives the row props filter, which whitelisted the key under the spelling `no-gutters` while
   the value was written under `noGutters`.

@@ -317,4 +317,74 @@ describe('Layout Integration Tests', () => {
     expect(small.rows[0].columns.length).toBe(1);
     expect(small.rows[0].columns[0].props).toEqual({ cols: 12 });
   });
+
+  it('cascades columns from the nearest breakpoint that declares them', () => {
+    const form = new FormBuilder();
+
+    form.row({}, (row) =>
+      row
+        .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'City' })))
+        .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'Zip' })))
+        .breakpoint('sm', (bpRow) =>
+          bpRow
+            .col({ cols: 4 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'City' })))
+            .col({ cols: 4 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'State' })))
+            .col({ cols: 4 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'Zip' }))),
+        )
+        .breakpoint('md', (bpRow) => {
+          bpRow.props.dense = true;
+          return bpRow;
+        }),
+    );
+
+    expect(form.getOptionsForBreakpoint('xs').toJSON('xs').rows[0].columns.length).toBe(2);
+
+    // md states only a prop, so it renders sm's three columns rather than falling back to the base two
+    const medium = form.getOptionsForBreakpoint('md').toJSON('md');
+    expect(medium.rows[0].props).toEqual({ dense: true });
+    expect(medium.rows[0].columns.length).toBe(3);
+  });
+
+  it('merges row and column props key by key across breakpoints', () => {
+    const form = new FormBuilder();
+
+    form.row({ justify: 'center' }, (row) =>
+      row
+        .breakpoint('sm', (bpRow) => {
+          bpRow.props.dense = true;
+          return bpRow;
+        })
+        .col({ cols: 8, offset: 1 }, (col) =>
+          col
+            .breakpoint('sm', (bpCol) => {
+              bpCol.props.offset = 2;
+              return bpCol;
+            })
+            .component((cmpt) => cmpt.generic('VTextField', { label: 'Street' })),
+        ),
+    );
+
+    const small = form.getOptionsForBreakpoint('sm').toJSON('sm');
+    // the breakpoints restate one prop each; everything else carries over
+    expect(small.rows[0].props).toEqual({ justify: 'center', dense: true });
+    expect(small.rows[0].columns[0].props).toEqual({ cols: 8, offset: 2 });
+  });
+
+  it('lets a breakpoint state that a row has no columns at all', () => {
+    const form = new FormBuilder();
+
+    form.row({}, (row) =>
+      row
+        .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'City' })))
+        .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.generic('VTextField', { label: 'Zip' })))
+        // an empty list is a statement, unlike a breakpoint that says nothing about the columns
+        .breakpoint('md', (bpRow) => {
+          bpRow.columns = [];
+          return bpRow;
+        }),
+    );
+
+    expect(form.getOptionsForBreakpoint('sm').toJSON('sm').rows[0].columns.length).toBe(2);
+    expect(form.getOptionsForBreakpoint('md').toJSON('md').rows[0].columns).toEqual([]);
+  });
 });

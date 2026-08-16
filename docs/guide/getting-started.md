@@ -7,7 +7,7 @@ npm install @dynamicforms/vuetify-modal-form-kit
 ```
 
 The library declares [`@dynamicforms/vue-forms`](:vue-forms:) `^0.6.0`,
-[`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) `^0.8.0` and Vuetify `^3.9` among its peer
+[`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) `^0.8.1` and Vuetify `^3.9` among its peer
 dependencies; install them alongside it if they are not already in your project.
 
 In your `main.ts`:

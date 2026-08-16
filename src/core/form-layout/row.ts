@@ -16,7 +16,9 @@ import {
 class RowBase implements ComponentProps {
   props: RowPropsPartial;
 
-  columns: Column[] = [];
+  // undefined until a column is added: a breakpoint holding an empty list states that the row has no columns
+  // there, while one that states nothing about them inherits the columns below it
+  columns?: Column[];
 
   constructor(props?: RowPropsPartial) {
     this.props = props ?? {};
@@ -25,7 +27,7 @@ class RowBase implements ComponentProps {
   col(colProps?: ColumnPropsPartial, colCallback?: (col: Column) => Column): this {
     const column = new Column(colProps);
     colCallback?.(column);
-    this.columns.push(column);
+    (this.columns ??= []).push(column);
     return this;
   }
 
@@ -49,7 +51,7 @@ class RowBase implements ComponentProps {
   }
 
   toJSON(breakpoint?: BreakpointNames): RowJSON {
-    return { props: this.props, columns: this.columns.map((col) => col.toJSON(breakpoint)) };
+    return { props: this.props, columns: (this.columns ?? []).map((col) => col.toJSON(breakpoint)) };
   }
 }
 
@@ -83,14 +85,11 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
   toJSON(breakpoint?: BreakpointNames): RowJSONResponsive {
     if (breakpoint != null) {
       const res = this.getOptionsForBreakpoint(breakpoint);
-      // a breakpoint that declares no columns of its own overrides the props only - the row keeps the columns it
-      // holds at its base. Declaring columns in the breakpoint replaces the whole set.
-      const columns = res.columns.length ? res.columns : this._value.columns;
-      return { props: res.props, columns: columns.map((col) => col.toJSON(breakpoint)) };
+      return { props: res.props, columns: (res.columns ?? []).map((col) => col.toJSON(breakpoint)) };
     }
     const res: RowJSONResponsive = {
       props: this._value.props,
-      columns: this._value.columns.map((col) => col.toJSON()),
+      columns: (this._value.columns ?? []).map((col) => col.toJSON()),
     };
     responsiveBreakpoints.forEach((bp) => {
       if (this._value[bp]) res[bp] = this._value[bp].toJSON();
@@ -152,7 +151,8 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
     });
 
     const res = new RowBase(result);
-    res.columns = [...(bp?.columns ?? [])];
+    // undefined, not [], where the breakpoint holds no columns - an empty list would state that it has none
+    res.columns = bp?.columns ? [...bp.columns] : undefined;
     return res;
   }
 }
