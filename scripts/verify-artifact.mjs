@@ -36,6 +36,17 @@ for (const name of Object.getOwnPropertyNames(dom.window)) {
 }
 Object.defineProperty(globalThis, 'window', { value: dom.window, configurable: true, writable: true });
 
+// What jsdom does not carry and a peer reads at module scope. Optional chaining does not save a read of an
+// undeclared binding - `CSS?.supports?.(...)` in Vuetify's globals.js throws ReferenceError where `CSS` was
+// never declared - so the binding has to exist, whatever it answers.
+if (!('CSS' in globalThis)) {
+  Object.defineProperty(globalThis, 'CSS', {
+    value: { supports: () => false, escape: (value) => String(value) },
+    configurable: true,
+    writable: true,
+  });
+}
+
 const artifact = pathToFileURL(resolve('dist/dynamicforms-vuetify-modal-form-kit.js')).href;
 const m = await import(artifact);
 
