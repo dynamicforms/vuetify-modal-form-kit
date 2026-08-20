@@ -1,5 +1,5 @@
 import * as Form from '@dynamicforms/vue-forms';
-import { Action } from '@dynamicforms/vuetify-inputs';
+import { Action, ActionRenderOptions } from '@dynamicforms/vuetify-inputs';
 import { vi } from 'vitest';
 import { nextTick } from 'vue';
 
@@ -43,8 +43,9 @@ describe('modal service', () => {
 
     const actions = currentModal.value!.actions!;
     expect(Object.keys(actions)).toEqual(['yes', 'no']);
-    expect(actions.yes.defaultConfirm).toBe(true);
-    expect(actions.no.defaultReject).toBe(true);
+    // the flags are the action's value, which is where <df-actions> and <df-modal>'s keyboard read them
+    expect((<ActionRenderOptions>actions.yes.value).defaultConfirm).toBe(true);
+    expect((<ActionRenderOptions>actions.no.value).defaultReject).toBe(true);
 
     actions.no.execute(null);
     expect(await settled(promise)).toBe('no');
@@ -135,6 +136,167 @@ describe('modal service', () => {
     await settled(rendered);
     unrendered.close('close');
     await settled(unrendered);
+  });
+
+  it('settles only the dialog whose action was executed, over two bindings of one form', async () => {
+    // an action's registrations belong to its declaration, so both bindings of `template` share one chain:
+    // without the per-dialog removal, executing one dialog's action settles the other's promise as well
+    const template = new Form.Group({
+      email: new Form.Field({ value: '' }),
+      submit: new Action({ value: { label: 'Send' } }),
+    });
+    const first = modal.message('First', 'first', { form: template.bind({ email: 'a@example.com' }) });
+    const second = modal.message('Second', 'second', { form: template.bind({ email: 'b@example.com' }) });
+
+    let firstSettled = false;
+    first.then(() => {
+      firstSettled = true;
+    });
+
+    await (<Action>currentModal.value!.actions!.submit).execute(null);
+    expect(await settled(second)).toBe('submit');
+    expect(firstSettled).toBe(false);
+
+    // and the dialog underneath is still the one it was, with an action that still settles it
+    expect(currentModal.value!.dialogId).toBe(first.dialogId);
+    await (<Action>currentModal.value!.actions!.submit).execute(null);
+    expect(await settled(first)).toBe('submit');
+  });
+
+  it('leaves the action it borrowed with no registration of its own', async () => {
+    const submit = new Action({ value: { label: 'Send' } });
+    const form = new Form.Group({ submit });
+
+    for (let i = 0; i < 3; i++) {
+      const promise = modal.message('Subscribe', 'again', { form });
+      await submit.execute(null);
+      expect(await settled(promise)).toBe('submit');
+    }
+
+    // nothing accumulated: an execute() outside any dialog reaches no resolver, so no dialog is opened or settled
+    await submit.execute(null);
+    expect(currentModal.value).toBeNull();
+  });
+
+  it('answers with what the action chain returned', async () => {
+    const submit = new Action({ value: { label: 'Send' } });
+    submit.registerAction(new Form.ExecuteAction(async () => ({ id: 42 })));
+    const form = new Form.Group({ submit });
+
+    const promise = modal.message('Subscribe', 'Enter your email address:', { form });
+
+    expect(await submit.execute(null)).toEqual({ id: 42 });
+    expect(await settled(promise)).toBe('submit');
+  });
+
+  it('answers with an abort and leaves the dialog open', async () => {
+    const submit = new Action({ value: { label: 'Send' } });
+    submit.registerAction(
+      new Form.ExecuteAction(() => {
+        throw new Form.AbortEventHandlingException('not yet');
+      }),
+    );
+    const form = new Form.Group({ submit });
+
+    const promise = modal.message('Subscribe', 'Enter your email address:', { form });
+
+    const answer = await submit.execute(null);
+    expect(answer).toBeInstanceOf(Form.AbortEventHandlingException);
+    expect(currentModal.value!.dialogId).toBe(promise.dialogId);
+
+    promise.close('close');
+    await settled(promise);
+  });
+
+  it('lets an ordinary failure reject, and leaves the dialog open', async () => {
+    const failure = new Error('the backend said no');
+    const submit = new Action({ value: { label: 'Send' } });
+    submit.registerAction(
+      new Form.ExecuteAction(() => {
+        throw failure;
+      }),
+    );
+    const form = new Form.Group({ submit });
+
+    const promise = modal.message('Subscribe', 'Enter your email address:', { form });
+
+    // only an abort is an answer; anything else is the caller's to handle, and settles nothing
+    await expect(submit.execute(null)).rejects.toBe(failure);
+    expect(currentModal.value!.dialogId).toBe(promise.dialogId);
+
+    promise.close('close');
+    await settled(promise);
+  });
+
+  it('renders an action declared as a vue-forms Action', async () => {
+    const warn = vi.mocked(console.warn);
+    // <df-actions> draws a button from the action's value, so the subclass @dynamicforms/vuetify-inputs exports
+    // is what an action needs to render responsively, not what it needs to be drawn
+    const submit = new Form.Action({ value: { label: 'Send' } });
+    const form = new Form.Group({ submit });
+
+    const promise = modal.message('Subscribe', 'Enter your email address:', { form });
+
+    expect(Object.keys(currentModal.value!.actions!)).toEqual(['submit']);
+    expect(currentModal.value!.actions!.submit).toBe(submit);
+    expect(warn).not.toHaveBeenCalled();
+
+    await submit.execute(null);
+    expect(await settled(promise)).toBe('submit');
+  });
+
+  it('does not settle a dialog that stopped being the one on screen while its executor ran', async () => {
+    const submit = new Action({ value: { label: 'Send' } });
+    let release: (value: string) => void = () => {};
+    submit.registerAction(
+      new Form.ExecuteAction(
+        () =>
+          new Promise<string>((resolve) => {
+            release = resolve;
+          }),
+      ),
+    );
+    const form = new Form.Group({ submit });
+
+    const first = modal.message('Subscribe', 'Enter your email address:', { form });
+    const running = submit.execute(null);
+
+    // a dialog opens over it while the executor is still in flight, so by the time the executor answers the
+    // question the resolver was asked - is this dialog the one the user is looking at - has a different answer
+    const second = modal.message('Second', 'on top');
+    release('stored');
+    expect(await running).toBe('stored');
+
+    await nextTick();
+    await nextTick();
+    expect(currentModal.value!.dialogId).toBe(second.dialogId);
+
+    second.close('close');
+    await settled(second);
+    expect(currentModal.value!.dialogId).toBe(first.dialogId);
+
+    first.close('cancelled');
+    expect(await settled(first)).toBe('cancelled');
+  });
+
+  it('registers one resolver on an action the form and the caller both name', async () => {
+    const submit = new Action({ value: { label: 'Send' } });
+    const form = new Form.Group({ submit });
+    const runs: string[] = [];
+    submit.registerAction(
+      new Form.ExecuteAction((field, supr, ...params) => {
+        runs.push('executor');
+        return supr(field, ...params);
+      }),
+    );
+
+    // the same instance, reachable under the form's field name and under the caller's key
+    const promise = modal.message('Subscribe', 'again', { form, actions: { submit } });
+    await submit.execute(null);
+
+    expect(runs).toEqual(['executor']);
+    expect(await settled(promise)).toBe('submit');
+    expect(currentModal.value).toBeNull();
   });
 
   it('stays silent when a view is installed within the same tick as the open', async () => {

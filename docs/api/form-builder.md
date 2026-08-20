@@ -49,9 +49,9 @@ Returned by `col()`'s callback.
 | `Column.fromJSON(json)` | Static. Reads a serialized column - `toJSON()`'s `columns[]` entries - back into a `Column`; a `Column` passed in is handed back unchanged. |
 
 Column props (all optional): `cols` (a number, `'auto'` or `false`; omitting it leaves the width to `<v-col>`,
-which is auto), `offset` and `order` (numbers), `alignSelf`, `class`, `style`. `offset-md`, `order-lg` and the other breakpoint-suffixed
-variants reach Vuetify's `offsetMd` / `orderLg` props. Per-breakpoint column *width* goes through
-`breakpoint(name, colCallback)` rather than a `cols-md` key.
+which is auto), `offset` and `order` (numbers), `alignSelf`, `class`, `style`. `offset-md`, `order-lg` and the
+other breakpoint-suffixed variants reach Vuetify's `offsetMd` / `orderLg` props. Per-breakpoint column *width*
+goes through `breakpoint(name, colCallback)` rather than a `cols-md` key.
 
 ## Component builder
 
@@ -63,9 +63,17 @@ The object passed to `component()`'s callback (`VuetifyInputsComponentBuilder` b
 | `nestedForm(form)` | Embeds another `FormBuilder` layout as a nested form. Serialized by `toJSON()` and rendered by `<FormRender>` as a form of its own - it resolves the nested layout's breakpoints itself and inherits the outer `:components` map. Nesting has no depth limit. |
 | `dfInput` / `dfTextArea` / `dfSelect` / `dfCheckbox` / `dfDateTime` / `dfFile` / `dfColor` / `dfRtfEditor` / `dfActions` | Shorthands for `generic('df-*', props)`, typed to the matching component's props from [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:). |
 
-`FormBuilderBodyProp` is exported from `@dynamicforms/vuetify-modal-form-kit` for building custom component
-builders/renderers; the rest of the `form-layout` internals (`Row`, `Column`, `FormBuilderName`, ...) are available
-under the `FormLayout` namespace export if you need to build your own component builder class.
+`FormBuilder` and `FormBuilderBodyProp` are top-level exports of `@dynamicforms/vuetify-modal-form-kit`. The rest
+of the layout tree - `Row`, `Column`, `Component`, `ComponentBuilderBase`, `ComponentBuilderInterface`,
+`VuetifyInputsComponentBuilder`, `FormBuilderName`, `SimpleProxy`, `TwelveDivisible` and the props and JSON types of
+rows, columns and components - is reached through the `FormLayout` namespace alone, which is what a custom component
+builder or renderer extends:
+
+```typescript
+import { FormLayout } from '@dynamicforms/vuetify-modal-form-kit';
+
+class MyBuilder extends FormLayout.VuetifyInputsComponentBuilder {}
+```
 
 ## `<FormRender>`
 
@@ -77,3 +85,7 @@ Renders a `FormBuilder` layout.
 |---|---|---|
 | `layout` | `FormBuilder \| FormJSONResponsive` | The layout to render, either as the builder or as the plain JSON `toJSON()` produces. JSON is hydrated back into rows, columns and components, so the two render the same thing. A `symbol` component name - `FormBuilderName` among them - survives an in-memory copy of the JSON but not a `JSON.stringify()` / `JSON.parse()` round trip. |
 | `components` | `Record<string \| symbol, Component>` | Maps component names used in `generic()` calls (e.g. `'df-input'`) to actual Vue components. Symbol keys are supported; the renderer adds one of its own to resolve nested layouts. |
+
+`<ComponentRender>` renders a single component of a layout and is exported for building a renderer of your own. It
+reads the nested-form renderer out of `components` in a computed rather than once at setup, so a `components` prop
+replaced with a map that carries that renderer draws the nested layout from then on.

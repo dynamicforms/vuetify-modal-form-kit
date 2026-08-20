@@ -31,15 +31,18 @@ features:
 
 `@dynamicforms/vuetify-modal-form-kit` is a Vue 3 + Vuetify 3 library built around four design goals:
 
-1. **Programmatic & template-based dialog API** — open dialogs from code with a promise-based API (`await modal.message()`, `await modal.yesNo()`) and get the result back directly, without events or callbacks. Or declare dialogs in Vue templates with `<df-modal>`.
+1. **Programmatic & template-based dialog API** — open dialogs from code with a promise-based API
+   (`await modal.message()`, `await modal.yesNo()`) and get the result back directly, without events or callbacks.
+   Or declare dialogs in Vue templates with `<df-modal>`.
 2. **One dialog on screen at a time** — an internal stack ensures only one dialog is ever visible: opening a second
    dialog suspends the first (kept open but hidden) and shows the second on top; the first reappears once the
    second closes.
-3. **Programmatic form builder** — a fluent `FormBuilder` API lets you define responsive Vuetify grid layouts entirely in TypeScript, with no template markup required.
+3. **Programmatic form builder** — a fluent `FormBuilder` API lets you define responsive Vuetify grid layouts
+   entirely in TypeScript, with no template markup required.
 4. **Keyboard shortcuts** — `<Enter>` confirms and `<Esc>` cancels the active dialog.
 
 ## Next steps
 
 Ready to get started? Check out the [Getting Started](/guide/getting-started) guide or dive into the
-[Examples](/examples/) for more detailed usage patterns. Coming from 0.5.x? The
+[Examples](/examples/) for more detailed usage patterns. Coming from 0.6.x? The
 [migration guide](/guide/migration) lists the breaking changes with before/after code.

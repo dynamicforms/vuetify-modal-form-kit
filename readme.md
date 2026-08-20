@@ -21,7 +21,7 @@ dialog for inline validation and submission.
 
 Full documentation is available at **https://docs.velis.si/dynamicforms/vuetify-modal-form-kit/**.
 
-Upgrading from 0.5.x? The
+Upgrading from 0.6.x? The
 [migration guide](https://docs.velis.si/dynamicforms/vuetify-modal-form-kit/guide/migration) lists every breaking
 change with before/after code.
 
@@ -36,9 +36,12 @@ npm install @dynamicforms/vuetify-modal-form-kit
 **Peer dependencies** (must be installed separately):
 
 ```bash
-npm install vue@^3.4 vuetify@^3.9 @dynamicforms/vue-forms@^0.6.0 @dynamicforms/vuetify-inputs@^0.8.1 \
+npm install vue@^3.5.2 vuetify@^3.9 @dynamicforms/vue-forms@^0.17.0 @dynamicforms/vuetify-inputs@^0.9.1 \
   lodash-es vue-markdown-render @mdi/font
 ```
+
+The package is ESM only, and `engines.node` is `>=22.12` - the release where Node supports `require()` of an
+ES module, which is how a CommonJS consumer reaches it.
 
 ### Register the plugin
 
@@ -103,7 +106,7 @@ Pass a `@dynamicforms/vue-forms` form group to add validation and structured inp
 ```typescript
 import { modal } from '@dynamicforms/vuetify-modal-form-kit'
 import { Field, Group, Validators } from '@dynamicforms/vue-forms'
-// buttons are rendered through <df-actions>, so they are vuetify-inputs' Action
+// vue-forms' own Action is a dialog button too; this one adds the responsive render options
 import { Action } from '@dynamicforms/vuetify-inputs'
 
 const form = new Group({
@@ -115,8 +118,19 @@ const form = new Group({
 await modal.message('Subscribe', 'Enter your email address:', { form })
 ```
 
-Each non-`Action` `Field` on the group is rendered as a `<df-input>`, labelled from its field name. Build the
-layout yourself with `FormBuilder` when you need anything else.
+Each non-`Action` `Field` on the group is rendered as a `<df-input>`. Its label is the one the field carries -
+`new Field({ value: '', label: 'Email address' })` - and the field name, read as Title Case, is what is left when
+it carries none. A field at `DisplayMode.SUPPRESS` is skipped, so it costs no empty row. A nested `Group` or
+`List` member is not laid out at all: it still validates and still counts towards `form.valid`, and the dialog
+warns once, naming it. Build the layout yourself with `FormBuilder` to render one.
+
+A dialog button is any `@dynamicforms/vue-forms` `Action`. `<df-actions>` draws it from the action's value, so the
+`Action` that `@dynamicforms/vuetify-inputs` exports is what an action needs in order to render responsively, as a
+text link or in a confirm / reject colour - not what it needs to be drawn at all.
+
+An action keeps answering for its own executor: `await action.execute()` resolves with what the action's own
+`ExecuteAction` chain returned, and the dialog settles alongside it. An `AbortEventHandlingException` is an
+answer rather than a rejection - `execute()` resolves with the exception, and the dialog stays open.
 
 ### Custom component dialog
 
@@ -134,7 +148,7 @@ All dialog methods accept an optional options object:
 {
   form?: Form.Group        // form for inline validation
   size?: DialogSize        // SMALL | MEDIUM | LARGE | X_LARGE
-  actions?: Record<string, Action>  // override or extend action buttons
+  actions?: Record<string, Action>  // override or extend action buttons; Action is vuetify-inputs'
   color?: string           // header background color
   icon?: string            // header icon (MDI name)
 }
@@ -155,7 +169,8 @@ content and never does.
 
 ## Programmatic Form Layout Builder
 
-`FormBuilder` lets you define a Vuetify grid layout (rows → columns → components) entirely in TypeScript, without writing any template markup. This is especially useful for backend-driven or dynamically generated forms.
+`FormBuilder` lets you define a Vuetify grid layout (rows → columns → components) entirely in TypeScript, without
+writing any template markup. This is especially useful for backend-driven or dynamically generated forms.
 
 ### Quick start — simple layouts
 
@@ -265,6 +280,7 @@ import {
   ModalView,
   DfModal,
   DialogSize,
+  defaultDialogSize,
 
   // Form layout builder
   FormBuilder,
@@ -278,6 +294,25 @@ import {
   // Plugin
   DynamicFormsModalFormKit,
 } from '@dynamicforms/vuetify-modal-form-kit'
+
+// types
+import type {
+  CloseablePromise,
+  DynamicFormsModalFormKitOptions,
+  FormActions,
+  ModalOptions,
+} from '@dynamicforms/vuetify-modal-form-kit'
+```
+
+That is the whole top-level surface. The rest of the layout tree - `Row`, `Column`, `Component`,
+`ComponentBuilderBase`, `ComponentBuilderInterface`, `VuetifyInputsComponentBuilder`, `FormBuilderName`,
+`SimpleProxy`, `TwelveDivisible` and the props and JSON types of rows, columns and components - is exported through
+the `FormLayout` namespace alone, which is what a custom component builder or renderer reaches for:
+
+```typescript
+import { FormLayout } from '@dynamicforms/vuetify-modal-form-kit'
+
+class MyBuilder extends FormLayout.VuetifyInputsComponentBuilder {}
 ```
 
 ---
@@ -286,10 +321,11 @@ import {
 
 | Dependency | Version |
 |---|---|
-| Vue | ^3.4 |
+| Node | >=22.12 |
+| Vue | ^3.5.2 |
 | Vuetify | ^3.9 |
-| @dynamicforms/vue-forms | ^0.6.0 |
-| @dynamicforms/vuetify-inputs | ^0.8.1 |
+| @dynamicforms/vue-forms | ^0.17.0 |
+| @dynamicforms/vuetify-inputs | ^0.9.1 |
 
 ---
 

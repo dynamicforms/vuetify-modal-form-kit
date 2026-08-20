@@ -1,25 +1,18 @@
 {
   "name": "@dynamicforms/vuetify-modal-form-kit",
   "private": false,
-  "version": "0.6.1",
+  "version": "0.7.0",
   "type": "module",
   "description": "Vue 3 + Vuetify 3 library providing a promise-based programmatic dialog API with a sequential dialog queue, a TypeScript fluent form layout builder (FormBuilder), and built-in keyboard shortcuts for dialog (Enter/Esc).",
   "author": "Jure Erznožnik",
   "files": [
     "dist/*"
   ],
-  "main": "dist/dynamicforms-vuetify-modal-form-kit.umd.cjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/dynamicforms-vuetify-modal-form-kit.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/dynamicforms-vuetify-modal-form-kit.umd.cjs"
-      }
+      "types": "./dist/index.d.ts",
+      "default": "./dist/dynamicforms-vuetify-modal-form-kit.js"
     },
     "./package.json": "./package.json"
   },
@@ -27,8 +20,10 @@
     "docs"
   ],
   "scripts": {
-    "build": "vite build && node -e \"require('fs').copyFileSync('dist/index.d.ts', 'dist/index.d.cts')\"",
+    "build": "vite build",
+    "prepack": "npm run build",
     "test": "vitest run --coverage",
+    "verify:artifact": "vitest run --config vitest.artifact.config.ts",
     "lint": "eslint src --fix && vue-tsc --noEmit",
     "lint:ci": "eslint src && vue-tsc --noEmit",
     "docs:dev": "npm run docs:dev -w docs",
@@ -55,30 +50,45 @@
   "bugs": {
     "url": "https://github.com/dynamicforms/vuetify-modal-form-kit/issues"
   },
+  "engines": {
+    "node": ">=22.12"
+  },
   "peerDependencies": {
-    "@dynamicforms/vue-forms": "^0.6.0",
-    "@dynamicforms/vuetify-inputs": "^0.8.1",
+    "@dynamicforms/vue-forms": "^0.17.0",
+    "@dynamicforms/vuetify-inputs": "^0.9.1",
     "@mdi/font": "^7.4.47",
-    "lodash-es": "^4.17.12",
-    "vue": "^3.4",
+    "lodash-es": "^4.17.21",
+    "vue": "^3.5.2",
     "vue-markdown-render": "^2.2.1",
     "vuetify": "^3.9"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/lodash-es": "^4.17.12",
-    "@types/node": "^24.5.2",
+    "@types/node": "^26.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.67.0",
+    "@typescript-eslint/parser": "^8.67.0",
     "@vitejs/plugin-vue": "^5",
     "@vitest/coverage-istanbul": "^3",
     "@vue/test-utils": "^2.2.4",
     "@vue/tsconfig": "^0.7.0",
-    "eslint-config-velis": "^2.0.12",
+    "eslint": "^10.4.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-config-velis": "^3.0.0",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-import-x": "^4.17.1",
+    "eslint-plugin-prettier": "^5.5.6",
+    "eslint-plugin-unicorn": "^73.0.0",
+    "eslint-plugin-vue": "^10.10.0",
     "jsdom": "^26.0.0",
+    "prettier": "^3.9.6",
     "rollup-plugin-visualizer": "^5.14.0",
     "typescript": "^5",
     "vite": "^5",
     "vite-plugin-dts": "^4",
     "vite-plugin-eslint": "^1.8.1",
     "vitest": "^3",
+    "vue-eslint-parser": "^10.4.1",
     "vue-tsc": "^2"
   }
 }

@@ -33,7 +33,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Lint
         run: npm run lint:ci
@@ -46,28 +46,70 @@ jobs:
 
       - name: Verify declaration output
         run: |
-          for f in dist/index.d.ts dist/index.d.cts; do
-            size=$(wc -c < "$f")
-            if [ "$size" -lt 10000 ]; then
-              echo "::error::$f is only $size bytes - declarations were rolled up empty"
-              exit 1
-            fi
-          done
+          size=$(wc -c < dist/index.d.ts)
+          if [ "$size" -lt 10000 ]; then
+            echo "::error::dist/index.d.ts is only $size bytes - declarations were rolled up empty"
+            exit 1
+          fi
           grep -q 'export declare class FormBuilder' dist/index.d.ts
+
+      - name: Verify the built artifact
+        run: npm run verify:artifact
 
       - name: Build docs
         run: npm run docs:build
 
       - name: Incremental coverage check
-        uses: velis74/incremental-coverage-check@v2
+        uses: velis74/incremental-coverage-check@v3
         with:
           coverage-files: coverage/coverage-final.json
-          # docs/ holds the VitePress site and its demo components - not library code, and not covered by
-          # vitest, whose coverage is scoped to src/
-          extra-ignore-patterns: docs/**
+          # Neither is library code, and neither is reached by vitest, whose coverage is scoped to src/:
+          # docs/ holds the VitePress site and its demo components, and scripts/ the helpers CI itself runs.
+          extra-ignore-patterns: |
+            docs/**
+            scripts/**
           log-level: INFO
           base-ref: ${{ github.base_ref }}
           head-ref: HEAD
           github-token: ${{ secrets.GITHUB_TOKEN }}
           pr-number: ${{ github.event.pull_request.number }}
-        if: github.event_name == 'pull_request'
+        # One report per pull request: the graded diff and the coverage file are the
+        # same on both Node versions, so the second run would only repeat the first.
+        if: github.event_name == 'pull_request' && matrix.node-version == 'lts/*'
+
+  peer-range:
+    name: Peer range (${{ matrix.edge }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        edge: [floor, latest]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Use Node.js lts/*
+        uses: actions/setup-node@v7
+        with:
+          node-version: 'lts/*'
+
+      # The lockfile pins what a developer resolved, which is what the job above needs and what leaves a peer
+      # released afterwards to be met first by whoever runs `npm update`. This job resolves the declared ranges
+      # afresh, at both ends, so that the promise `peerDependencies` makes is the one under test.
+      - name: Resolve the ${{ matrix.edge }} of every declared peer range
+        run: node scripts/install-peer-edge.mjs ${{ matrix.edge }}
+
+      - name: Type-check
+        run: npx vue-tsc --noEmit
+
+      - name: Run tests
+        run: npx vitest run
+
+      - name: Build library
+        run: npm run build
+
+      - name: Verify the built artifact
+        run: npm run verify:artifact

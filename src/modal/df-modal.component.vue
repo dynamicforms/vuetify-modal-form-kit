@@ -56,8 +56,8 @@
 <script setup lang="ts">
 import * as Form from '@dynamicforms/vue-forms';
 import { MessagesWidget } from '@dynamicforms/vue-forms';
-import { Action } from '@dynamicforms/vuetify-inputs';
-import { computed, onMounted, onUnmounted, watch } from 'vue';
+import { ActionRenderOptions } from '@dynamicforms/vuetify-inputs';
+import { computed, getCurrentInstance, onMounted, onUnmounted, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 
 import DialogSize from './dialog-size';
@@ -74,8 +74,9 @@ interface Props {
   color?: string;
   icon?: string;
   // Actions considered for the Enter (defaultConfirm) / Esc (defaultReject) keyboard shortcuts. Rendering them is
-  // still up to the `actions` slot - this prop only drives the keyboard handling.
-  actions?: Action[];
+  // still up to the `actions` slot - this prop only drives the keyboard handling. The flags are read off the
+  // action's value, which is where <df-actions> reads them too, so any vue-forms Action states them.
+  actions?: Form.Action[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -89,6 +90,7 @@ const props = withDefaults(defineProps<Props>(), {
   icon: undefined,
   actions: () => [],
 });
+const instance = getCurrentInstance();
 const display = useDisplay();
 const size = computed(() => props.size);
 
@@ -148,28 +150,41 @@ watch(
   { immediate: true },
 );
 
-// The keyboard reaches exactly the actions the user could click: <df-actions> disables an action that is not
-// enabled and renders anything below FULL as hidden or invisible.
-function isReachable(action: Action) {
-  return action.enabled && action.visibility === Form.DisplayMode.FULL;
+// defaultConfirm / defaultReject live on the action's value, not on a class: <df-actions> reads them there and so
+// does this, which is what lets a dialog take an action of either class.
+function renderOptions(action: Form.Action): ActionRenderOptions {
+  return (action.value ?? {}) as ActionRenderOptions;
+}
+
+// The keyboard reaches an action that is rendered at FULL, that is enabled all the way up - `effectiveEnabled` is
+// false where the action or any container above it is disabled - and that is not already running. `busy` is what
+// keeps a held-down Enter from starting a second run of a handler that has yet to settle.
+function isReachable(action: Form.Action) {
+  return action.effectiveEnabled && action.visibility === Form.DisplayMode.FULL && !action.busy;
+}
+
+// execute() is asynchronous and this is a document listener, so nothing wraps it the way Vue wraps a template
+// handler: a rejecting handler would leave an unhandled rejection. The error goes where a template handler's
+// would have gone.
+function run(action: Form.Action, e: KeyboardEvent) {
+  e.preventDefault();
+  action.execute(e).catch((error: unknown) => {
+    const handler = instance?.appContext.config.errorHandler;
+    if (handler) handler(error, instance?.proxy ?? null, 'df-modal keyboard shortcut');
+    else console.error(error);
+  });
 }
 
 function onKeydown(e: KeyboardEvent) {
-  if (!isShown.value || e.defaultPrevented) return;
+  if (!isShown.value || e.defaultPrevented || e.repeat) return;
   if (e.key === 'Enter') {
     const target = e.target as HTMLElement;
     if (target.tagName === 'TEXTAREA' || target.isContentEditable) return;
-    const action = props.actions.find((a) => a.defaultConfirm && isReachable(a));
-    if (action) {
-      e.preventDefault();
-      action.execute(e);
-    }
+    const action = props.actions.find((a) => renderOptions(a).defaultConfirm && isReachable(a));
+    if (action) run(action, e);
   } else if (e.key === 'Escape') {
-    const action = props.actions.find((a) => a.defaultReject && isReachable(a));
-    if (action) {
-      e.preventDefault();
-      action.execute(e);
-    }
+    const action = props.actions.find((a) => renderOptions(a).defaultReject && isReachable(a));
+    if (action) run(action, e);
   }
 }
 

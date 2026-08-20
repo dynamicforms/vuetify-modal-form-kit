@@ -58,9 +58,8 @@ const message = computed(() => currentModal.value?.message);
 const messageClass = computed(() => (message.value ? message.value.extraClasses : undefined));
 const actionsArray = computed(() => Object.values(currentModal.value?.actions ?? {}));
 
-// Helper function to convert fieldName to a readable label
+// The fallback label, for a field that carries none: camelCase or snake_case read as Title Case.
 function generateLabel(fieldName: string): string {
-  // Convert camelCase or snake_case to Title Case
   return fieldName
     .replace(/([A-Z])/g, ' $1') // Add space before capital letters
     .replace(/_/g, ' ') // Replace underscores with spaces
@@ -70,6 +69,21 @@ function generateLabel(fieldName: string): string {
     .join(' ');
 }
 
+// Once per form, not once per recomputation: the layout is rebuilt whenever a member's visibility or extended
+// properties change, and the warning states something about the form that is true for as long as it exists.
+const warnedForms = new WeakSet<Form.Group>();
+
+function warnUnrendered(form: Form.Group, names: string[]) {
+  if (!names.length || warnedForms.has(form)) return;
+  warnedForms.add(form);
+  console.warn(
+    `<modal-view> lays out the Field members of the form it is given, one <df-input> each. It has no layout for ` +
+      `${names.join(', ')}, so ${names.length > 1 ? 'those members are' : 'that member is'} not on screen - while ` +
+      'still validating, and still counted by form.valid. Pass a FormBuilder layout of your own to render ' +
+      'nested groups and lists.',
+  );
+}
+
 // Build form layout from form fields
 const formLayout = computed(() => {
   if (!currentModal.value?.form) return null;
@@ -77,21 +91,28 @@ const formLayout = computed(() => {
   const form = currentModal.value.form;
   const formBuilder = new FormBuilder();
   const builder = formBuilder.simple();
+  const unrendered: string[] = [];
 
-  // Iterate through form fields and add them to the layout
   Object.entries(form.fields).forEach(([fieldName, field]) => {
-    // Skip Action fields (they are rendered in the actions slot)
+    // Actions are rendered in the actions slot
     if (field instanceof Form.Action) return;
 
-    // Add field to layout using df-input component (default for Field)
     if (field instanceof Form.Field) {
+      // a suppressed field renders nothing, so a row and a column of its own would be an empty gutter gap
+      if (field.visibility === Form.DisplayMode.SUPPRESS) return;
       builder.dfInput({
-        label: generateLabel(fieldName),
+        // the field's own label wins over the one read off its name: an element carries its presentation, and
+        // the name is only what is left when it carries none
+        label: field.extra.label ?? generateLabel(fieldName),
         control: field,
       });
+      return;
     }
+
+    unrendered.push(fieldName);
   });
 
+  warnUnrendered(form, unrendered);
   return formBuilder;
 });
 

@@ -1,4 +1,4 @@
-import { DisplayMode, ExecuteAction } from '@dynamicforms/vue-forms';
+import { DisplayMode, ExecuteAction, Group } from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
 import { mount } from '@vue/test-utils';
 import { vi } from 'vitest';
@@ -150,6 +150,89 @@ describe('DfModal', () => {
 
       expect(disabled.spy).not.toHaveBeenCalled();
       expect(hidden.spy).not.toHaveBeenCalled();
+      wrapper.unmount();
+    });
+
+    it('does not reach an action inside a disabled container', () => {
+      const inner = actionWithSpy({ label: 'Save', defaultConfirm: true });
+      // the action itself is untouched: what makes it unreachable is the section above it
+      const section = new Group({ save: inner.action });
+      section.enabled = false;
+      expect(inner.action.enabled).toBe(true);
+
+      const wrapper = mountModal({ modelValue: true, dialogId, actions: [inner.action] });
+
+      press('Enter');
+      expect(inner.spy).not.toHaveBeenCalled();
+      wrapper.unmount();
+    });
+
+    it('starts one run while a handler has yet to settle', async () => {
+      const action = new Action({ value: { label: 'Save', defaultConfirm: true } });
+      let release: () => void = () => {};
+      const spy = vi.fn();
+      action.registerAction(
+        new ExecuteAction(() => {
+          spy();
+          return new Promise<void>((resolve) => {
+            release = resolve;
+          });
+        }),
+      );
+
+      const wrapper = mountModal({ modelValue: true, dialogId, actions: [action] });
+
+      press('Enter');
+      await nextTick();
+      press('Enter');
+      expect(spy).toHaveBeenCalledTimes(1);
+
+      release();
+      await nextTick();
+      wrapper.unmount();
+    });
+
+    it('routes a failing handler to the app error handler instead of leaving a rejection unhandled', async () => {
+      const failure = new Error('handler blew up');
+      const action = new Action({ value: { label: 'Save', defaultConfirm: true } });
+      action.registerAction(
+        new ExecuteAction(() => {
+          throw failure;
+        }),
+      );
+
+      const errorHandler = vi.fn();
+      const wrapper = mount(DfModal, {
+        props: { modelValue: true, dialogId, actions: [action] },
+        global: { stubs, plugins: [createVuetify()], config: { errorHandler } },
+      });
+
+      press('Enter');
+      await nextTick();
+      await nextTick();
+
+      expect(errorHandler).toHaveBeenCalledWith(failure, expect.anything(), 'df-modal keyboard shortcut');
+      wrapper.unmount();
+    });
+
+    it('reports a failing handler on the console where the app declares no error handler', async () => {
+      const failure = new Error('handler blew up');
+      const action = new Action({ value: { label: 'Save', defaultConfirm: true } });
+      action.registerAction(
+        new ExecuteAction(() => {
+          throw failure;
+        }),
+      );
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const wrapper = mountModal({ modelValue: true, dialogId, actions: [action] });
+
+      press('Enter');
+      await nextTick();
+      await nextTick();
+
+      expect(error).toHaveBeenCalledWith(failure);
+      error.mockRestore();
       wrapper.unmount();
     });
 

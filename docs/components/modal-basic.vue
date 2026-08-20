@@ -116,7 +116,7 @@ async function showConfirmation() {
 // Form dialog
 async function showFormDialog() {
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  const emailAction = new Validators.Pattern(emailPattern);
+  const emailFormat = new Validators.Pattern(emailPattern);
 
   // Marking an action defaultConfirm/defaultReject also drives its color (primary/secondary) and wires it
   // to the Enter/Esc keyboard shortcuts - see <df-modal>'s `actions` prop.
@@ -125,13 +125,16 @@ async function showFormDialog() {
 
   // Create a form with validation
   const form = new Group({
+    // the field carries its own label, and the dialog draws it
     name: new Field({
       value: '',
+      label: 'Full name',
       validators: [new Validators.Required()],
     }),
+    // this one carries none, so the dialog labels it from the field name: 'Email'
     email: new Field({
       value: '',
-      validators: [new Validators.Required(), emailAction],
+      validators: [new Validators.Required(), emailFormat],
     }),
     // Add action buttons
     submit: submitAction,
