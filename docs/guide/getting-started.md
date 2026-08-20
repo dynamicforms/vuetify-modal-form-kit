@@ -6,9 +6,12 @@
 npm install @dynamicforms/vuetify-modal-form-kit
 ```
 
-The library declares [`@dynamicforms/vue-forms`](:vue-forms:) `^0.6.0`,
-[`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) `^0.8.1` and Vuetify `^3.9` among its peer
+The library declares [`@dynamicforms/vue-forms`](:vue-forms:) `^0.17.0`,
+[`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) `^0.9.0`, Vue `^3.5.2` and Vuetify `^3.9` among its peer
 dependencies; install them alongside it if they are not already in your project.
+
+The package is ESM only and `engines.node` is `>=22`. A CommonJS consumer reaches it through `require()` of an ES
+module, which Node supports from 22.12.
 
 In your `main.ts`:
 ```typescript
@@ -80,4 +83,4 @@ form.simple(2)
 </template>
 ```
 
-Coming from 0.5.x? The [migration guide](/guide/migration) lists the breaking changes with before/after code.
+Coming from 0.6.x? The [migration guide](/guide/migration) lists the breaking changes with before/after code.

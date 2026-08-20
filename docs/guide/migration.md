@@ -8,6 +8,257 @@ exists.
 
 <!-- New releases go directly below this comment, above the previous one, as `## Upgrading to vX.Y.Z (from vA.B.x)`. -->
 
+## Upgrading to v0.7.0 (from v0.6.x)
+
+Both peers move at once — eleven releases of `@dynamicforms/vue-forms`, one of `@dynamicforms/vuetify-inputs` — and
+the package becomes ESM-only. Nothing this library exports is renamed or removed, so most projects compile
+untouched; the work is in your own use of the two peers, plus six points on this library's own surface, three of
+which are about the actions that settle a dialog. There is a [checklist](#checklist-for-0-7-0) at the end of this
+section.
+
+### The peer ranges and the node floor
+
+| Peer | Before | Now |
+|---|---|---|
+| `@dynamicforms/vue-forms` | `^0.6.0` | `^0.17.0` |
+| `@dynamicforms/vuetify-inputs` | `^0.8.1` | `^0.9.0` |
+| `vue` | `^3.4` | `^3.5.2` |
+
+`engines.node` is `>=22`, where the package declared none. The vue and node floors are vue-forms' own, which
+vuetify-inputs 0.9.0 and this release both restate.
+
+The two peers are one upgrade: vuetify-inputs 0.9.0 requires vue-forms 0.17.0, and its 0.8.x line cannot be combined
+with vue-forms 0.17.0. Installing them one at a time leaves npm reporting unsatisfiable peers.
+
+```json
+{
+  "dependencies": {
+    "@dynamicforms/vue-forms": "^0.17.0",
+    "@dynamicforms/vuetify-inputs": "^0.9.0",
+    "@dynamicforms/vuetify-modal-form-kit": "^0.7.0",
+    "vue": "^3.5.2",
+    "vuetify": "^3.9"
+  }
+}
+```
+
+### Your own use of the peers migrates at the same time
+
+This library re-exports none of the peer API your application builds forms out of: every `Field`, `Group`, `List`,
+`Action` and validator is vue-forms' or vuetify-inputs', and both cross a breaking range here. Work through
+[the vue-forms migration guide](:vue-forms:/guide/migration.html), which is written for exactly this jump, and
+[the vuetify-inputs migration guide](:vuetify-inputs:/guide/migration.html). The sections below cover only what
+those two cannot know about, which is this package's own surface.
+
+Four vue-forms breaks are worth searching for before you upgrade rather than after. The first three announce
+nothing at all — no log, no throw — so the code keeps compiling and stops working; the fourth is a compile error:
+
+- **`watch(element, cb)` no longer fires.** An element is no longer a Vue proxy of itself, so the deep traversal a
+  reactive watch source starts stops immediately. Watch a getter over what you read: `watch(() => field.value, cb)`.
+- **`readonly(element)` protects nothing.** It hands the element straight back, and a write through the result
+  reaches the element. Hand out `element.value`, or a `computed` over it.
+- **`isEqual` over two elements no longer compares their data.** It answered `true` for any two elements of the
+  same class, and answers `false` now unless they are the same instance. Compare `a.value` with `b.value`.
+- **`clone()` is `bind(data, overrides)`.** The data comes first: `f.clone({ value: x, label: 'Name' })` is
+  `f.bind(x, { label: 'Name' })`. The type checker finds every call site.
+
+Two changes reach dialog code in particular, both through the `Action` a dialog is handed. `Action.execute()` is
+asynchronous from vue-forms 0.9.0 — `await` it or attach a `.catch()` outside a template — and vuetify-inputs 0.9.0
+leaves `action.label` / `action.icon` as the peer base class's plain value, so a read that wanted the value filtered
+by `showLabel` / `showIcon` is `action.renderedLabel` / `action.renderedIcon`.
+
+### The package is ESM-only
+
+There is one build and one entry point. `main`, the `require` export condition, the UMD artifact and the
+`dist/index.d.cts` that went with them are gone, and `build.target` is `es2022`.
+
+```typescript
+// unchanged: an import resolves exactly as it did
+import { modal, FormBuilder, ModalView } from '@dynamicforms/vuetify-modal-form-kit';
+```
+
+A CommonJS file reaches the same build through `require()` of an ES module, which node supports from 22.12.
+`engines.node` is `>=22`, so a CommonJS consumer needs 22.12 or newer:
+
+```javascript
+const { modal } = require('@dynamicforms/vuetify-modal-form-kit');
+```
+
+What the `require` condition pointed at could not be loaded in any case. The UMD bundle resolves its peers with
+`require()`, and `@dynamicforms/vue-forms` is ESM-only, so the first line of the bundle fails. The `<script>` tag
+path was never there either: the build named the browser global `dynamicforms-vuetify-modal-form-kit.[name]`
+literally, `[name]` included. Nothing replaces that global — load the ESM build through a bundler or a
+`<script type="module">`.
+
+### A dialog settles on the action of the form binding it was opened over
+
+A registration belongs to an element's *declaration* in vue-forms 0.16 and later, so one chain serves every binding
+of that element and every dialog opened over one. The resolver this library attaches states that: it settles the
+dialog for the element it was registered on and for no sibling binding of it, only while its own dialog is the one
+on screen, and it is removed with `unregisterAction()` when the dialog settles.
+
+The visible consequences:
+
+- **Repeated openings leave nothing behind.** A module-level `Action`, or a form kept across openings, ends each
+  dialog with exactly the handlers it had before that dialog opened. Where an application built a fresh `Action`
+  per opening, or cloned the form, to keep resolvers from stacking up, that work can go.
+- **A sibling binding settles nothing.** The resolver answers for the element the dialog holds; executing another
+  binding of the same declaration — a row of a `List` built from it, say — passes straight down the chain.
+- **`await action.execute()` answers what the caller's own chain returned.** The resolver returns the chain's
+  answer instead of ending on `undefined`.
+
+```typescript
+const save = new Action({ value: { label: 'Save' } });
+save.registerAction(
+  new Form.ExecuteAction(async (field, supr, ...params) => {
+    await supr(field, ...params);
+    return api.save(form.value);   // the record the backend answered with
+  }),
+);
+
+const closed = modal.message('Edit', 'change what you need', { form, actions: { save } });
+const record = await save.execute();   // the record; it was undefined
+await closed;                          // 'save'
+```
+
+- **An `AbortEventHandlingException` is an answer, not a rejection.** A handler that raises one ends the run and
+  leaves the dialog open, and `execute()` resolves with the exception. `execute()` answered `undefined` before,
+  whatever the run did: it discarded the chain's answer, and the chain answered `null` for an abort and for a run
+  that reached no handler alike, so a handler that refused to close the dialog could not report why.
+
+```typescript
+const save = new Action({ value: { label: 'Save' } });
+save.registerAction(new Form.ExecuteAction(async (field, supr, ...params) => {
+  if (!form.valid) throw new Form.AbortEventHandlingException('Fix the highlighted fields');
+  return supr(field, ...params);
+}));
+
+const closed = modal.message('Edit', 'change what you need', { form, actions: { save } });
+const answer = await save.execute();
+if (answer instanceof Form.AbortEventHandlingException) showToast(answer.message);   // the dialog is still open
+```
+
+The dialog's own resolver is what answers with the exception, and it stands outside every handler registered before
+the dialog opened. Register the aborting handler while the dialog is already open and it stands outside the resolver
+instead: its abort reaches nothing that catches it, and `execute()` rejects.
+
+### A bare vue-forms `Action` in `options.form` is not rendered
+
+`<df-actions>` draws the dialog's buttons, and it draws from vuetify-inputs' `Action` — it reads the
+breakpoint-resolved render options only that class carries. An `Action` of vue-forms' own that reaches
+`options.form` used to be cast into the rendered set. It is left out of the buttons now, with a `console.warn`
+naming the field. Executing it still settles the dialog.
+
+```typescript
+// before: handed to <df-actions>, which threw: it calls getBreakpointValue() on every action it draws
+import * as Form from '@dynamicforms/vue-forms';
+const form = new Form.Group({ close: new Form.Action({ value: { label: 'Close' } }) });
+
+// after
+import { Action } from '@dynamicforms/vuetify-inputs';
+const form = new Form.Group({ close: new Action({ value: { label: 'Close' } }) });
+```
+
+Whether the dialog adds its own default buttons is decided by the same rule: only an `Action` `<df-actions>` can
+draw counts, alongside anything in `options.actions`. A form whose only action is a bare vue-forms one therefore
+opens with the dialog's own `Yes` / `No` or `Close`, where the button row used to throw
+`TypeError: getBreakpointValue is not a function` as it drew, leaving nothing on screen that could settle it.
+
+### Enter and Esc read `effectiveEnabled` and `busy`
+
+The keyboard reaches an action that is rendered at `DisplayMode.FULL`, that is enabled all the way up, and that is
+not already running.
+
+```typescript
+const buttons = new Form.Group({ save: new Action({ value: { label: 'Save', defaultConfirm: true } }) });
+buttons.enabled = false;
+
+buttons.fields.save.enabled;            // true - what was written to the action
+buttons.fields.save.effectiveEnabled;   // false - and what Enter now asks
+```
+
+`effectiveEnabled` is `false` where the action or any container above it is disabled, so Enter and Esc no longer
+execute an action inside a disabled group. `busy` is `true` from the call to `execute()` until the run settles,
+which is what keeps a held-down Enter from starting a second run of a handler that has yet to finish; a repeated
+`keydown` is dropped for the same reason.
+
+`<df-actions>` still disables a button from the action's own `enabled`, so a click and the keyboard disagree for an
+action inside a disabled container: the button is live and Enter is not. The keyboard is right and the peer is to
+follow; until it does, disable such an action itself rather than relying on the container.
+
+`execute()` is asynchronous, and a document listener gets no Vue wrapper around it. A handler that rejects is
+routed to `app.config.errorHandler`, the way a rejection from a template handler is, and to `console.error` where
+the application installs none.
+
+### The generated dialog layout reads a field's own label
+
+`modal.message()` and `modal.yesNo()` build a layout for the form they are given, one `<df-input>` per `Field`. The
+label on that input is the field's own where it carries one, and is derived from the field name only where it does
+not.
+
+```typescript
+const form = new Form.Group({
+  vatNumber: new Form.Field({ value: '', label: 'VAT ID' }),
+  city: new Form.Field({ value: '' }),
+});
+// 'VAT ID', which used to render as 'Vat Number'; and 'City', from the name as before
+```
+
+vuetify-inputs 0.9.0 declares `label` on vue-forms' `Extras`, so every element carries one, and a prop wins over
+what the element carries — the generated prop overrode the label the caller had declared. An application that set
+`label` through `setExtendedValues()` or in an element's constructor sees it on screen now, wherever a name-derived
+label used to be. Where the derived label is what you want, drop the `label` from the field.
+
+Two more things about the generated layout:
+
+- A member at `DisplayMode.SUPPRESS` is skipped entirely. It renders nothing, so a row and a column of its own left
+  a gutter-sized gap.
+- A `Group` or `List` member gets a `console.warn` naming it, once per form. The generated layout has no row for a
+  nested element, and such a member is still validated and still counted by `form.valid` — a dialog that will not
+  close over an error nothing on screen shows. Pass a `FormBuilder` layout of your own to render one.
+
+### A `visibility` naming no `DisplayMode` constant throws where the component renders
+
+vuetify-inputs 0.9.0 resolves the `visibility` prop through vue-forms' `DisplayMode.fromAny`, which reads a name
+case-insensitively and refuses a value that names no constant — it throws from vue-forms 0.15, where it fell back to
+`DisplayMode.FULL`. A misspelling, and a mode a backend knows that this version does not, used to render the element
+fully and say nothing.
+
+This reaches layouts rather than application templates: `Component.fromJSON()` passes `props` through by reference
+and never inspects it, which is what lets a backend send a whole layout. A `visibility` in that payload arrives at
+the component untouched.
+
+```typescript
+const mode = Form.DisplayMode.isDefined(payload.visibility)
+  ? Form.DisplayMode.fromAny(payload.visibility)
+  : Form.DisplayMode.FULL;
+```
+
+Sanitise it where the payload is read, on the way into the layout, if an unknown mode has to be survivable.
+
+### Checklist for 0.7.0
+
+1. Upgrade both peers in one step — `@dynamicforms/vue-forms@^0.17.0`, `@dynamicforms/vuetify-inputs@^0.9.0` — with
+   `vue@^3.5.2`, and run on node 22 or newer.
+2. Search for the three silent breaks first: `watch(` with an element as the source, `readonly(` over an element,
+   and `isEqual` over two elements. The type checker finds the `clone(` → `bind(` calls for you.
+3. Work through [the vue-forms](:vue-forms:/guide/migration.html) and
+   [the vuetify-inputs](:vuetify-inputs:/guide/migration.html) migration guides for the rest of your own code.
+4. `await` or `.catch()` every `Action.execute()` outside a template, and rename the `action.label` / `action.icon`
+   reads that wanted the value filtered by `showLabel` / `showIcon`.
+5. Drop any per-opening cloning of actions or forms that was there to keep dialog resolvers from accumulating.
+6. Replace `new Form.Action(` with vuetify-inputs' `new Action(` for every action you hand to a dialog through
+   `options.form`, and check the console for the warning that names the ones you missed.
+7. Re-check the dialogs whose buttons sit in a disabled group: Enter and Esc no longer reach them.
+8. Load every dialog that hands `modal.message()` a form: a `label` your elements carry is on screen now, in place
+   of the label derived from the field name.
+9. Look for the warning about `Group` and `List` members in the forms you pass to `modal.*`, and give those a
+   `FormBuilder` layout.
+10. Sanitise `visibility` where a layout arrives from a backend: a value naming no `DisplayMode` constant throws
+    where the component renders.
+11. If anything of yours consumes this package through `require` or a `<script>` tag, move it to an `import`. The
+    build is ESM-only.
+
 ## Upgrading to v0.6.0 (from v0.5.x)
 
 This release follows `@dynamicforms/vue-forms` 0.6.0 and `@dynamicforms/vuetify-inputs` 0.8.1. Nothing this library

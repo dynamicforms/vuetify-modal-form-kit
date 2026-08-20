@@ -57,6 +57,24 @@ shown dialog:
 - **Escape** executes the action with `defaultReject` set to `true`. The dialog is `persistent`, so nothing
   happens on Escape if no action is flagged `defaultReject`.
 
+A key held down repeats, and the repeats are ignored: only the first `keydown` of a press starts a run.
+
+An action is reached when all three hold:
+
+| Read | Reached when |
+|---|---|
+| `effectiveEnabled` | `true` - the action itself is enabled, and so is every container above it. A `Group` set to `enabled = false` therefore takes its actions out of the keyboard's reach without each one being disabled by hand. |
+| `visibility` | `DisplayMode.FULL`. An action at `HIDDEN`, `INVISIBLE` or `SUPPRESS` is not something the user can see, so it is not something Enter or Esc reaches either. |
+| `busy` | `false`. `busy` is `true` from the call to `execute()` until that run settles, so a second Enter cannot start a second run of a handler that has yet to finish. |
+
+`<df-actions>` disables its button on the action's own `enabled` and does not ask `busy`, so the two paths
+disagree over an action inside a disabled container: the keyboard leaves it alone, a click still runs it. The peer
+library's rendering is the side that follows.
+
+`execute()` is asynchronous, and a document listener gets none of the wrapping Vue puts around a template
+handler. A handler that rejects is therefore routed here to `app.config.errorHandler`, with
+`'df-modal keyboard shortcut'` as the info string, and to `console.error` where the app declares no handler.
+
 Set `defaultConfirm` / `defaultReject` on the action's `value`, the same way the `modal` service does internally
 (they also drive that action's color - `primary` / `secondary` - in `<df-actions>`, see
 [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:)):
@@ -67,7 +85,9 @@ const loginAction = new Action({ value: { name: 'login', label: 'Log in', defaul
 
 The `actions` prop and the `actions` slot are fed the *same* `Action` instances - pressing Enter/Esc calls
 `.execute()` on exactly the object a click on the matching `<df-actions>` button would call it on, so there's no
-separate "keyboard action" concept to keep in sync.
+separate "keyboard action" concept to keep in sync. `Action` is
+[`@dynamicforms/vuetify-inputs`](:vuetify-inputs:)': it is what carries `defaultConfirm`, `defaultReject` and the
+breakpoint-resolved options `<df-actions>` draws from.
 
 This applies equally to `<df-modal>` used directly in a template (see
 [Template Dialog](/examples/dialog-template#keyboard-shortcuts) for a full worked example) and to dialogs opened

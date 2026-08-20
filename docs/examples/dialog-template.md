@@ -93,8 +93,11 @@ example above. See the [`<df-modal>` API Reference](/api/df-modal) for the full 
 Enter-to-confirm / Esc-to-cancel works here too, the same as with dialogs opened through `modal.*` - `<df-modal>`
 handles it internally, as long as you pass the same `Action[]` you render through `<df-actions>` to its `actions`
 prop, with one action flagged `defaultConfirm` and (optionally) one `defaultReject`. Try it in the demo above:
-focus a field and press Enter to log in, or Esc to cancel. See [`<df-modal>`](/api/df-modal#keyboard-shortcuts) for
-details.
+focus a field and press Enter to log in, or Esc to cancel.
+
+The keyboard reaches an action that is rendered at `DisplayMode.FULL`, whose `effectiveEnabled` is `true` - so a
+disabled section takes its actions out of reach - and that is not already running, which is what `busy` says. See
+[`<df-modal>`](/api/df-modal#keyboard-shortcuts) for the full rules.
 
 <script setup>
 import ModalTemplate from '../components/modal-template.vue';

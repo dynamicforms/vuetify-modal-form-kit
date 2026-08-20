@@ -1,6 +1,7 @@
 # Modal Dialog Component
 
-The Modal Dialog component provides a powerful alternative to standard Vuetify dialogs with additional features like dialog stacking, Promise-based API, and integration with DynamicForms.
+The Modal Dialog component provides a powerful alternative to standard Vuetify dialogs with additional features
+like dialog stacking, Promise-based API, and integration with DynamicForms.
 
 ## Basic Usage
 
@@ -21,7 +22,10 @@ A message dialog, a yes/no confirmation, a validated form dialog, and sized dial
   clicked.
 - **Form dialogs** - pass a [`@dynamicforms/vue-forms`](:vue-forms:) `Group` (with validation) as `options.form`;
   its `Action` fields (e.g. `submit`, `cancel`) become the dialog's buttons, and the returned promise resolves to
-  whichever one was clicked.
+  whichever one was clicked. Those actions are [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:)' `Action`, the
+  class `<df-actions>` draws; a bare vue-forms `Action` is warned about and left out of the buttons. Each `Field`
+  is laid out as a `<df-input>` carrying the field's own label, and a nested `Group` or `List` member is not laid
+  out at all - see [`<modal-view>`](/api/modal-view#the-generated-layout).
 - **Custom components** - `modal.custom('Title', componentName, componentProps)` renders any registered component
   as the dialog body instead of a message/form.
 - **Sizing** - `options.size` picks `DialogSize.SMALL` / `MEDIUM` / `LARGE` / `X_LARGE`, each of which goes

@@ -5,6 +5,74 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-08-20
+
+### Changed (breaking)
+
+- The peer dependencies move to `@dynamicforms/vue-forms` `^0.17.0`, `@dynamicforms/vuetify-inputs` `^0.9.0` and `vue`
+  `^3.5.2`, and `engines.node` is `>=22`. The four go together: vuetify-inputs 0.9.0 requires vue-forms 0.17.0, and the
+  vue and node floors are what those two libraries themselves demand. Nothing this library exports was renamed or
+  removed; the work is in the consuming application's own use of the peers, which
+  [the migration guide](/guide/migration) points at.
+- The package is ESM-only. The UMD artifact, the `main` field, the `require` export condition and `dist/index.d.cts`
+  are gone, and with the UMD the `window` global it defined, for which there is no replacement. Neither entry point it
+  named could be loaded. Loaded through `require()` it requires `@dynamicforms/vue-forms`, and that package has shipped
+  no CommonJS build since its 0.12.0. The script-tag path put the library at
+  `window['dynamicforms-vuetify-modal-form-kit']['[name]']`, because `lib.name` was written with a `[name]` placeholder
+  that nothing interpolates, and read every peer off a global none of them defines. A CommonJS consumer reaches the ESM
+  build through `require()` of an ES module, which node supports from 22.12. A TypeScript consumer that emits CommonJS
+  needs `moduleResolution: nodenext` on TypeScript 5.8 or later, which is where `require()` of an ES module is typed;
+  `node16` reports `TS1479`, which is what `dist/index.d.cts` answered. `build.target` is `es2022`.
+- An `Action` declared on `options.form` becomes a dialog button only when it is the `Action` that
+  `@dynamicforms/vuetify-inputs` exports. `<df-actions>` resolves every button it draws through
+  `getBreakpointValue()`, which only that class declares. A bare `@dynamicforms/vue-forms` `Action` is left out of the
+  buttons, with a `console.warn` naming the field and stating which `Action` to declare, and executing it still settles
+  the dialog. What decides whether the dialog adds its own default buttons is whether the caller states a button
+  `<df-actions>` can draw, so a form carrying nothing but a bare `Action` opens with the dialog's own default buttons.
+  It was cast into the rendered set before, where `<df-actions>` threw
+  `TypeError: action.getBreakpointValue is not a function` as it drew the buttons.
+
+### Added
+
+- `<modal-view>` warns, once per form, about a member of the form it has no layout for. The layout it generates is one
+  `<df-input>` per `Field`; a nested `Group` or `List` is not on screen, while still validating and still counted by
+  `form.valid`. The warning names the members and points at passing a `FormBuilder` layout of your own.
+- `scripts/verify-artifact.mjs`, which CI runs after the build. It imports the built ESM artifact, asserts the export
+  list and the members of the `FormLayout` namespace, and exercises the fluent builder, a breakpoint and the JSON round
+  trip. The specs import `src/`, so this is the only thing that loads what the package publishes.
+- A `prepack` script that builds the package, so `npm pack` and `npm publish` ship what the current source compiles to.
+
+### Fixed
+
+- Executing an action settles the dialog it was opened into and no other. A registration belongs to an element's
+  declaration, so one action chain serves every binding of that element and every dialog opened over one: the resolver
+  answers only for the element it was registered on, and only while its own dialog is the one on screen. Two dialogs
+  opened over two bindings of a single form each settle on their own.
+- Nothing accumulates on the caller's actions. The resolver is dropped with `unregisterAction()` when the dialog
+  settles. Opening N dialogs over the same `Action` instance - a module-level action, or a form kept across openings -
+  used to leave N handlers registered on it, each holding a settled promise and a dead dialog id, and all of them ran
+  on every later click.
+- `await action.execute()` answers what the action's own chain returned. The resolver awaited the chain and returned
+  nothing, so an executor's return value never reached the caller.
+- An `AbortEventHandlingException` is an answer. `execute()` resolves with the exception rather than rejecting on it,
+  the run ends, and the dialog stays open - an action that refuses to settle the dialog states so by aborting.
+- A failing keyboard shortcut reaches `app.config.errorHandler`, with `df-modal keyboard shortcut` as its context.
+  `execute()` is asynchronous and the Enter/Esc listener is on the document, so nothing wraps it the way Vue wraps a
+  template handler and a rejecting handler surfaced as an unhandled rejection.
+- Enter and Esc reach an action that is enabled all the way up, not one that merely carries `enabled` itself.
+  Reachability reads `effectiveEnabled`, which is false where the action or any container above it is disabled. Note
+  that `<df-actions>` still disables its buttons on each action's own `enabled`, so a click reaches an action inside a
+  disabled container where the keyboard does not; the two agree again once the peer follows.
+- A held Enter starts one run. `onKeydown` returns on a repeat event, and an action that is still running is
+  unreachable while `busy`, so the second keystroke no longer starts a second run of a handler that has yet to settle.
+- The generated layout keeps a label the element carries. `@dynamicforms/vuetify-inputs` 0.9.0 declares `label` on
+  vue-forms' `Extras`, and a prop wins over what the element carries, so a generated `label` prop would override the
+  one the caller declared on the field. The name-derived label is stated only for a field that carries none.
+- A form member at `DisplayMode.SUPPRESS` is left out of the generated layout. It rendered nothing while still taking
+  a row and a column of its own, which reached the screen as an empty gutter gap.
+- `<component-render>` resolves the nested-form renderer in a `computed`. It read the `components` map once during
+  setup, so a map that gains the renderer afterwards left the nested form rendering `undefined`.
+
 ## [0.6.1] - 2026-08-16
 
 ### Fixed
