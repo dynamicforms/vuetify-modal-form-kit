@@ -41,13 +41,12 @@ export default defineConfig({
     ],
   },
   build: {
-    target: 'es2015',
+    target: 'es2022',
     sourcemap: true,
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
-      formats: ['umd', 'es'],
+      formats: ['es'],
       fileName: 'dynamicforms-vuetify-modal-form-kit',
-      name: 'dynamicforms-vuetify-modal-form-kit.[name]',
     },
     rollupOptions: {
       external: [
@@ -59,14 +58,12 @@ export default defineConfig({
         'vuetify',
         /^vuetify\/.*/,
       ],
-      output: {
-        globals: (id: string) => id, // all external modules are currently not aliased to anything but their own names
-      }
     }
   },
   test: {
     coverage: {
-      provider: 'istanbul',  // for some reason v8 was giving Serialized Error: { code: 'ERR_INSPECTOR_NOT_CONNECTED' }
+      // istanbul, not v8: the v8 provider reports `ERR_INSPECTOR_NOT_CONNECTED` over this suite
+      provider: 'istanbul',
       include: [
         'src/**/*'
       ],

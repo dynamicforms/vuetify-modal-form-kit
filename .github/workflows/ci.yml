@@ -46,20 +46,21 @@ jobs:
 
       - name: Verify declaration output
         run: |
-          for f in dist/index.d.ts dist/index.d.cts; do
-            size=$(wc -c < "$f")
-            if [ "$size" -lt 10000 ]; then
-              echo "::error::$f is only $size bytes - declarations were rolled up empty"
-              exit 1
-            fi
-          done
+          size=$(wc -c < dist/index.d.ts)
+          if [ "$size" -lt 10000 ]; then
+            echo "::error::dist/index.d.ts is only $size bytes - declarations were rolled up empty"
+            exit 1
+          fi
           grep -q 'export declare class FormBuilder' dist/index.d.ts
+
+      - name: Verify the built artifact
+        run: node scripts/verify-artifact.mjs
 
       - name: Build docs
         run: npm run docs:build
 
       - name: Incremental coverage check
-        uses: velis74/incremental-coverage-check@v2
+        uses: velis74/incremental-coverage-check@v3
         with:
           coverage-files: coverage/coverage-final.json
           # docs/ holds the VitePress site and its demo components - not library code, and not covered by
@@ -70,4 +71,6 @@ jobs:
           head-ref: HEAD
           github-token: ${{ secrets.GITHUB_TOKEN }}
           pr-number: ${{ github.event.pull_request.number }}
-        if: github.event_name == 'pull_request'
+        # One report per pull request: the graded diff and the coverage file are the
+        # same on both Node versions, so the second run would only repeat the first.
+        if: github.event_name == 'pull_request' && matrix.node-version == 'lts/*'
