@@ -115,7 +115,7 @@
   the DOM. `closable` is never rendered, so the header close button and the `onModelValueUpdate(false)` it calls
   are unexercised.
 - `df-api.component.vue:102`: a member at `DisplayMode.SUPPRESS` is left out of the generated layout, and no spec
-  covers it, while the `Group` warning beside it has one.
+  covers it, while the `Group` warning and the label precedence beside it both have one.
 - `row.ts:131-141` and `column.ts:153-163`, plus `alignSelf` at `column.ts:183`: no spec sets `class`, `style` or
   `alignSelf` on a row or a column, at the base or at a breakpoint. All three are declared in `RowProps` /
   `ColumnProps` and validated by code nothing reaches, so a filter that drops a valid value goes unnoticed.

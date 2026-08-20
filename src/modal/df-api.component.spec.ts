@@ -5,6 +5,8 @@ import { vi } from 'vitest';
 import { nextTick } from 'vue';
 import { createVuetify } from 'vuetify';
 
+import { FormBuilder } from '../core/form-layout';
+
 import modal from './api';
 import ModalView from './df-api.component.vue';
 
@@ -70,6 +72,28 @@ describe('ModalView', () => {
     expect(wrapper.find('.form-render').exists()).toBe(true);
     // the Action member is a button, not a form field, so exactly one action reaches df-actions
     expect(wrapper.find('.df-actions').attributes('data-count')).toBe('1');
+
+    promise.close('close');
+    await nextTick();
+    await promise;
+    wrapper.unmount();
+  });
+
+  it('labels an input from the field, and falls back to the field name only where it carries none', async () => {
+    const wrapper = mountView();
+    const form = new Form.Group({
+      // vuetify-inputs declares `label` on vue-forms' Extras, and a prop wins over what the element carries, so
+      // a generated label would silently outrank this one
+      fullName: new Form.Field({ value: '', label: 'Ime in priimek' }),
+      vatId: new Form.Field({ value: '' }),
+    });
+
+    const promise = modal.message('Details', 'fill this in', { form });
+    await nextTick();
+
+    const layout = wrapper.findComponent(stubs.FormRender).props('layout') as FormBuilder;
+    const labels = layout.toJSON().rows.map((row) => row.columns[0].components[0].props.label);
+    expect(labels).toEqual(['Ime in priimek', 'Vat Id']);
 
     promise.close('close');
     await nextTick();
