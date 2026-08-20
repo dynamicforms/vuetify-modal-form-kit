@@ -9,10 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed (breaking)
 
-- The peer dependencies move to `@dynamicforms/vue-forms` `^0.17.0`, `@dynamicforms/vuetify-inputs` `^0.9.0` and `vue`
+- The peer dependencies move to `@dynamicforms/vue-forms` `^0.17.0`, `@dynamicforms/vuetify-inputs` `^0.9.1` and `vue`
   `^3.5.2`, and `engines.node` is `>=22.12`. `lodash-es` moves to `^4.17.21`: 4.17.12, which the declared range
   admitted, throws `ReferenceError: root is not defined` out of `_createRound.js` the moment anything imports it.
-  The first three go together: vuetify-inputs 0.9.0 requires vue-forms 0.17.0, and the vue and node floors are
+  The first three go together: vuetify-inputs requires vue-forms 0.17.0, and the vue and node floors are
   what those two libraries themselves demand. Nothing this library exports was renamed or
   removed; the work is in the consuming application's own use of the peers, which
   [the migration guide](/guide/migration) points at.
@@ -25,14 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   build through `require()` of an ES module, which node supports from 22.12. A TypeScript consumer that emits CommonJS
   needs `moduleResolution: nodenext` on TypeScript 5.8 or later, which is where `require()` of an ES module is typed;
   `node16` reports `TS1479`, which is what `dist/index.d.cts` answered. `build.target` is `es2022`.
-- An `Action` declared on `options.form` becomes a dialog button only when it is the `Action` that
-  `@dynamicforms/vuetify-inputs` exports. `<df-actions>` resolves every button it draws through
-  `getBreakpointValue()`, which only that class declares. A bare `@dynamicforms/vue-forms` `Action` is left out of the
-  buttons, with a `console.warn` naming the field and stating which `Action` to declare, and executing it still settles
-  the dialog. What decides whether the dialog adds its own default buttons is whether the caller states a button
-  `<df-actions>` can draw, so a form carrying nothing but a bare `Action` opens with the dialog's own default buttons.
-  It was cast into the rendered set before, where `<df-actions>` threw
-  `TypeError: action.getBreakpointValue is not a function` as it drew the buttons.
+- `FormActions` and `<df-modal>`'s `actions` prop are `@dynamicforms/vue-forms`' `Action`, where they were the
+  subclass `@dynamicforms/vuetify-inputs` exports. Both widen, so nothing that compiled stops compiling. What the
+  dialog reads off an action is its value - `defaultConfirm` and `defaultReject` are members of `ActionRenderOptions`,
+  which is where `<df-actions>` reads them too - so the subclass is what an action needs in order to render
+  responsively, not what it needs to be a dialog button. Code that read `action.defaultConfirm` through the subclass
+  accessor reads `(action.value as ActionRenderOptions).defaultConfirm`. This needs
+  `@dynamicforms/vuetify-inputs` `^0.9.1`, which is where `<df-actions>` draws an action of either class; against
+  0.9.0 it threw `TypeError: action.getBreakpointValue is not a function` as it drew the buttons.
 
 ### Added
 
@@ -62,9 +62,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `execute()` is asynchronous and the Enter/Esc listener is on the document, so nothing wraps it the way Vue wraps a
   template handler and a rejecting handler surfaced as an unhandled rejection.
 - Enter and Esc reach an action that is enabled all the way up, not one that merely carries `enabled` itself.
-  Reachability reads `effectiveEnabled`, which is false where the action or any container above it is disabled. Note
-  that `<df-actions>` still disables its buttons on each action's own `enabled`, so a click reaches an action inside a
-  disabled container where the keyboard does not; the two agree again once the peer follows.
+  Reachability reads `effectiveEnabled`, which is false where the action or any container above it is disabled.
+  `<df-actions>` disables the button on the same read from `@dynamicforms/vuetify-inputs` 0.9.1, so a click and a
+  keystroke reach the same set.
 - A held Enter starts one run. `onKeydown` returns on a repeat event, and an action that is still running is
   unreachable while `busy`, so the second keystroke no longer starts a second run of a handler that has yet to settle.
 - The generated layout keeps a label the element carries. `@dynamicforms/vuetify-inputs` 0.9.0 declares `label` on

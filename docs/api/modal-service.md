@@ -62,7 +62,7 @@ const form = new Group({ email: new Field({ value: '', label: 'Email address' })
 await modal.message('Subscribe', 'Enter your email address:', { form });   // resolves with 'submit'
 ```
 
-A bare `@dynamicforms/vue-forms` `Action` on the form is warned about on the console and left out of the buttons;
+An `Action` of either class is drawn;
 executing it from your own code still settles the dialog. A form that carries nothing but such an action therefore
 still opens with the default button, because a dialog with no button on screen leaves the user nothing to settle
 it with.

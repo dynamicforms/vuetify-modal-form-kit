@@ -28,7 +28,7 @@ if that's your use case, you don't need to touch `df-modal` directly, see [`moda
 | `title` | `Form.RenderableValue` | — | Dialog title. Accepts plain text, Markdown (`MdString`), or a custom component. Falls back to the `title` slot if omitted. |
 | `color` | `string` | — | Title bar background color. |
 | `icon` | `string` | — | Icon shown next to the title. |
-| `actions` | `Action[]` | `[]` | Drives the [keyboard shortcuts](#keyboard-shortcuts) below. Purely functional - it renders nothing by itself; render the same array through `<df-actions>` in the `actions` slot. |
+| `actions` | `Form.Action[]` | `[]` | Drives the [keyboard shortcuts](#keyboard-shortcuts) below. Purely functional - it renders nothing by itself; render the same array through `<df-actions>` in the `actions` slot. |
 
 ## Emits
 
@@ -67,9 +67,8 @@ An action is reached when all three hold:
 | `visibility` | `DisplayMode.FULL`. An action at `HIDDEN`, `INVISIBLE` or `SUPPRESS` is not something the user can see, so it is not something Enter or Esc reaches either. |
 | `busy` | `false`. `busy` is `true` from the call to `execute()` until that run settles, so a second Enter cannot start a second run of a handler that has yet to finish. |
 
-`<df-actions>` disables its button on the action's own `enabled` and does not ask `busy`, so the two paths
-disagree over an action inside a disabled container: the keyboard leaves it alone, a click still runs it. The peer
-library's rendering is the side that follows.
+`<df-actions>` disables its button on the same two reads, and draws it `loading` while the action is busy, so a
+click reaches exactly what a keystroke reaches.
 
 `execute()` is asynchronous, and a document listener gets none of the wrapping Vue puts around a template
 handler. A handler that rejects is therefore routed here to `app.config.errorHandler`, with

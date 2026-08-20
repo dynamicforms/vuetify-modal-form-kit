@@ -48,15 +48,16 @@
 
 ## Blocked on the peers
 
-- `<df-actions>` disables a button on `action.enabled` (`vuetify-inputs/src/df-actions.vue:15`) where the keyboard
-  reads `effectiveEnabled`. An action inside a disabled container is clickable and unreachable by Enter. The peer is
-  to follow; until it does, a click and a keystroke disagree.
-- `<df-actions>` reads no `busy`, so a second click starts a second run of a handler that has yet to settle, where a
-  held Enter starts one. vuetify-inputs' own migration guide states `:disabled="!save.enabled || save.busy"` as the
-  pattern its buttons do not use.
-- A dialog button has to be vuetify-inputs' `Action`, because `<df-actions>` resolves every button through
-  `getBreakpointValue()`, which only that class declares. `api.ts` warns and leaves a bare vue-forms `Action` out of
-  the rendered set; `<df-actions>` falling back to the unresolved value would remove the distinction.
+- `ResponsiveActionRenderOptions.cleanBreakpoint` copies five of the members `ActionRenderOptions` declares and
+  drops `name`, `defaultConfirm`, `defaultReject` and `passthroughAttrs`, so a breakpoint stating one of those four
+  states nothing. This library reads all four off the value rather than through the resolved options, which is why
+  it does not notice; a caller writing `{ md: { defaultConfirm: true } }` gets no error and no effect.
+- `DfInputHint` and `DfLabel` declare their props inline, so neither has a name `DfInputComponentProps` exports.
+  `VuetifyInputsComponentBuilder` therefore has nine methods for eleven exported components, and a layout wanting
+  either falls to `generic('df-input-hint', props)` with `props: any`.
+- There is no tag-name to component map. `<component-render>` looks a component up as `props.components[name]`, a
+  plain object lookup rather than Vue's resolver, so `src/modal/df-api.component.vue` hard-codes a nine-name import
+  list and the object beside it, and the builder's tag literals agree with what renders by coincidence.
 - `<modal-view>`'s component map grows with the peer. `df-list` is on vuetify-inputs' own list, and a dialog cannot
   render one until the map names it.
 
@@ -124,8 +125,6 @@
 
 ## Decisions for the owner
 
-- The `enabled` divergence: `<df-actions>` reads `enabled`, `<df-modal>`'s keyboard reads `effectiveEnabled`. Is it
-  settled in `@dynamicforms/vuetify-inputs`, or reverted here until the peer follows?
 - A nested `Group` or `List` on `options.form`: laid out by the generated layout, or left as the documented reason
   to write a `FormBuilder` of your own? The warning names the members; it does not answer the question.
 

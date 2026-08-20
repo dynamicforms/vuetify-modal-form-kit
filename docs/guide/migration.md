@@ -21,21 +21,21 @@ section.
 | Peer | Before | Now |
 |---|---|---|
 | `@dynamicforms/vue-forms` | `^0.6.0` | `^0.17.0` |
-| `@dynamicforms/vuetify-inputs` | `^0.8.1` | `^0.9.0` |
+| `@dynamicforms/vuetify-inputs` | `^0.8.1` | `^0.9.1` |
 | `vue` | `^3.4` | `^3.5.2` |
 
 `lodash-es` moves to `^4.17.21`, and `engines.node` is `>=22.12`, where the package declared none. The old
 `lodash-es` floor did not work: 4.17.12 throws `ReferenceError: root is not defined` as it loads. The vue floor is
-vue-forms' own, which vuetify-inputs 0.9.0 and this release both restate.
+vue-forms' own, which vuetify-inputs and this release both restate.
 
-The two peers are one upgrade: vuetify-inputs 0.9.0 requires vue-forms 0.17.0, and its 0.8.x line cannot be combined
+The two peers are one upgrade: vuetify-inputs 0.9.x requires vue-forms 0.17.0, and its 0.8.x line cannot be combined
 with vue-forms 0.17.0. Installing them one at a time leaves npm reporting unsatisfiable peers.
 
 ```json
 {
   "dependencies": {
     "@dynamicforms/vue-forms": "^0.17.0",
-    "@dynamicforms/vuetify-inputs": "^0.9.0",
+    "@dynamicforms/vuetify-inputs": "^0.9.1",
     "@dynamicforms/vuetify-modal-form-kit": "^0.7.0",
     "vue": "^3.5.2",
     "vuetify": "^3.9"
@@ -143,27 +143,32 @@ The dialog's own resolver is what answers with the exception, and it stands outs
 the dialog opened. Register the aborting handler while the dialog is already open and it stands outside the resolver
 instead: its abort reaches nothing that catches it, and `execute()` rejects.
 
-### A bare vue-forms `Action` in `options.form` is not rendered
+### A dialog button is any vue-forms `Action`
 
-`<df-actions>` draws the dialog's buttons, and it draws from vuetify-inputs' `Action` — it reads the
-breakpoint-resolved render options only that class carries. An `Action` of vue-forms' own that reaches
-`options.form` used to be cast into the rendered set. It is left out of the buttons now, with a `console.warn`
-naming the field. Executing it still settles the dialog.
+`FormActions` and `<df-modal>`'s `actions` prop are typed `Form.Action`, where they were the `Action` that
+`@dynamicforms/vuetify-inputs` exports. Both widen, so every action you already declare goes on compiling; what is
+new is that an action of the peer library's base class is a dialog button too. `<df-actions>` draws a button from
+the action's value, so the subclass is what an action needs in order to render responsively — as a text link, or
+in a confirm / reject colour — not what it needs to be drawn at all.
+
+This is what raises the `@dynamicforms/vuetify-inputs` floor to `^0.9.1`. Against 0.9.0 the button row resolved
+every action through `getBreakpointValue()`, which only the subclass declares, and threw
+`TypeError: getBreakpointValue is not a function` over anything else.
+
+One read moves with it. `defaultConfirm` and `defaultReject` are members of `ActionRenderOptions` — the shape an
+action's value takes — and the subclass exposed them as accessors as well:
 
 ```typescript
-// before: handed to <df-actions>, which threw: it calls getBreakpointValue() on every action it draws
-import * as Form from '@dynamicforms/vue-forms';
-const form = new Form.Group({ close: new Form.Action({ value: { label: 'Close' } }) });
+// before
+if (action.defaultConfirm) …
 
-// after
-import { Action } from '@dynamicforms/vuetify-inputs';
-const form = new Form.Group({ close: new Action({ value: { label: 'Close' } }) });
+// after: where <df-actions> and <df-modal>'s keyboard read them
+import { ActionRenderOptions } from '@dynamicforms/vuetify-inputs';
+if ((action.value as ActionRenderOptions).defaultConfirm) …
 ```
 
-Whether the dialog adds its own default buttons is decided by the same rule: only an `Action` `<df-actions>` can
-draw counts, alongside anything in `options.actions`. A form whose only action is a bare vue-forms one therefore
-opens with the dialog's own `Yes` / `No` or `Close`, where the button row used to throw
-`TypeError: getBreakpointValue is not a function` as it drew, leaving nothing on screen that could settle it.
+The accessors are still there on the subclass, so this is only needed where the action is held as a
+`Form.Action` — which is what `FormActions` now hands you.
 
 ### Enter and Esc read `effectiveEnabled` and `busy`
 
@@ -183,9 +188,8 @@ execute an action inside a disabled group. `busy` is `true` from the call to `ex
 which is what keeps a held-down Enter from starting a second run of a handler that has yet to finish; a repeated
 `keydown` is dropped for the same reason.
 
-`<df-actions>` still disables a button from the action's own `enabled`, so a click and the keyboard disagree for an
-action inside a disabled container: the button is live and Enter is not. The keyboard is right and the peer is to
-follow; until it does, disable such an action itself rather than relying on the container.
+`<df-actions>` disables its buttons on the same two reads from `@dynamicforms/vuetify-inputs` 0.9.1 — it draws a
+button `loading` while its action is busy — so a click and a keystroke reach the same set of actions.
 
 `execute()` is asynchronous, and a document listener gets no Vue wrapper around it. A handler that rejects is
 routed to `app.config.errorHandler`, the way a rejection from a template handler is, and to `console.error` where
@@ -239,7 +243,7 @@ Sanitise it where the payload is read, on the way into the layout, if an unknown
 
 ### Checklist for 0.7.0
 
-1. Upgrade both peers in one step — `@dynamicforms/vue-forms@^0.17.0`, `@dynamicforms/vuetify-inputs@^0.9.0` — with
+1. Upgrade both peers in one step — `@dynamicforms/vue-forms@^0.17.0`, `@dynamicforms/vuetify-inputs@^0.9.1` — with
    `vue@^3.5.2`, and run on node 22.12 or newer.
 2. Search for the three silent breaks first: `watch(` with an element as the source, `readonly(` over an element,
    and `isEqual` over two elements. The type checker finds the `clone(` → `bind(` calls for you.

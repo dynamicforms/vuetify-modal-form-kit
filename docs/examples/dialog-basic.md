@@ -22,8 +22,9 @@ A message dialog, a yes/no confirmation, a validated form dialog, and sized dial
   clicked.
 - **Form dialogs** - pass a [`@dynamicforms/vue-forms`](:vue-forms:) `Group` (with validation) as `options.form`;
   its `Action` fields (e.g. `submit`, `cancel`) become the dialog's buttons, and the returned promise resolves to
-  whichever one was clicked. Those actions are [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:)' `Action`, the
-  class `<df-actions>` draws; a bare vue-forms `Action` is warned about and left out of the buttons. Each `Field`
+  whichever one was clicked. An action of either class is drawn: the
+  [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) `Action` adds the responsive render options, not the ability
+  to be drawn. Each `Field`
   is laid out as a `<df-input>` carrying the field's own label, and a nested `Group` or `List` member is not laid
   out at all - see [`<modal-view>`](/api/modal-view#the-generated-layout).
 - **Custom components** - `modal.custom('Title', componentName, componentProps)` renders any registered component

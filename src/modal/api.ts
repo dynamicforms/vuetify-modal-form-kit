@@ -6,7 +6,9 @@ import { computed, nextTick, ref } from 'vue';
 import DialogSize from './dialog-size';
 import dialogTracker from './top-modal-tracker';
 
-export type FormActions = Record<string, Action>;
+// Any vue-forms Action: <df-actions> draws a button from the action's value, and the subclass
+// @dynamicforms/vuetify-inputs exports is what an action needs to render responsively, not to be drawn at all.
+export type FormActions = Record<string, Form.Action>;
 
 export interface CloseablePromise<T> extends Promise<T> {
   close: (value: T) => void;
@@ -49,7 +51,7 @@ class ModalAPI {
     message: Form.RenderContent | Form.RenderableValue,
     options?: ModalOptions,
   ): CloseablePromise<string> {
-    const hasAction = this.hasRenderableAction(options);
+    const hasAction = this.hasOwnAction(options);
 
     const yes = Action.yesAction({ value: { defaultConfirm: true } });
     const no = Action.noAction({ value: { defaultReject: true } });
@@ -62,7 +64,7 @@ class ModalAPI {
     message: Form.RenderContent | Form.RenderableValue,
     options?: ModalOptions,
   ): CloseablePromise<string> {
-    const hasAction = this.hasRenderableAction(options);
+    const hasAction = this.hasOwnAction(options);
 
     const close = Action.closeAction({ value: { defaultConfirm: true, defaultReject: true } });
 
@@ -78,13 +80,11 @@ class ModalAPI {
     return this.message(title, <Form.SimpleComponentDef>{ componentName, componentProps }, options);
   }
 
-  // Whether the caller states buttons of its own, and so whether the dialog adds its default ones. Only an Action
-  // <df-actions> can draw counts: a dialog whose form carries nothing but an unrenderable action would otherwise
-  // open with no button at all, and nothing on screen could settle it.
-  private hasRenderableAction(options?: ModalOptions): boolean {
+  // Whether the caller states buttons of its own, and so whether the dialog adds its default ones.
+  private hasOwnAction(options?: ModalOptions): boolean {
     if (!isEmpty(options?.actions)) return true;
     return Object.keys(options?.form?.fields ?? []).some(
-      (fieldName) => options?.form?.field(fieldName) instanceof Action,
+      (fieldName) => options?.form?.field(fieldName) instanceof Form.Action,
     );
   }
 
@@ -156,20 +156,11 @@ class ModalAPI {
       const action = options?.form?.field(fieldName);
       if (!(action instanceof Form.Action)) return;
       if (!actions[fieldName]) {
-        // the rendered set is <df-actions>' to draw, and it draws from this library's Action alone
-        if (action instanceof Action) {
-          actions[fieldName] = action;
-          return; // the loop below attaches the resolver, with the rest of the rendered set
-        }
-        console.warn(
-          `Form field '${fieldName}' is a @dynamicforms/vue-forms Action, which <df-actions> cannot render: ` +
-            "it reads the breakpoint-resolved options only this library's Action carries. The dialog leaves it " +
-            'out of its buttons. Declare it as the Action exported by @dynamicforms/vuetify-inputs to have it ' +
-            'rendered; executing it still settles the dialog.',
-        );
+        actions[fieldName] = action;
+        return; // the loop below attaches the resolver, with the rest of the rendered set
       }
-      // a name the caller's own `actions` already holds, and an action the dialog does not render: neither is in
-      // the set below, and both still settle the dialog when they execute
+      // a name the caller's own `actions` already holds: the form's action is not in the set below, and still
+      // settles the dialog when it executes
       attachResolver(action, fieldName);
     });
     Object.entries(actions).forEach(([name, action]) => attachResolver(action, name));

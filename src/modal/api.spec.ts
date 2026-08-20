@@ -1,5 +1,5 @@
 import * as Form from '@dynamicforms/vue-forms';
-import { Action } from '@dynamicforms/vuetify-inputs';
+import { Action, ActionRenderOptions } from '@dynamicforms/vuetify-inputs';
 import { vi } from 'vitest';
 import { nextTick } from 'vue';
 
@@ -43,8 +43,9 @@ describe('modal service', () => {
 
     const actions = currentModal.value!.actions!;
     expect(Object.keys(actions)).toEqual(['yes', 'no']);
-    expect(actions.yes.defaultConfirm).toBe(true);
-    expect(actions.no.defaultReject).toBe(true);
+    // the flags are the action's value, which is where <df-actions> and <df-modal>'s keyboard read them
+    expect((<ActionRenderOptions>actions.yes.value).defaultConfirm).toBe(true);
+    expect((<ActionRenderOptions>actions.no.value).defaultReject).toBe(true);
 
     actions.no.execute(null);
     expect(await settled(promise)).toBe('no');
@@ -227,16 +228,18 @@ describe('modal service', () => {
     await settled(promise);
   });
 
-  it('leaves a bare vue-forms Action out of the rendered set, and still settles on it', async () => {
+  it('renders an action declared as a vue-forms Action', async () => {
     const warn = vi.mocked(console.warn);
+    // <df-actions> draws a button from the action's value, so the subclass @dynamicforms/vuetify-inputs exports
+    // is what an action needs to render responsively, not what it needs to be drawn
     const submit = new Form.Action({ value: { label: 'Send' } });
     const form = new Form.Group({ submit });
 
     const promise = modal.message('Subscribe', 'Enter your email address:', { form });
 
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("Form field 'submit'"));
-    // no action of its own reaches df-actions, so the dialog falls back to its default close button
-    expect(Object.keys(currentModal.value!.actions!)).toEqual(['close']);
+    expect(Object.keys(currentModal.value!.actions!)).toEqual(['submit']);
+    expect(currentModal.value!.actions!.submit).toBe(submit);
+    expect(warn).not.toHaveBeenCalled();
 
     await submit.execute(null);
     expect(await settled(promise)).toBe('submit');
