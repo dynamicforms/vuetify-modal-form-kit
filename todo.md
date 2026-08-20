@@ -86,9 +86,10 @@
   component type, `ModalView`, `FormRender` and `ComponentRender` are emitted as `DefineComponent` with 20 type
   arguments, and the type takes 19 through Vue 3.5.1, so a consumer below 3.5.2 with `skipLibCheck: false` gets
   TS2707. `@dynamicforms/vue-forms` has the `vue-floor` job to copy.
-- `engines.node` is `>=22` and the readme promises `require()` of the ESM build, which node supports from 22.12. The
-  matrix is `lts/*` and `latest`, nothing runs on 22.12, and `scripts/verify-artifact.mjs` only imports.
-- `scripts/verify-artifact.mjs` is named by the workflow alone. An npm script would let it run before a push.
+- Nothing runs at the declared floor. `engines.node` is `>=22.12` and the readme promises a CommonJS consumer
+  `require()` of the ESM build there; the matrix is `lts/*` and `latest`, both far above it, and
+  `npm run verify:artifact` imports rather than requires. A matrix leg at 22.12 that `require()`s the artifact is
+  what would state the promise.
 - There is no release workflow: the version bump, the tag and the publish are hand-made, and nothing checks that
   `changelog.md` names the version being published.
 - `files: ["dist/*"]` leaves `changelog.md` out of the tarball.
@@ -112,9 +113,7 @@
   passes `size`, so every mount runs at `DialogSize.DEFAULT`, where `fullScreen` is false and `width` falls to
   `'unset'` through the default branch, and the `VDialog` stub declares `modelValue` alone, so neither prop reaches
   the DOM. `closable` is never rendered, so the header close button and the `onModelValueUpdate(false)` it calls
-  are unexercised. `run()`'s fallback to `console.error` where the app declares no `errorHandler` is untested.
-- `api.ts:137`: a handler that throws anything other than `AbortEventHandlingException` re-throws, so `execute()`
-  rejects and the dialog stays open. Nothing states that.
+  are unexercised.
 - `df-api.component.vue:102`: a member at `DisplayMode.SUPPRESS` is left out of the generated layout, and no spec
   covers it, while the `Group` warning beside it has one.
 - `row.ts:131-141` and `column.ts:153-163`, plus `alignSelf` at `column.ts:183`: no spec sets `class`, `style` or

@@ -215,6 +215,27 @@ describe('DfModal', () => {
       wrapper.unmount();
     });
 
+    it('reports a failing handler on the console where the app declares no error handler', async () => {
+      const failure = new Error('handler blew up');
+      const action = new Action({ value: { label: 'Save', defaultConfirm: true } });
+      action.registerAction(
+        new ExecuteAction(() => {
+          throw failure;
+        }),
+      );
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const wrapper = mountModal({ modelValue: true, dialogId, actions: [action] });
+
+      press('Enter');
+      await nextTick();
+      await nextTick();
+
+      expect(error).toHaveBeenCalledWith(failure);
+      error.mockRestore();
+      wrapper.unmount();
+    });
+
     it('stops listening once unmounted', () => {
       const confirm = actionWithSpy({ label: 'Save', defaultConfirm: true });
       mountModal({ modelValue: true, dialogId, actions: [confirm.action] }).unmount();

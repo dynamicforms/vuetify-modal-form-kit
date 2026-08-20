@@ -207,6 +207,26 @@ describe('modal service', () => {
     await settled(promise);
   });
 
+  it('lets an ordinary failure reject, and leaves the dialog open', async () => {
+    const failure = new Error('the backend said no');
+    const submit = new Action({ value: { label: 'Send' } });
+    submit.registerAction(
+      new Form.ExecuteAction(() => {
+        throw failure;
+      }),
+    );
+    const form = new Form.Group({ submit });
+
+    const promise = modal.message('Subscribe', 'Enter your email address:', { form });
+
+    // only an abort is an answer; anything else is the caller's to handle, and settles nothing
+    await expect(submit.execute(null)).rejects.toBe(failure);
+    expect(currentModal.value!.dialogId).toBe(promise.dialogId);
+
+    promise.close('close');
+    await settled(promise);
+  });
+
   it('leaves a bare vue-forms Action out of the rendered set, and still settles on it', async () => {
     const warn = vi.mocked(console.warn);
     const submit = new Form.Action({ value: { label: 'Send' } });
