@@ -23,6 +23,7 @@
     "build": "vite build",
     "prepack": "npm run build",
     "test": "vitest run --coverage",
+    "verify:artifact": "vitest run --config vitest.artifact.config.ts",
     "lint": "eslint src --fix && vue-tsc --noEmit",
     "lint:ci": "eslint src && vue-tsc --noEmit",
     "docs:dev": "npm run docs:dev -w docs",

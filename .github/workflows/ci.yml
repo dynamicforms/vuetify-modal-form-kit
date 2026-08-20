@@ -54,7 +54,7 @@ jobs:
           grep -q 'export declare class FormBuilder' dist/index.d.ts
 
       - name: Verify the built artifact
-        run: node scripts/verify-artifact.mjs
+        run: npm run verify:artifact
 
       - name: Build docs
         run: npm run docs:build

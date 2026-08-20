@@ -61,6 +61,8 @@ export default defineConfig({
     }
   },
   test: {
+    // the artifact spec is not one of these: it loads dist/, which `npm test` runs before there is
+    include: ['src/**/*.spec.ts'],
     coverage: {
       // istanbul, not v8: the v8 provider reports `ERR_INSPECTOR_NOT_CONNECTED` over this suite
       provider: 'istanbul',
