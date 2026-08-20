@@ -63,11 +63,15 @@ jobs:
         uses: velis74/incremental-coverage-check@v3
         with:
           coverage-files: coverage/coverage-final.json
-          # Neither is library code, and neither is reached by vitest, whose coverage is scoped to src/:
-          # docs/ holds the VitePress site and its demo components, and scripts/ the helpers CI itself runs.
+          # None of these carries a line a test could execute. docs/ holds the VitePress site and its demo
+          # components and scripts/ the helpers CI itself runs, neither of them library code; a barrel re-exports
+          # and is already outside vitest's coverage; and a module that declares types alone compiles to nothing.
           extra-ignore-patterns: |
             docs/**
             scripts/**
+            **/index.ts
+            src/layout/types.ts
+            src/modal/df-modal.types.ts
           log-level: INFO
           base-ref: ${{ github.base_ref }}
           head-ref: HEAD
