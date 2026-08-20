@@ -17,13 +17,13 @@
 - `resolvePromise(field.fieldName || name)` prefers the element's own name over the key in `options.actions`, so one
   `Action` reachable under two names settles with the form's. `/api/modal-service` states that precedence; nothing
   lets a caller ask for the other name.
-- `hasRenderableAction()` counts an `Action` `<df-actions>` can draw, not one it will draw. A caller whose actions
-  are all at `DisplayMode.SUPPRESS` suppresses the dialog's default buttons, `<df-actions>` filters those actions
-  out, and the dialog opens with no button and no keyboard route to settle it.
+- `hasOwnAction()` counts an `Action` the form declares, not one the dialog will draw. A caller whose actions are
+  all at `DisplayMode.SUPPRESS` suppresses the dialog's default buttons, `<df-actions>` filters those actions out,
+  and the dialog opens with no button and no keyboard route to settle it.
 
 ## The dialog stack
 
-- `src/modal/df-modal.component.vue:190` removes the dialog from the tracker on unmount. Unmounting `<modal-view>`
+- `src/modal/df-modal.component.vue:197` removes the dialog from the tracker on unmount. Unmounting `<modal-view>`
   with a dialog on screen drops that dialog off the stack, leaves its `modalDefinitions` entry in place and never
   settles its promise: a `<modal-view>` mounted afterwards shows nothing, and only `promise.close(value)` still
   reaches it. Either settle the open dialogs when the last view unmounts, or refuse the removal for an api-owned
