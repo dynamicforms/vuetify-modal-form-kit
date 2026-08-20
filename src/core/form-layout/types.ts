@@ -83,7 +83,7 @@ export type ComponentProps<T extends Record<string | symbol, any> = Record<strin
 
 export interface ComponentJSON<T extends ComponentProps = ComponentProps> {
   name: string | symbol;
-  props: T;
+  props: T | null;
 }
 
 export type TwelveDivisible = 1 | 2 | 3 | 4 | 6 | 12;

@@ -7,10 +7,13 @@ A Vue 3 + Vuetify 3 library built around four design goals:
    events or callbacks. Dialogs can also be declared directly in Vue templates using `<DfModal>`.
 2. **One dialog on screen at a time** — the library maintains an internal stack; if code tries to open a second dialog
    while one is already open, the first is suspended (hidden, not closed) until the second is closed, at which point
-   it reappears.
+   it reappears. The stack is module state, so there is one per page and every Vue app on it shares that one: mount
+   exactly one `<ModalView />`, since a second mounted view warns on the console and draws the same current dialog
+   again.
 3. **Programmatic form builder** — define responsive Vuetify grid layouts (rows → columns → components) entirely in
    TypeScript using a fluent `FormBuilder` API, without writing any template markup.
-4. **Keyboard shortcuts** — `<Enter>` confirms and `<Esc>` cancels the active dialog.
+4. **Keyboard shortcuts** — `<Enter>` confirms and `<Esc>` cancels the active dialog. A keystroke an overlay above
+   the dialog answers - a select menu, a date picker - is that overlay's alone.
 
 The dialog manager and form builder are designed to work together: a `FormBuilder` layout can be passed directly into a
 dialog for inline validation and submission.
@@ -40,8 +43,9 @@ npm install vue@^3.5.2 vuetify@^3.9 @dynamicforms/vue-forms@^0.17.0 @dynamicform
   lodash-es vue-markdown-render @mdi/font
 ```
 
-The package is ESM only, and `engines.node` is `>=22.12` - the release where Node supports `require()` of an
-ES module, which is how a CommonJS consumer reaches it.
+The package is ESM only, and `engines.node` is `>=22.12` - the release where Node supports `require()` of an ES
+module, which is how a CommonJS consumer reaches it. That path runs through a bundler: the peers it loads import
+their own stylesheets, which plain node has no loader for.
 
 ### Register the plugin
 
@@ -128,6 +132,10 @@ A dialog button is any `@dynamicforms/vue-forms` `Action`. `<df-actions>` draws 
 `Action` that `@dynamicforms/vuetify-inputs` exports is what an action needs in order to render responsively, as a
 text link or in a confirm / reject colour - not what it needs to be drawn at all.
 
+A dialog states its own buttons - `close`, or `yes` / `no` - only where nothing the caller passed is drawn. An
+action at `DisplayMode.SUPPRESS` draws no button, so a set that is entirely suppressed opens with the dialog's own
+ones rather than with nothing to settle it.
+
 An action keeps answering for its own executor: `await action.execute()` resolves with what the action's own
 `ExecuteAction` chain returned, and the dialog settles alongside it. An `AbortEventHandlingException` is an
 answer rather than a rejection - `execute()` resolves with the exception, and the dialog stays open.
@@ -148,7 +156,7 @@ All dialog methods accept an optional options object:
 {
   form?: Form.Group        // form for inline validation
   size?: DialogSize        // SMALL | MEDIUM | LARGE | X_LARGE
-  actions?: Record<string, Action>  // override or extend action buttons; Action is vuetify-inputs'
+  actions?: FormActions    // Record<string, Action>: override or extend the dialog's buttons
   color?: string           // header background color
   icon?: string            // header icon (MDI name)
 }
@@ -298,8 +306,12 @@ import {
 // types
 import type {
   CloseablePromise,
+  ComponentRenderProps,
+  DfModalProps,
+  DfModalSlots,
   DynamicFormsModalFormKitOptions,
   FormActions,
+  FormRenderProps,
   ModalOptions,
 } from '@dynamicforms/vuetify-modal-form-kit'
 ```

@@ -85,6 +85,10 @@ the floor `engines.node` states:
 const { modal } = require('@dynamicforms/vuetify-modal-form-kit');
 ```
 
+That call runs through a bundler that answers for `.css`: this package imports Vuetify's component entries -
+`vuetify/components/VDialog` and the rest, directly and through `@dynamicforms/vuetify-inputs` - and each of
+those imports its own stylesheet, which plain node has no loader for.
+
 What the `require` condition pointed at could not be loaded in any case. The UMD bundle resolves its peers with
 `require()`, and `@dynamicforms/vue-forms` is ESM-only, so the first line of the bundle fails. The `<script>` tag
 path was never there either: the build named the browser global `dynamicforms-vuetify-modal-form-kit.[name]`

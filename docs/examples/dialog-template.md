@@ -96,7 +96,9 @@ prop, with one action flagged `defaultConfirm` and (optionally) one `defaultReje
 focus a field and press Enter to log in, or Esc to cancel.
 
 The keyboard reaches an action that is rendered at `DisplayMode.FULL`, whose `effectiveEnabled` is `true` - so a
-disabled section takes its actions out of reach - and that is not already running, which is what `busy` says. See
+disabled section takes its actions out of reach - and that is not already running, which is what `busy` says. An
+overlay open above the dialog answers first: the Escape that closes a `<df-select>` menu or a `<df-date-time>`
+picker inside the dialog is the menu's, and the dialog is rejected by the next one. See
 [`<df-modal>`](/api/df-modal#keyboard-shortcuts) for the full rules.
 
 <script setup>

@@ -20,14 +20,10 @@ import { getBreakpointName } from '@dynamicforms/vuetify-inputs';
 import { computed, getCurrentInstance } from 'vue';
 import { useDisplay } from 'vuetify';
 
-import { FormBuilder, FormBuilderName, FormJSONResponsive } from '../core/form-layout';
+import { FormBuilder, FormBuilderName } from '../core/form-layout';
 
 import ComponentRenderer from './component-render.vue';
-
-interface FormRenderProps {
-  layout: FormBuilder | FormJSONResponsive;
-  components?: Record<string | symbol, any>;
-}
+import { FormRenderProps } from './types';
 
 const props = withDefaults(defineProps<FormRenderProps>(), { components: () => ({}) });
 

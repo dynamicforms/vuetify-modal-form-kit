@@ -46,6 +46,12 @@ actions for you.
 `df-modal` also manages the one-dialog-at-a-time stack itself, so `modal-view` doesn't need any special-casing for
 nested/queued `modal.*` calls - it always just renders "the current one".
 
+A dialog belongs to the `modal` service, not to the view drawing it: unmounting the `<modal-view>` while a dialog
+is on screen takes the dialog off the screen and leaves it on the stack, holding its unsettled promise. The next
+`<modal-view>` to mount draws it again, actions and all. Mount exactly one all the same - the stack is module
+state, so there is one per page and every Vue app on it shares that one, and a second mounted view warns on the
+console and draws the same current dialog a second time.
+
 ## The generated layout
 
 `<modal-view>` builds a single-column `FormBuilder` layout over the members of `options.form`, in declaration

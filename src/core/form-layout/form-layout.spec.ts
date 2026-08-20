@@ -47,13 +47,13 @@ describe('Layout Integration Tests', () => {
     expect(firstRow.columns[0].props.offset).toBe(0);
     expect(firstRow.columns[0].components.length).toBe(1);
     expect(firstRow.columns[0].components[0].name).toBe('VTextField');
-    expect(firstRow.columns[0].components[0].props.label).toBe('First name');
+    expect(firstRow.columns[0].components[0].props!.label).toBe('First name');
 
     expect(firstRow.columns[1].props.cols).toBe(6);
     expect(firstRow.columns[1].props.offset).toBe(0);
     expect(firstRow.columns[1].components.length).toBe(1);
     expect(firstRow.columns[1].components[0].name).toBe('VTextField');
-    expect(firstRow.columns[1].components[0].props.label).toBe('Last name');
+    expect(firstRow.columns[1].components[0].props!.label).toBe('Last name');
 
     // Check second row
     const secondRow = json.rows[1];
@@ -61,8 +61,8 @@ describe('Layout Integration Tests', () => {
     expect(secondRow.columns[0].props.offset).toBe(0);
     expect(secondRow.columns[0].components.length).toBe(1);
     expect(secondRow.columns[0].components[0].name).toBe('VTextarea');
-    expect(secondRow.columns[0].components[0].props.label).toBe('Comments');
-    expect(secondRow.columns[0].components[0].props.rows).toBe(3);
+    expect(secondRow.columns[0].components[0].props!.label).toBe('Comments');
+    expect(secondRow.columns[0].components[0].props!.rows).toBe(3);
   });
 
   it('should build a responsive form with breakpoints', () => {
@@ -124,7 +124,7 @@ describe('Layout Integration Tests', () => {
     expect(json.xs?.rows.length).toBe(2);
     expect(json.xs?.rows[0].columns.length).toBe(1);
     expect(json.xs?.rows[1].columns.length).toBe(1);
-    expect(json.xs?.rows[0].columns[0].components[0].props.dense).toBe(true);
+    expect(json.xs?.rows[0].columns[0].components[0].props!.dense).toBe(true);
   });
 
   it('should support nested forms', () => {
@@ -274,7 +274,7 @@ describe('Layout Integration Tests', () => {
     // breakpoints are mobile-first: what sm sets holds from sm upwards
     const small = form.getOptionsForBreakpoint('sm').toJSON('sm');
     expect(small.rows[0].columns[0].props).toEqual({ cols: 12 });
-    expect(small.rows[0].columns[0].components[0].props.label).toBe('Street');
+    expect(small.rows[0].columns[0].components[0].props!.label).toBe('Street');
 
     const large = form.getOptionsForBreakpoint('lg').toJSON('lg');
     expect(large.rows[0].columns[0].props).toEqual({ cols: 12 });
@@ -295,7 +295,7 @@ describe('Layout Integration Tests', () => {
     const small = form.getOptionsForBreakpoint('sm').toJSON('sm');
     expect(small.rows[0].props).toEqual({ dense: true });
     expect(small.rows[0].columns.length).toBe(1);
-    expect(small.rows[0].columns[0].components[0].props.label).toBe('City');
+    expect(small.rows[0].columns[0].components[0].props!.label).toBe('City');
   });
 
   it('replaces a row wholesale when its breakpoint declares columns', () => {

@@ -66,6 +66,54 @@ describe('modal service', () => {
     expect(await settled(promise)).toBe('submit');
   });
 
+  it('states a default action where the only one the form declares cannot be reached', async () => {
+    const submit = new Action({
+      value: { label: 'Send', defaultConfirm: true },
+      visibility: Form.DisplayMode.SUPPRESS,
+    });
+    const form = new Form.Group({ submit });
+
+    // <df-actions> draws nothing for an action at SUPPRESS, so a dialog counting it would be on screen with no
+    // button on it and no keyboard route out
+    const suppressed = modal.message('Subscribe', 'Enter your email address:', { form });
+    expect(Object.keys(currentModal.value!.actions!)).toEqual(['close', 'submit']);
+
+    currentModal.value!.actions!.close.execute(null);
+    expect(await settled(suppressed)).toBe('close');
+
+    // the same form with the action drawn: the caller states the way out, and the dialog adds none
+    submit.visibility = Form.DisplayMode.FULL;
+    const drawn = modal.message('Subscribe', 'Enter your email address:', { form });
+    expect(Object.keys(currentModal.value!.actions!)).toEqual(['submit']);
+
+    await submit.execute(null);
+    expect(await settled(drawn)).toBe('submit');
+  });
+
+  it('states its yes / no where every action the caller passed is suppressed', async () => {
+    const later = new Action({ value: { label: 'Later' }, visibility: Form.DisplayMode.SUPPRESS });
+
+    const promise = modal.yesNo('Delete item', 'This cannot be undone. Continue?', { actions: { later } });
+    expect(Object.keys(currentModal.value!.actions!)).toEqual(['yes', 'no', 'later']);
+
+    currentModal.value!.actions!.no.execute(null);
+    expect(await settled(promise)).toBe('no');
+  });
+
+  it('states a default action for one drawn where no click or keystroke reaches it', async () => {
+    // <df-actions> draws a HIDDEN action as `d-none` and an INVISIBLE one as `visibility: hidden`, and the
+    // keyboard answers FULL alone: a dialog counting either would be on screen with no way out of it
+    for (const visibility of [Form.DisplayMode.HIDDEN, Form.DisplayMode.INVISIBLE]) {
+      const later = new Action({ value: { label: 'Later' }, visibility });
+
+      const promise = modal.yesNo('Delete item', 'This cannot be undone. Continue?', { actions: { later } });
+      expect(Object.keys(currentModal.value!.actions!)).toEqual(['yes', 'no', 'later']);
+
+      currentModal.value!.actions!.no.execute(null);
+      expect(await settled(promise)).toBe('no');
+    }
+  });
+
   it('closes from the outside through the returned promise', async () => {
     const promise = modal.message('Working', 'Please wait...');
     expect(currentModal.value).not.toBeNull();

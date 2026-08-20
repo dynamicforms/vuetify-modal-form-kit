@@ -1,6 +1,5 @@
 import * as Form from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
-import { isEmpty } from 'lodash-es';
 import { computed, nextTick, ref } from 'vue';
 
 import DialogSize from './dialog-size';
@@ -80,12 +79,21 @@ class ModalAPI {
     return this.message(title, <Form.SimpleComponentDef>{ componentName, componentProps }, options);
   }
 
-  // Whether the caller states buttons of its own, and so whether the dialog adds its default ones.
+  // Whether the caller states buttons of its own, and so whether the dialog adds its default ones. Only an action
+  // the user can reach counts, which is the read <df-modal>'s keyboard makes: <df-actions> leaves out an action at
+  // SUPPRESS and draws one at HIDDEN as `d-none` and one at INVISIBLE as `visibility: hidden`, so none of the three
+  // takes a click, and the keyboard answers FULL alone. A dialog counting one of them would be on screen with no
+  // way out of it.
+  // The visibility is the one the action carries as the dialog opens. The default actions are decided once, at
+  // that moment: an action raised to FULL or dropped below it later neither removes the dialog's own buttons nor
+  // adds them.
   private hasOwnAction(options?: ModalOptions): boolean {
-    if (!isEmpty(options?.actions)) return true;
-    return Object.keys(options?.form?.fields ?? []).some(
-      (fieldName) => options?.form?.field(fieldName) instanceof Form.Action,
-    );
+    const drawn = (action: Form.Action) => action.visibility === Form.DisplayMode.FULL;
+    if (Object.values(options?.actions ?? {}).some(drawn)) return true;
+    return Object.keys(options?.form?.fields ?? []).some((fieldName) => {
+      const field = options?.form?.field(fieldName);
+      return field instanceof Form.Action && drawn(field);
+    });
   }
 
   private getRenderableMessage(message: Form.RenderContent | Form.RenderableValue): Form.RenderableValue {
