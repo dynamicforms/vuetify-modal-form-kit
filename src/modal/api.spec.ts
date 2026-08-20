@@ -137,6 +137,91 @@ describe('modal service', () => {
     await settled(unrendered);
   });
 
+  it('settles only the dialog whose action was executed, over two bindings of one form', async () => {
+    // an action's registrations belong to its declaration, so both bindings of `template` share one chain:
+    // without the per-dialog removal, executing one dialog's action settles the other's promise as well
+    const template = new Form.Group({
+      email: new Form.Field({ value: '' }),
+      submit: new Action({ value: { label: 'Send' } }),
+    });
+    const first = modal.message('First', 'first', { form: template.bind({ email: 'a@example.com' }) });
+    const second = modal.message('Second', 'second', { form: template.bind({ email: 'b@example.com' }) });
+
+    let firstSettled = false;
+    first.then(() => {
+      firstSettled = true;
+    });
+
+    await (<Action>currentModal.value!.actions!.submit).execute(null);
+    expect(await settled(second)).toBe('submit');
+    expect(firstSettled).toBe(false);
+
+    // and the dialog underneath is still the one it was, with an action that still settles it
+    expect(currentModal.value!.dialogId).toBe(first.dialogId);
+    await (<Action>currentModal.value!.actions!.submit).execute(null);
+    expect(await settled(first)).toBe('submit');
+  });
+
+  it('leaves the action it borrowed with no registration of its own', async () => {
+    const submit = new Action({ value: { label: 'Send' } });
+    const form = new Form.Group({ submit });
+
+    for (let i = 0; i < 3; i++) {
+      const promise = modal.message('Subscribe', 'again', { form });
+      await submit.execute(null);
+      expect(await settled(promise)).toBe('submit');
+    }
+
+    // nothing accumulated: an execute() outside any dialog reaches no resolver, so no dialog is opened or settled
+    await submit.execute(null);
+    expect(currentModal.value).toBeNull();
+  });
+
+  it('answers with what the action chain returned', async () => {
+    const submit = new Action({ value: { label: 'Send' } });
+    submit.registerAction(new Form.ExecuteAction(async () => ({ id: 42 })));
+    const form = new Form.Group({ submit });
+
+    const promise = modal.message('Subscribe', 'Enter your email address:', { form });
+
+    expect(await submit.execute(null)).toEqual({ id: 42 });
+    expect(await settled(promise)).toBe('submit');
+  });
+
+  it('answers with an abort and leaves the dialog open', async () => {
+    const submit = new Action({ value: { label: 'Send' } });
+    submit.registerAction(
+      new Form.ExecuteAction(() => {
+        throw new Form.AbortEventHandlingException('not yet');
+      }),
+    );
+    const form = new Form.Group({ submit });
+
+    const promise = modal.message('Subscribe', 'Enter your email address:', { form });
+
+    const answer = await submit.execute(null);
+    expect(answer).toBeInstanceOf(Form.AbortEventHandlingException);
+    expect(currentModal.value!.dialogId).toBe(promise.dialogId);
+
+    promise.close('close');
+    await settled(promise);
+  });
+
+  it('leaves a bare vue-forms Action out of the rendered set, and still settles on it', async () => {
+    const warn = vi.mocked(console.warn);
+    const submit = new Form.Action({ value: { label: 'Send' } });
+    const form = new Form.Group({ submit });
+
+    const promise = modal.message('Subscribe', 'Enter your email address:', { form });
+
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("Form field 'submit'"));
+    // no action of its own reaches df-actions, so the dialog falls back to its default close button
+    expect(Object.keys(currentModal.value!.actions!)).toEqual(['close']);
+
+    await submit.execute(null);
+    expect(await settled(promise)).toBe('submit');
+  });
+
   it('stays silent when a view is installed within the same tick as the open', async () => {
     const warn = vi.mocked(console.warn);
 
