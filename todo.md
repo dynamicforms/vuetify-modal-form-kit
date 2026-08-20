@@ -80,16 +80,15 @@
 
 ## Packaging and release
 
-- `package-lock.json` is gitignored while CI runs `npm install`, so no job resolves the tree a developer resolved
-  and `npm ci` cannot run at all. Commit the lockfile and switch both matrix legs.
-- No job type-checks `dist/index.d.ts` against the declared Vue floor. The floor is real: `<df-modal>`'s own
-  component type, `ModalView`, `FormRender` and `ComponentRender` are emitted as `DefineComponent` with 20 type
-  arguments, and the type takes 19 through Vue 3.5.1, so a consumer below 3.5.2 with `skipLibCheck: false` gets
-  TS2707. `@dynamicforms/vue-forms` has the `vue-floor` job to copy.
-- Nothing runs at the declared floor. `engines.node` is `>=22.12` and the readme promises a CommonJS consumer
+- No job type-checks `dist/index.d.ts` against the declared Vue floor. `peer-range (floor)` type-checks the
+  source against Vue 3.5.2; the emitted declarations are a separate question, and the one a consumer meets.
+  `<df-modal>`'s own component type, `ModalView`, `FormRender` and `ComponentRender` are emitted as
+  `DefineComponent` with 20 type arguments, and the type takes 19 through Vue 3.5.1, so a consumer below 3.5.2
+  with `skipLibCheck: false` gets TS2707. `@dynamicforms/vue-forms` has the `vue-floor` job to copy.
+- No job runs at the declared node floor. `engines.node` is `>=22.12` and the readme promises a CommonJS consumer
   `require()` of the ESM build there; the matrix is `lts/*` and `latest`, both far above it, and
-  `npm run verify:artifact` imports rather than requires. A matrix leg at 22.12 that `require()`s the artifact is
-  what would state the promise.
+  `npm run verify:artifact` imports rather than requires. A leg at 22.12 that `require()`s the artifact is what
+  would state the promise.
 - There is no release workflow: the version bump, the tag and the publish are hand-made, and nothing checks that
   `changelog.md` names the version being published.
 - `files: ["dist/*"]` leaves `changelog.md` out of the tarball.

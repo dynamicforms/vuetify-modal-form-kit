@@ -24,8 +24,9 @@ section.
 | `@dynamicforms/vuetify-inputs` | `^0.8.1` | `^0.9.0` |
 | `vue` | `^3.4` | `^3.5.2` |
 
-`engines.node` is `>=22.12`, where the package declared none. The vue floor is vue-forms' own, which
-vuetify-inputs 0.9.0 and this release both restate.
+`lodash-es` moves to `^4.17.21`, and `engines.node` is `>=22.12`, where the package declared none. The old
+`lodash-es` floor did not work: 4.17.12 throws `ReferenceError: root is not defined` as it loads. The vue floor is
+vue-forms' own, which vuetify-inputs 0.9.0 and this release both restate.
 
 The two peers are one upgrade: vuetify-inputs 0.9.0 requires vue-forms 0.17.0, and its 0.8.x line cannot be combined
 with vue-forms 0.17.0. Installing them one at a time leaves npm reporting unsatisfiable peers.
