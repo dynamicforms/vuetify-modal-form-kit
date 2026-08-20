@@ -118,26 +118,32 @@ class ModalAPI {
     const actions: FormActions = { ...defaultActions, ...(options?.actions ?? {}) };
 
     // A registration belongs to the element's declaration, so one chain serves every binding of it and every
-    // dialog opened over one. Three things follow, and the resolver states all three: it answers for the element
-    // it was registered on and no sibling binding of it, only while its own dialog is the one on screen, and it
-    // is dropped again when that dialog settles rather than accumulating over the openings.
+    // dialog opened over one. This handler settles the dialog when the element that executed is the binding the
+    // dialog holds and the dialog is the one on screen. Both are asked after the chain has run, because that is
+    // where settling is decided: an executor may take a while, and the dialog may be closed from the outside
+    // through promise.close() while it does. The handler is dropped again when the dialog settles, so nothing
+    // accumulates over repeated openings.
     const registered: [Form.Action, Form.ExecuteAction][] = [];
+    const attached = new Set<Form.Action>();
     const attachResolver = (target: Form.Action, name: string) => {
+      // one registration per action: an action reachable both as a member of the form and under a key of
+      // options.actions would otherwise settle the dialog twice
+      if (attached.has(target)) return;
+      attached.add(target);
       const handler = new Form.ExecuteAction(async (field, supr, ...params) => {
-        if (field !== target || !modalDefinitions[id] || dialogTracker.currentRef.value !== id) {
-          return supr(field, ...params);
-        }
+        const mine = field === target;
         let answer;
         try {
           answer = await supr(field, ...params);
         } catch (error) {
           // an abort is an answer: the run ends, the dialog stays open, and the caller reads the exception off
           // what execute() resolves with rather than off a rejection
-          if (error instanceof Form.AbortEventHandlingException) return error;
+          if (mine && error instanceof Form.AbortEventHandlingException) return error;
           throw error;
         }
-        if (answer instanceof Form.AbortEventHandlingException) return answer;
-        resolvePromise(field.fieldName || name);
+        if (mine && !(answer instanceof Form.AbortEventHandlingException) && dialogTracker.currentRef.value === id) {
+          resolvePromise(field.fieldName || name);
+        }
         // the answer the chain reached, not this handler's own: an action handed to a dialog goes on reporting
         // what its own executor returned
         return answer;

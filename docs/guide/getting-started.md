@@ -10,8 +10,8 @@ The library declares [`@dynamicforms/vue-forms`](:vue-forms:) `^0.17.0`,
 [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) `^0.9.0`, Vue `^3.5.2` and Vuetify `^3.9` among its peer
 dependencies; install them alongside it if they are not already in your project.
 
-The package is ESM only and `engines.node` is `>=22`. A CommonJS consumer reaches it through `require()` of an ES
-module, which Node supports from 22.12.
+The package is ESM only and `engines.node` is `>=22.12`, which is the release where Node supports `require()` of
+an ES module - the way a CommonJS consumer reaches it.
 
 In your `main.ts`:
 ```typescript

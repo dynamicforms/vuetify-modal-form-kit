@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed (breaking)
 
 - The peer dependencies move to `@dynamicforms/vue-forms` `^0.17.0`, `@dynamicforms/vuetify-inputs` `^0.9.0` and `vue`
-  `^3.5.2`, and `engines.node` is `>=22`. The four go together: vuetify-inputs 0.9.0 requires vue-forms 0.17.0, and the
+  `^3.5.2`, and `engines.node` is `>=22.12`. The four go together: vuetify-inputs 0.9.0 requires vue-forms 0.17.0, and the
   vue and node floors are what those two libraries themselves demand. Nothing this library exports was renamed or
   removed; the work is in the consuming application's own use of the peers, which
   [the migration guide](/guide/migration) points at.

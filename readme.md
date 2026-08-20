@@ -40,8 +40,8 @@ npm install vue@^3.5.2 vuetify@^3.9 @dynamicforms/vue-forms@^0.17.0 @dynamicform
   lodash-es vue-markdown-render @mdi/font
 ```
 
-The package is ESM only, and Node 22 or newer is what runs it. A CommonJS consumer reaches it through
-`require()` of an ES module, which Node supports from 22.12.
+The package is ESM only, and `engines.node` is `>=22.12` - the release where Node supports `require()` of an
+ES module, which is how a CommonJS consumer reaches it.
 
 ### Register the plugin
 
@@ -321,7 +321,7 @@ class MyBuilder extends FormLayout.VuetifyInputsComponentBuilder {}
 
 | Dependency | Version |
 |---|---|
-| Node | >=22 |
+| Node | >=22.12 |
 | Vue | ^3.5.2 |
 | Vuetify | ^3.9 |
 | @dynamicforms/vue-forms | ^0.17.0 |

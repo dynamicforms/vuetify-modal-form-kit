@@ -222,6 +222,60 @@ describe('modal service', () => {
     expect(await settled(promise)).toBe('submit');
   });
 
+  it('does not settle a dialog that stopped being the one on screen while its executor ran', async () => {
+    const submit = new Action({ value: { label: 'Send' } });
+    let release: (value: string) => void = () => {};
+    submit.registerAction(
+      new Form.ExecuteAction(
+        () =>
+          new Promise<string>((resolve) => {
+            release = resolve;
+          }),
+      ),
+    );
+    const form = new Form.Group({ submit });
+
+    const first = modal.message('Subscribe', 'Enter your email address:', { form });
+    const running = submit.execute(null);
+
+    // a dialog opens over it while the executor is still in flight, so by the time the executor answers the
+    // question the resolver was asked - is this dialog the one the user is looking at - has a different answer
+    const second = modal.message('Second', 'on top');
+    release('stored');
+    expect(await running).toBe('stored');
+
+    await nextTick();
+    await nextTick();
+    expect(currentModal.value!.dialogId).toBe(second.dialogId);
+
+    second.close('close');
+    await settled(second);
+    expect(currentModal.value!.dialogId).toBe(first.dialogId);
+
+    first.close('cancelled');
+    expect(await settled(first)).toBe('cancelled');
+  });
+
+  it('registers one resolver on an action the form and the caller both name', async () => {
+    const submit = new Action({ value: { label: 'Send' } });
+    const form = new Form.Group({ submit });
+    const runs: string[] = [];
+    submit.registerAction(
+      new Form.ExecuteAction((field, supr, ...params) => {
+        runs.push('executor');
+        return supr(field, ...params);
+      }),
+    );
+
+    // the same instance, reachable under the form's field name and under the caller's key
+    const promise = modal.message('Subscribe', 'again', { form, actions: { submit } });
+    await submit.execute(null);
+
+    expect(runs).toEqual(['executor']);
+    expect(await settled(promise)).toBe('submit');
+    expect(currentModal.value).toBeNull();
+  });
+
   it('stays silent when a view is installed within the same tick as the open', async () => {
     const warn = vi.mocked(console.warn);
 

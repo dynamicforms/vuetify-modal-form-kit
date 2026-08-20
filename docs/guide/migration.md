@@ -24,7 +24,7 @@ section.
 | `@dynamicforms/vuetify-inputs` | `^0.8.1` | `^0.9.0` |
 | `vue` | `^3.4` | `^3.5.2` |
 
-`engines.node` is `>=22`, where the package declared none. The vue and node floors are vue-forms' own, which
+`engines.node` is `>=22.12`, where the package declared none. The vue floor is vue-forms' own, which
 vuetify-inputs 0.9.0 and this release both restate.
 
 The two peers are one upgrade: vuetify-inputs 0.9.0 requires vue-forms 0.17.0, and its 0.8.x line cannot be combined
@@ -77,8 +77,8 @@ There is one build and one entry point. `main`, the `require` export condition, 
 import { modal, FormBuilder, ModalView } from '@dynamicforms/vuetify-modal-form-kit';
 ```
 
-A CommonJS file reaches the same build through `require()` of an ES module, which node supports from 22.12.
-`engines.node` is `>=22`, so a CommonJS consumer needs 22.12 or newer:
+A CommonJS file reaches the same build through `require()` of an ES module, which node supports from 22.12 -
+the floor `engines.node` states:
 
 ```javascript
 const { modal } = require('@dynamicforms/vuetify-modal-form-kit');
@@ -239,7 +239,7 @@ Sanitise it where the payload is read, on the way into the layout, if an unknown
 ### Checklist for 0.7.0
 
 1. Upgrade both peers in one step — `@dynamicforms/vue-forms@^0.17.0`, `@dynamicforms/vuetify-inputs@^0.9.0` — with
-   `vue@^3.5.2`, and run on node 22 or newer.
+   `vue@^3.5.2`, and run on node 22.12 or newer.
 2. Search for the three silent breaks first: `watch(` with an element as the source, `readonly(` over an element,
    and `isEqual` over two elements. The type checker finds the `clone(` → `bind(` calls for you.
 3. Work through [the vue-forms](:vue-forms:/guide/migration.html) and

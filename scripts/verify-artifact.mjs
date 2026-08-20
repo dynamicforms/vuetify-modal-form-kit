@@ -2,7 +2,8 @@
  * Loads the built ESM artifact and exercises it, so that what the package publishes is checked rather than what
  * the source compiles to under the test runner. The specs import `src/`; nothing else reaches `dist/`.
  *
- * Run after `npm run build`.
+ * Run after `npm run build`, from the repository root. `registerHooks` needs node 22.15 or newer, above the
+ * package's own floor: this script runs in CI, not in a consumer's install.
  */
 import { strict as assert } from 'node:assert';
 import { registerHooks } from 'node:module';

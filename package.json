@@ -50,7 +50,7 @@
     "url": "https://github.com/dynamicforms/vuetify-modal-form-kit/issues"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12"
   },
   "peerDependencies": {
     "@dynamicforms/vue-forms": "^0.17.0",
