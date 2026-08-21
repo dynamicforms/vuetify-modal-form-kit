@@ -8,6 +8,7 @@ import { isArray, isObjectLike } from 'lodash-es';
 
 import { type ComponentBuilderBase, VuetifyInputsComponentBuilder } from './component';
 import { Row } from './row';
+import { isRuntimeProbe } from './simple-proxy';
 import { ComponentProps, FormJSON, FormJSONResponsive, RowPropsPartial, TwelveDivisible } from './types';
 
 export type SimpleProxy<T extends ComponentBuilderBase> = T & {
@@ -29,8 +30,8 @@ class FormBase implements ComponentProps {
   /**
    * @param cols specifies how many columns we want per row. each column will be 12/cols wide with cols columns per row
    * @return returns a proxy that allows to immediately from the FormBuilder object add components into their own
-   * rows and columns e.g. new FormBuilder().simple.generic(...) will create a layout with one row, column and within
-   * it your generic component. You may call the ComponentBuilder's methods as many times as you want
+   * rows and columns, e.g. `new FormBuilder().simple().generic(...)` will create a layout with one row, column and
+   * within it your generic component. You may call the ComponentBuilder's methods as many times as you want
    * to generate more rows and columns with components
    */
   simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(cols: TwelveDivisible = 1): SimpleProxy<T> {
@@ -42,6 +43,7 @@ class FormBase implements ComponentProps {
         if (prop === 'simple') {
           return (newCols: TwelveDivisible = 1) => this.simple<T>(newCols);
         }
+        if (isRuntimeProbe(prop)) return undefined;
         return (...args: any[]) => {
           if (!currentRow || componentsInCurrentRow >= cols) {
             this.row({}, (row) => {
@@ -93,8 +95,8 @@ export class FormBuilder extends ResponsiveRenderOptions<FormBase> {
   /**
    * @param cols specifies how many columns we want per row. each column will be 12/cols wide with cols columns per row
    * @return returns a proxy that allows to immediately from the FormBuilder object add components into their own
-   * rows and columns e.g. new FormBuilder().simple.generic(...) will create a layout with one row, column and within
-   * it your generic component. You may call the ComponentBuilder's methods as many times as you want
+   * rows and columns, e.g. `new FormBuilder().simple().generic(...)` will create a layout with one row, column and
+   * within it your generic component. You may call the ComponentBuilder's methods as many times as you want
    * to generate more rows and columns with components
    */
   simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(cols: TwelveDivisible = 1): SimpleProxy<T> {

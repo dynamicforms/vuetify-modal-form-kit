@@ -11,7 +11,8 @@ The library declares [`@dynamicforms/vue-forms`](:vue-forms:) `^0.17.0`,
 dependencies; install them alongside it if they are not already in your project.
 
 The package is ESM only and `engines.node` is `>=22.12`, which is the release where Node supports `require()` of
-an ES module - the way a CommonJS consumer reaches it.
+an ES module - the way a CommonJS consumer reaches it. That path runs through a bundler: the peers it loads import
+their own stylesheets, which plain node has no loader for.
 
 In your `main.ts`:
 ```typescript
@@ -63,7 +64,8 @@ if (answer === 'yes') {
 
 ### Form layouts
 
-Use `FormBuilder` to define a responsive layout in code and render it with `<FormRender>`:
+Use `FormBuilder` to define a responsive layout in code and render it with
+[`<form-render>`](/api/form-render):
 
 ```typescript
 import { FormBuilder } from '@dynamicforms/vuetify-modal-form-kit';

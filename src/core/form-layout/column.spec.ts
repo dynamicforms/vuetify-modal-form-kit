@@ -100,6 +100,97 @@ describe('Column', () => {
     });
   });
 
+  it('keeps the alignSelf, class and style values ColumnProps declares', () => {
+    expect(new Column({ alignSelf: 'center' }).toJSON().props).toEqual({ alignSelf: 'center' });
+    expect(new Column({ alignSelf: 'baseline' }).toJSON().props).toEqual({ alignSelf: 'baseline' });
+    expect(new Column({ class: 'col-class' }).toJSON().props).toEqual({ class: 'col-class' });
+    expect(new Column({ class: ['first', 'second'] }).toJSON().props).toEqual({ class: ['first', 'second'] });
+    expect(new Column({ class: { active: true } }).toJSON().props).toEqual({ class: { active: true } });
+    expect(new Column({ style: 'color: red' }).toJSON().props).toEqual({ style: 'color: red' });
+    expect(new Column({ style: { color: 'red', flexGrow: 1 } }).toJSON().props).toEqual({
+      style: { color: 'red', flexGrow: 1 },
+    });
+    expect(new Column({ style: [{ color: 'red' }, 'margin: 0'] }).toJSON().props).toEqual({
+      style: [{ color: 'red' }, 'margin: 0'],
+    });
+  });
+
+  it('drops an alignSelf, class or style value ColumnProps does not declare', () => {
+    // 'space-between' is a justify value; alignSelf has no such alignment
+    expect(new Column({ alignSelf: 'space-between' as any }).toJSON().props).toEqual({});
+    // `class` is a string, a list of strings or a class-to-boolean object; a list holding an object is none of them
+    expect(new Column({ class: ['first', { active: true }] as any }).toJSON().props).toEqual({});
+    expect(new Column({ class: 42 as any }).toJSON().props).toEqual({});
+    // a CSS property holds a string or a number
+    expect(new Column({ style: { color: ['red'] } as any }).toJSON().props).toEqual({});
+    expect(new Column({ style: 42 as any }).toJSON().props).toEqual({});
+  });
+
+  it('takes a number for offset and order, and nothing else', () => {
+    expect(new Column({ offset: 2, order: 3 }).toJSON().props).toEqual({ offset: 2, order: 3 });
+    // ColumnProps declares number | 'auto' | boolean for both; the filter takes the number alone
+    expect(new Column({ offset: 'auto', order: 'auto' }).toJSON().props).toEqual({});
+  });
+
+  it('carries alignSelf, class and style into a breakpoint that states none of them', () => {
+    const column = Column.fromJSON({
+      props: { alignSelf: 'center', class: 'col-class', style: { color: 'red' } },
+      components: [],
+      md: { props: { cols: 4 } },
+    });
+
+    expect(column.toJSON('sm').props).toEqual({ alignSelf: 'center', class: 'col-class', style: { color: 'red' } });
+    expect(column.toJSON('md').props).toEqual({
+      alignSelf: 'center',
+      class: 'col-class',
+      style: { color: 'red' },
+      cols: 4,
+    });
+  });
+
+  it('lets a breakpoint restate alignSelf', () => {
+    const column = Column.fromJSON({
+      props: { alignSelf: 'center' },
+      components: [],
+      md: { props: { alignSelf: 'stretch' } },
+    });
+
+    expect(column.toJSON('sm').props).toEqual({ alignSelf: 'center' });
+    expect(column.toJSON('md').props).toEqual({ alignSelf: 'stretch' });
+  });
+
+  it('resolves a column returned from an async function', async () => {
+    const column = new Column({ cols: 12 });
+    const build = async () => column.simple().generic('VTextField', { label: 'First Name' });
+
+    // resolving the promise reads `then` off the proxy: a component-adding function there calls `then` on the
+    // component builder, which declares none
+    await expect(build()).resolves.toBeDefined();
+
+    expect(column.toJSON()).toEqual({
+      props: { cols: 12 },
+      components: [{ name: 'VTextField', props: { label: 'First Name' } }],
+    });
+  });
+
+  it('answers undefined for the keys a runtime probes the simple() proxy with', () => {
+    const column = new Column({ cols: 12 });
+    const proxy = <any>column.simple();
+
+    expect(proxy.then).toBeUndefined();
+    expect(proxy.toString).toBeUndefined();
+    expect(proxy.valueOf).toBeUndefined();
+    expect(proxy.toJSON).toBeUndefined();
+    expect(proxy[Symbol.toPrimitive]).toBeUndefined();
+    expect(proxy[Symbol.toStringTag]).toBeUndefined();
+    expect(proxy[Symbol.iterator]).toBeUndefined();
+    expect(proxy[Symbol.asyncIterator]).toBeUndefined();
+    expect(proxy[Symbol.for('nodejs.util.inspect.custom')]).toBeUndefined();
+
+    // a probe builds nothing: no component
+    expect(column.toJSON().components).toEqual([]);
+  });
+
   it('should support nested forms via component method', () => {
     const nestedForm = new FormBuilder();
     nestedForm.row({}, (row) => row.col({ cols: 12 }));
@@ -167,11 +258,11 @@ describe('Column', () => {
 
     // First component
     expect(json.rows[0].columns[0].components[0].name).toBe('VTextField');
-    expect(json.rows[0].columns[0].components[0].props.label).toBe('First Name');
+    expect(json.rows[0].columns[0].components[0].props!.label).toBe('First Name');
 
     // Second component
     expect(json.rows[0].columns[0].components[1].name).toBe('VTextField');
-    expect(json.rows[0].columns[0].components[1].props.label).toBe('Last Name');
+    expect(json.rows[0].columns[0].components[1].props!.label).toBe('Last Name');
   });
 
   describe('fromJSON', () => {

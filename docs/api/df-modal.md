@@ -18,13 +18,16 @@ if that's your use case, you don't need to touch `df-modal` directly, see [`moda
 
 ## Props
 
+`DfModalProps` and `DfModalSlots` are exported under those names, for a component that wraps `<df-modal>` and
+forwards its props and slots.
+
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `modelValue` | `boolean` | `false` | Controls visibility. Use with `v-model`. |
 | `closable` | `boolean` | `false` | Shows a close (`x`) button in the title bar that sets `modelValue` to `false`. |
 | `size` | `DialogSize` | `DialogSize.DEFAULT` | One of `DialogSize.SMALL` / `MEDIUM` / `LARGE` / `X_LARGE`. Each of those switches to fullscreen below its own breakpoint; `DEFAULT` sizes itself to its content and never does. |
 | `formControl` | `Form.Group` | — | Exposed to the `body` slot as `formControl`; `df-modal` itself doesn't render a form from it. |
-| `dialogId` | `symbol` | — | Used internally by the `modal` service to manage the one-dialog-at-a-time stack. Leave unset for template dialogs. |
+| `dialogId` | `symbol` | — | Used internally by the `modal` service to manage the one-dialog-at-a-time stack. Leave unset for template dialogs. It also states who owns the stack entry: `df-modal` pushes only a template dialog's, and leaves one it was given a `dialogId` for on the stack when it unmounts. A `model-value` going false still removes whichever entry the component holds, which is the route the `closable` button takes. |
 | `title` | `Form.RenderableValue` | — | Dialog title. Accepts plain text, Markdown (`MdString`), or a custom component. Falls back to the `title` slot if omitted. |
 | `color` | `string` | — | Title bar background color. |
 | `icon` | `string` | — | Icon shown next to the title. |
@@ -45,12 +48,16 @@ if that's your use case, you don't need to touch `df-modal` directly, see [`moda
 | `actions` | — | The dialog's action buttons. **Always** render an `Action[]` through `<df-actions>` here instead of hand-rolled `v-btn`s - see [Template Dialog → Keep actions consistent](/examples/dialog-template#keep-actions-consistent-always-render-them-through-df-actions) for why, and [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) for the full `Action` / `df-actions` API. |
 
 `df-modal` manages the dialog stack itself - only the top-most dialog by `dialogId` is actually shown - so several
-`<df-modal>`s can coexist in the tree without you having to hide the rest by hand.
+`<df-modal>`s can coexist in the tree without you having to hide the rest by hand. A template dialog's entry is
+pushed when `model-value` goes true and removed when it goes false or the component unmounts. A dialog opened
+through the [`modal` service](./modal-service) is the service's, and it stays on the stack when the `df-modal`
+drawing it unmounts: the definition and the promise behind it outlive the component, and the next
+[`<modal-view>`](./modal-view) to mount draws it again.
 
 ## Keyboard shortcuts
 
 `df-modal` installs its own `keydown` listener while it's mounted, and reacts only while it is itself the top-most
-shown dialog:
+shown dialog and nothing is open above it:
 
 - **Enter** executes the action in the `actions` prop with `defaultConfirm` set to `true`, unless focus is in a
   `<textarea>` or a `contenteditable` element (so multi-line text still gets a literal newline).
@@ -58,6 +65,13 @@ shown dialog:
   happens on Escape if no action is flagged `defaultReject`.
 
 A key held down repeats, and the repeats are ignored: only the first `keydown` of a press starts a run.
+
+A keystroke an overlay above the dialog answers is not the dialog's. A `<df-select>` menu or a `<df-date-time>`
+picker inside the dialog is a Vuetify overlay of its own, and Vuetify closes a non-persistent one on Escape from a
+`window` listener without calling `preventDefault()`, so the same keystroke arrives here too. The dialog's own
+overlay root carries the class `df-modal`, and Enter and Escape reach an action only while an overlay of that
+class holds the highest z-index in `.v-overlay-container` - the reach a click has. Closing the menu and rejecting
+the dialog therefore take one Escape each.
 
 An action is reached when all three hold:
 
@@ -84,9 +98,10 @@ const loginAction = new Action({ value: { name: 'login', label: 'Log in', defaul
 
 The `actions` prop and the `actions` slot are fed the *same* `Action` instances - pressing Enter/Esc calls
 `.execute()` on exactly the object a click on the matching `<df-actions>` button would call it on, so there's no
-separate "keyboard action" concept to keep in sync. `Action` is
-[`@dynamicforms/vuetify-inputs`](:vuetify-inputs:)': it is what carries `defaultConfirm`, `defaultReject` and the
-breakpoint-resolved options `<df-actions>` draws from.
+separate "keyboard action" concept to keep in sync. The flags are read off the action's `value`, which is where
+`<df-actions>` reads them too, so an `Action` of either class states them; the
+[`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) subclass is what an action needs in order to carry
+breakpoint-resolved render options, not what it needs to be a dialog button.
 
 This applies equally to `<df-modal>` used directly in a template (see
 [Template Dialog](/examples/dialog-template#keyboard-shortcuts) for a full worked example) and to dialogs opened

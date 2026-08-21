@@ -5,6 +5,7 @@
   onModelValueUpdate instead.
   -->
   <v-dialog
+    :class="overlayClass"
     :model-value="isShown"
     :width="width"
     :max-width="width"
@@ -60,26 +61,11 @@ import { ActionRenderOptions } from '@dynamicforms/vuetify-inputs';
 import { computed, getCurrentInstance, onMounted, onUnmounted, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 
+import { DfModalProps, DfModalSlots } from './df-modal.types';
 import DialogSize from './dialog-size';
 import dialogTracker from './top-modal-tracker';
 
-interface Props {
-  // eslint-disable-next-line
-  modelValue: boolean;
-  closable?: boolean;
-  size?: DialogSize;
-  formControl?: Form.Group;
-  dialogId?: symbol;
-  title?: Form.RenderableValue;
-  color?: string;
-  icon?: string;
-  // Actions considered for the Enter (defaultConfirm) / Esc (defaultReject) keyboard shortcuts. Rendering them is
-  // still up to the `actions` slot - this prop only drives the keyboard handling. The flags are read off the
-  // action's value, which is where <df-actions> reads them too, so any vue-forms Action states them.
-  actions?: Form.Action[];
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<DfModalProps>(), {
   modelValue: false,
   closable: false,
   size: DialogSize.DEFAULT,
@@ -175,8 +161,35 @@ function run(action: Form.Action, e: KeyboardEvent) {
   });
 }
 
+// Vuetify teleports every overlay into .v-overlay-container and gives it the z-index its stack hands out when the
+// overlay activates, so the one on screen with the highest z-index is the one the user is looking at. An overlay
+// above the dialog - a <df-select> menu, a <df-date-time> picker - closes on Escape from a window keydown listener
+// of its own and never calls preventDefault(), so that keystroke reaches this handler too. The dialog answers the
+// keyboard only while it is the topmost overlay, which is the same reach a click has.
+const overlayClass = 'df-modal';
+
+function overlayZIndex(el: Element) {
+  return Number.parseFloat((el as HTMLElement).style.zIndex) || 0;
+}
+
+// A tooltip and a snackbar are given a z-index above the overlay below them and then kept out of the stack that
+// orders the rest - Vuetify raises the index before it asks whether the overlay joins the stack. Neither takes
+// the keystroke, so neither stands between the dialog and the keyboard.
+const unstacked = '.v-tooltip, .v-snackbar';
+
+function isTopOverlay() {
+  const active = Array.from(document.querySelectorAll('.v-overlay-container .v-overlay--active')).filter(
+    (el) => !el.matches(unstacked),
+  );
+  const own = active.filter((el) => el.classList.contains(overlayClass));
+  // No overlay of this dialog's own on screen: whatever else is open belongs to another dialog, not above this one.
+  if (!own.length) return true;
+  const top = Math.max(...active.map(overlayZIndex));
+  return own.some((el) => overlayZIndex(el) >= top);
+}
+
 function onKeydown(e: KeyboardEvent) {
-  if (!isShown.value || e.defaultPrevented || e.repeat) return;
+  if (!isShown.value || e.defaultPrevented || e.repeat || !isTopOverlay()) return;
   if (e.key === 'Enter') {
     const target = e.target as HTMLElement;
     if (target.tagName === 'TEXTAREA' || target.isContentEditable) return;
@@ -194,14 +207,11 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown);
-  dialogTracker.remove(sym.value);
+  // Only a template dialog's stack entry belongs to this component. Removing an api-owned one here would take the
+  // dialog off the stack while its modalDefinitions entry and its unsettled promise stay, so the next <modal-view>
+  // to mount would show nothing.
+  if (!props.dialogId) dialogTracker.remove(sym.value);
 });
 
-type Slots = {
-  title: () => any;
-  body: (props: { formControl: Form.Group }) => Form.Group;
-  actions: () => any;
-};
-
-defineSlots<Slots>();
+defineSlots<DfModalSlots>();
 </script>

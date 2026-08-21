@@ -7,6 +7,7 @@ import {
 import { isArray, isBoolean, isNumber, isObjectLike, isString } from 'lodash-es';
 
 import { Component, ComponentBuilderBase, VuetifyInputsComponentBuilder } from './component';
+import { isRuntimeProbe } from './simple-proxy';
 import { ColumnJSON, ColumnJSONResponsive, ColumnPropsPartial, ComponentProps } from './types';
 
 class ColBase implements ComponentProps {
@@ -46,17 +47,18 @@ class ColBase implements ComponentProps {
 
   /**
    * @return returns a proxy that allows to immediately from the column object add components, e.g.
-   * new FormBuilder().row((row) => row.col((col) => col.simple.generic(...) will add one component into this column.
-   * You may call the ComponentBuilder's methods as many times as you want to generate components
+   * `col.simple().generic(...)` will add one component into this column. You may call the ComponentBuilder's
+   * methods as many times as you want to generate components
    */
   simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(): T {
     const res = new Proxy({} as T, {
-      get:
-        (target: T, prop: string | symbol) =>
-        (...args: any[]) => {
+      get: (target: T, prop: string | symbol) => {
+        if (isRuntimeProbe(prop)) return undefined;
+        return (...args: any[]) => {
           this.component((cmpt: any) => cmpt[prop](...args));
           return res;
-        },
+        };
+      },
     });
     return res;
   }
@@ -111,8 +113,8 @@ export class Column extends ResponsiveRenderOptions<ColBase> {
 
   /**
    * @return returns a proxy that allows to immediately from the column object add components, e.g.
-   * new FormBuilder().row((row) => row.col((col) => col.simple.generic(...) will add one component into this column.
-   * You may call the ComponentBuilder's methods as many times as you want to generate components
+   * `col.simple().generic(...)` will add one component into this column. You may call the ComponentBuilder's
+   * methods as many times as you want to generate components
    */
   simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(): T {
     return this._value.simple<T>();

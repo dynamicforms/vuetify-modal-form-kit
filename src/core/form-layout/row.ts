@@ -4,6 +4,7 @@ import { isArray, isBoolean, isNumber, isObjectLike, isString } from 'lodash-es'
 
 import { Column } from './column';
 import { ComponentBuilderBase, VuetifyInputsComponentBuilder } from './component';
+import { isRuntimeProbe } from './simple-proxy';
 import {
   ColumnPropsPartial,
   ComponentProps,
@@ -34,18 +35,18 @@ class RowBase implements ComponentProps {
   /**
    * @param cols specifies how many columns we have designed this row to have. each column will be 12 / cols wide
    * @return returns a proxy that allows to immediately from the row object add components into their own
-   * columns e.g. new FormBuilder().row((row) => row.simple.generic(...) will create a layout with one column and within
-   * it your generic component. You may call the ComponentBuilder's methods as many times as you want
-   * to generate more columns with components
+   * columns, e.g. `row.simple(2).generic(...)` will add your generic component into a column 6 wide. You may call
+   * the ComponentBuilder's methods as many times as you want to generate more columns with components
    */
   simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(cols: TwelveDivisible = 1): T {
     const res = new Proxy({} as T, {
-      get:
-        (target: T, prop: string | symbol) =>
-        (...args: any[]) => {
+      get: (target: T, prop: string | symbol) => {
+        if (isRuntimeProbe(prop)) return undefined;
+        return (...args: any[]) => {
           this.col({ cols: 12 / cols }, (col) => col.component((cmpt: any) => cmpt[prop](...args)));
           return res;
-        },
+        };
+      },
     });
     return res;
   }
@@ -93,9 +94,8 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
   /**
    * @param cols specifies how many columns we have designed this row to have. each column will be 12 / cols wide
    * @return returns a proxy that allows to immediately from the row object add components into their own
-   * columns e.g. new FormBuilder().row((row) => row.simple.generic(...) will create a layout with one column and within
-   * it your generic component. You may call the ComponentBuilder's methods as many times as you want
-   * to generate more columns with components
+   * columns, e.g. `row.simple(2).generic(...)` will add your generic component into a column 6 wide. You may call
+   * the ComponentBuilder's methods as many times as you want to generate more columns with components
    */
   simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(cols: TwelveDivisible = 1): T {
     return this._value.simple<T>(cols);

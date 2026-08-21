@@ -4,14 +4,18 @@ import { mount } from '@vue/test-utils';
 import { vi } from 'vitest';
 import { nextTick } from 'vue';
 import { createVuetify } from 'vuetify';
+import * as vuetifyComponents from 'vuetify/components';
 
 import DfModal from './df-modal.component.vue';
+import DialogSize from './dialog-size';
 import dialogTracker from './top-modal-tracker';
 
 const stubs = {
   VDialog: {
-    props: ['modelValue'],
-    template: '<div class="dialog" :data-shown="String(modelValue)"><slot /></div>',
+    props: ['modelValue', 'width', 'fullscreen'],
+    template:
+      '<div class="dialog" :data-shown="String(modelValue)" :data-width="String(width)"' +
+      ' :data-fullscreen="String(fullscreen)"><slot /></div>',
   },
   VCard: { template: '<div><slot /></div>' },
   VCardTitle: { template: '<div><slot /></div>' },
@@ -27,6 +31,8 @@ interface ModalProps {
   modelValue: boolean;
   dialogId?: symbol;
   actions?: Action[];
+  size?: DialogSize;
+  closable?: boolean;
 }
 
 function mountModal(props: ModalProps) {
@@ -47,6 +53,22 @@ function actionWithSpy(value: Record<string, any>) {
     }),
   );
   return { action, spy };
+}
+
+// Vuetify teleports an overlay into .v-overlay-container and orders the ones on screen by the z-index its stack
+// hands out. The VDialog stub renders none of that, so the dialog's own overlay is one of the elements built here.
+function openOverlay(className: string, zIndex: number) {
+  let container = document.querySelector('.v-overlay-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'v-overlay-container';
+    document.body.appendChild(container);
+  }
+  const overlay = document.createElement('div');
+  overlay.className = `v-overlay v-overlay--active ${className}`;
+  overlay.style.zIndex = String(zIndex);
+  container.appendChild(overlay);
+  return overlay;
 }
 
 function press(key: string, target?: HTMLElement) {
@@ -97,6 +119,95 @@ describe('DfModal', () => {
     error.mockRestore();
   });
 
+  it('leaves an api-owned dialog on the stack when it unmounts', () => {
+    // api.ts owns the entry it pushed, along with the modalDefinitions entry and the promise that go with it
+    const dialogId = Symbol('api');
+    dialogTracker.push(dialogId);
+
+    mountModal({ modelValue: true, dialogId }).unmount();
+
+    expect(dialogTracker.currentRef.value).toBe(dialogId);
+    dialogTracker.remove(dialogId);
+  });
+
+  it('takes the template dialog it pushed off the stack when it unmounts', () => {
+    const wrapper = mountModal({ modelValue: true });
+    expect(dialogTracker.currentRef.value).not.toBeNull();
+
+    wrapper.unmount();
+    expect(dialogTracker.currentRef.value).toBeNull();
+  });
+
+  describe('size', () => {
+    const viewport = window.innerWidth;
+
+    afterEach(() => {
+      window.innerWidth = viewport;
+    });
+
+    // useDisplay() reads window.innerWidth when the plugin is created, so the viewport is set before the mount
+    function mountAtViewport(width: number, size?: DialogSize) {
+      window.innerWidth = width;
+      return mountModal({ modelValue: true, size });
+    }
+
+    function dialog(wrapper: ReturnType<typeof mountModal>) {
+      const attrs = wrapper.find('.dialog').attributes();
+      return { width: attrs['data-width'], fullscreen: attrs['data-fullscreen'] };
+    }
+
+    it.each([
+      [DialogSize.SMALL, 800, '400'],
+      [DialogSize.MEDIUM, 1000, '600'],
+      [DialogSize.LARGE, 1400, '800'],
+      [DialogSize.X_LARGE, 2000, '1140'],
+    ])('takes its width from the size where the viewport carries it', (size, viewportWidth, width) => {
+      const wrapper = mountAtViewport(viewportWidth, size);
+      expect(dialog(wrapper)).toEqual({ width, fullscreen: 'false' });
+      wrapper.unmount();
+    });
+
+    it.each([
+      [DialogSize.SMALL, 500],
+      [DialogSize.MEDIUM, 800],
+      [DialogSize.LARGE, 1000],
+      [DialogSize.X_LARGE, 1400],
+    ])('goes fullscreen below the breakpoint its size names', (size, viewportWidth) => {
+      const wrapper = mountAtViewport(viewportWidth, size);
+      expect(dialog(wrapper)).toEqual({ width: 'unset', fullscreen: 'true' });
+      wrapper.unmount();
+    });
+
+    it('leaves the width to the content at DialogSize.DEFAULT, whatever the viewport', () => {
+      const wide = mountAtViewport(2000);
+      expect(dialog(wide)).toEqual({ width: 'unset', fullscreen: 'false' });
+      wide.unmount();
+
+      const narrow = mountAtViewport(400);
+      expect(dialog(narrow)).toEqual({ width: 'unset', fullscreen: 'false' });
+      narrow.unmount();
+    });
+  });
+
+  describe('closable', () => {
+    it('renders no header button unless it is asked for one', () => {
+      const wrapper = mountModal({ modelValue: true });
+      expect(wrapper.find('button').exists()).toBe(false);
+      wrapper.unmount();
+    });
+
+    it('closes the dialog from the header button', async () => {
+      const wrapper = mountModal({ modelValue: true, closable: true });
+      expect(dialogTracker.currentRef.value).not.toBeNull();
+
+      await wrapper.find('button').trigger('click');
+
+      expect(wrapper.emitted('update:model-value')).toEqual([[false]]);
+      expect(dialogTracker.currentRef.value).toBeNull();
+      wrapper.unmount();
+    });
+  });
+
   describe('keyboard shortcuts', () => {
     let dialogId: symbol;
 
@@ -107,6 +218,7 @@ describe('DfModal', () => {
 
     afterEach(() => {
       dialogTracker.remove(dialogId);
+      document.querySelector('.v-overlay-container')?.remove();
     });
 
     it('executes the defaultConfirm action on Enter and the defaultReject one on Esc', () => {
@@ -142,14 +254,101 @@ describe('DfModal', () => {
       disabled.action.enabled = false;
       const hidden = actionWithSpy({ label: 'Cancel', defaultReject: true });
       hidden.action.visibility = DisplayMode.HIDDEN;
+      // <df-actions> draws an INVISIBLE action with `visibility: hidden`: it holds its space and takes no click,
+      // so the keyboard does not reach it either.
+      const invisible = actionWithSpy({ label: 'Close', defaultReject: true });
+      invisible.action.visibility = DisplayMode.INVISIBLE;
 
-      const wrapper = mountModal({ modelValue: true, dialogId, actions: [disabled.action, hidden.action] });
+      const wrapper = mountModal({
+        modelValue: true,
+        dialogId,
+        actions: [disabled.action, hidden.action, invisible.action],
+      });
 
       press('Enter');
       press('Escape');
 
       expect(disabled.spy).not.toHaveBeenCalled();
       expect(hidden.spy).not.toHaveBeenCalled();
+      expect(invisible.spy).not.toHaveBeenCalled();
+      wrapper.unmount();
+    });
+
+    it('leaves the keystroke to a non-persistent overlay open above the dialog', () => {
+      const confirm = actionWithSpy({ label: 'Save', defaultConfirm: true });
+      const reject = actionWithSpy({ label: 'Cancel', defaultReject: true });
+      const wrapper = mountModal({ modelValue: true, dialogId, actions: [confirm.action, reject.action] });
+
+      openOverlay('df-modal', 2000);
+      // a <df-select> menu open inside the dialog: VOverlay closes it on Escape without calling preventDefault()
+      const menu = openOverlay('v-menu', 2010);
+
+      press('Escape');
+      press('Enter');
+      expect(reject.spy).not.toHaveBeenCalled();
+      expect(confirm.spy).not.toHaveBeenCalled();
+
+      // the menu is gone, so the next Escape is the dialog's own
+      menu.remove();
+      press('Escape');
+      press('Enter');
+      expect(reject.spy).toHaveBeenCalledTimes(1);
+      expect(confirm.spy).toHaveBeenCalledTimes(1);
+
+      wrapper.unmount();
+    });
+
+    it('marks its own overlay, which is what tells it apart from one opened above it', async () => {
+      // Every other case here stubs <v-dialog>, so nothing else asserts that the marker the overlay scan looks
+      // for reaches the rendered overlay at all. Without it the scan finds no overlay of the dialog's own and
+      // answers the keyboard whatever stands above it.
+      Object.defineProperty(window, 'visualViewport', {
+        value: {
+          addEventListener() {},
+          removeEventListener() {},
+          width: 1280,
+          height: 800,
+          offsetLeft: 0,
+          offsetTop: 0,
+          scale: 1,
+        },
+        configurable: true,
+      });
+      const host = document.createElement('div');
+      document.body.appendChild(host);
+
+      const wrapper = mount(DfModal, {
+        props: { modelValue: true, dialogId },
+        attachTo: host,
+        global: {
+          plugins: [createVuetify({ components: vuetifyComponents })],
+          stubs: { MessagesWidget: { template: '<span />' } },
+        },
+      });
+      await nextTick();
+
+      const overlay = document.querySelector<HTMLElement>('.v-overlay-container .v-overlay--active.df-modal');
+      expect(overlay).not.toBeNull();
+      // the stack hands out the index the scan compares
+      expect(Number.parseFloat(overlay!.style.zIndex)).toBeGreaterThan(0);
+
+      wrapper.unmount();
+      host.remove();
+    });
+
+    it('answers the keyboard under a snackbar or a tooltip, which take no keystroke', () => {
+      const reject = actionWithSpy({ label: 'Cancel', defaultReject: true });
+      const wrapper = mountModal({ modelValue: true, dialogId, actions: [reject.action] });
+
+      openOverlay('df-modal', 2000);
+      // Vuetify raises the z-index of these two above the dialog and then keeps them out of the stack that orders
+      // the rest, so a raised index alone does not mean the overlay stands between the dialog and the keyboard
+      openOverlay('v-snackbar', 2010);
+      openOverlay('v-tooltip', 2020);
+
+      press('Escape');
+      expect(reject.spy).toHaveBeenCalledTimes(1);
+
       wrapper.unmount();
     });
 

@@ -16,11 +16,18 @@ See [FormBuilder examples](/examples/form-builder) for the two styles side by si
 | `row(rowProps, rowCallback)` | Appends a new `Row`, built by `rowCallback`. `rowProps` is a [`Row` props object](#row). |
 | `simple(cols = 1)` | Returns a proxy of a component builder (see [below](#component-builder)); every call made on it (e.g. `.dfInput(...)`) is placed into a new `12 / cols`-wide column, wrapping to a new row once `cols` components have been added to the current one. Calling `.simple(newCols)` again mid-chain starts a fresh row layout from that point on. `cols` must divide 12: `1 \| 2 \| 3 \| 4 \| 6 \| 12`. |
 | `breakpoint(name, formCallback)` | Overrides one responsive breakpoint (`'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'`); `formCallback` receives a form-like object with the same `row()` / `simple()` methods and has to return it. |
-| `toJSON(breakpoint?)` | Serializes the layout to the JSON structure `<FormRender>` consumes. Without an argument it keeps the breakpoints; with one it resolves them and returns the layout as it renders at that breakpoint. |
+| `toJSON(breakpoint?)` | Serializes the layout to the JSON structure [`<form-render>`](./form-render) consumes. Without an argument it keeps the breakpoints; with one it resolves them and returns the layout as it renders at that breakpoint. A component carrying no props is serialized with `props: null`. |
 | `FormBuilder.fromJSON(json)` | Static. Reads the JSON `toJSON()` produces back into a `FormBuilder`; a `FormBuilder` passed in is handed back unchanged. `<FormRender>` calls it on whatever reaches `:layout`. |
 
 A breakpoint - on the form, a row or a column - states only what changes and inherits the rest:
 [what a breakpoint inherits](/examples/form-builder-responsive#what-a-breakpoint-inherits).
+
+Every `simple()` - the form's, a row's, a column's - returns a proxy on which any key is a component-adding call,
+with two exceptions. On the form's proxy `simple` is answered first and restarts the layout at a new column count,
+as the table above says. And the keys a runtime reads off a value it knows nothing about answer `undefined`: every
+symbol, plus `then`, `toString`, `valueOf` and `toJSON`, so returning a layout out of an `async` function,
+stringifying the proxy or inspecting it in a console adds no component, row or column. No component builder method
+carries one of those names.
 
 ## `Row`
 
@@ -75,17 +82,8 @@ import { FormLayout } from '@dynamicforms/vuetify-modal-form-kit';
 class MyBuilder extends FormLayout.VuetifyInputsComponentBuilder {}
 ```
 
-## `<FormRender>`
+## Rendering a layout
 
-`import { FormRender } from '@dynamicforms/vuetify-modal-form-kit'`
-
-Renders a `FormBuilder` layout.
-
-| Prop | Type | Description |
-|---|---|---|
-| `layout` | `FormBuilder \| FormJSONResponsive` | The layout to render, either as the builder or as the plain JSON `toJSON()` produces. JSON is hydrated back into rows, columns and components, so the two render the same thing. A `symbol` component name - `FormBuilderName` among them - survives an in-memory copy of the JSON but not a `JSON.stringify()` / `JSON.parse()` round trip. |
-| `components` | `Record<string \| symbol, Component>` | Maps component names used in `generic()` calls (e.g. `'df-input'`) to actual Vue components. Symbol keys are supported; the renderer adds one of its own to resolve nested layouts. |
-
-`<ComponentRender>` renders a single component of a layout and is exported for building a renderer of your own. It
-reads the nested-form renderer out of `components` in a computed rather than once at setup, so a `components` prop
-replaced with a map that carries that renderer draws the nested layout from then on.
+[`<form-render>`](./form-render) draws a layout, and [`<component-render>`](./component-render) draws one component
+of it. Both take the layout either as the builder or as the JSON `toJSON()` produces, and both are exported, along
+with their props types, for a renderer of your own.

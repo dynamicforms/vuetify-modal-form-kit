@@ -63,11 +63,15 @@ jobs:
         uses: velis74/incremental-coverage-check@v3
         with:
           coverage-files: coverage/coverage-final.json
-          # Neither is library code, and neither is reached by vitest, whose coverage is scoped to src/:
-          # docs/ holds the VitePress site and its demo components, and scripts/ the helpers CI itself runs.
+          # None of these carries a line a test could execute. docs/ holds the VitePress site and its demo
+          # components and scripts/ the helpers CI itself runs, neither of them library code; a barrel re-exports
+          # and is already outside vitest's coverage; and a module that declares types alone compiles to nothing.
           extra-ignore-patterns: |
             docs/**
             scripts/**
+            **/index.ts
+            src/layout/types.ts
+            src/modal/df-modal.types.ts
           log-level: INFO
           base-ref: ${{ github.base_ref }}
           head-ref: HEAD
@@ -111,5 +115,68 @@ jobs:
       - name: Build library
         run: npm run build
 
+      - name: Verify the built artifact
+        run: npm run verify:artifact
+
+  vue-floor:
+    name: Type-check the emitted declarations against the lowest declared Vue
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Use Node.js lts/*
+        uses: actions/setup-node@v7
+        with:
+          node-version: 'lts/*'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build library
+        run: npm run build
+
+      # `peer-range (floor)` compiles the source against the lowest declared Vue; this compiles what the tarball
+      # ships. `dist/index.d.ts` states Vue's own types, whose arity moves between Vue patch releases, so the
+      # declarations can need a Vue newer than the range promises without any source file saying so.
+      - name: Type-check dist/index.d.ts against the declared Vue floor
+        run: node scripts/typecheck-dist-vue-floor.mjs
+
+  node-floor:
+    name: Load the artifact on the declared node floor
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Read the declared node floor
+        id: floor
+        run: |
+          floor=$(node -p "require('./package.json').engines.node.replace(/^[^0-9]*/, '')")
+          echo "version=$floor" >> "$GITHUB_OUTPUT"
+          echo "Declared floor: $floor"
+
+      # `engines.node` is what a consumer may hold this package to, and both legs of the matrix above run well
+      # above it.
+      - name: Use Node.js ${{ steps.floor.outputs.version }}
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ steps.floor.outputs.version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build library
+        run: npm run build
+
+      # The artifact reaches this node through Vite, not through `require()`: it imports Vuetify's component
+      # entries, each of which imports its own stylesheet, and the synchronous `require()` of an ES module
+      # consults no loader hook that could answer for a `.css` file.
       - name: Verify the built artifact
         run: npm run verify:artifact

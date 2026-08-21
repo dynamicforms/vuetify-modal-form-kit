@@ -19,5 +19,7 @@ See also: [Modal Dialog](/examples/dialog-basic) (programmatic) and [Template Di
 | Topic | Description |
 |---|---|
 | [FormBuilder](./form-builder) | Programmatic API for building responsive Vuetify grid layouts (`FormBuilder`, `Row`, `Column`, component builder). |
+| [`<form-render>`](./form-render) | Renders a layout - the builder or its JSON - as a Vuetify grid, resolving the breakpoints it holds. |
+| [`<component-render>`](./component-render) | Renders one component of a layout, resolving its name against the `components` map, the global registrations and the nested-form renderer. Use it to build a renderer of your own. |
 
 See also: [FormBuilder examples](/examples/form-builder).

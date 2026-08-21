@@ -2,8 +2,9 @@
 
 The programmatic entry point for opening dialogs from code, without declaring anything in a template. Requires a
 single [`<modal-view />`](./modal-view) mounted in your app root. A dialog opened before `<modal-view>` mounts is
-picked up as soon as it does; one opened while none is mounted at all logs a console warning, is never displayed,
-and can only be settled through the returned promise's own `.close(value)`.
+picked up as soon as it does, and so is one whose `<modal-view>` unmounted under it; one opened while none is
+mounted at all logs a console warning, is never displayed, and can only be settled through the returned promise's
+own `.close(value)`.
 
 ```typescript
 import { modal } from '@dynamicforms/vuetify-modal-form-kit';
@@ -25,8 +26,8 @@ part in this, so keep the two in sync if you set both. The promise also carries:
 
 | Method | Signature | Description |
 |---|---|---|
-| `message` | `message(title, message, options?)` | Shows a message dialog. Gets a single `close` action unless `options.actions` states one, or `options.form` carries an `Action` the dialog can render. |
-| `yesNo` | `yesNo(title, message, options?)` | Shows a confirmation dialog with `yes` / `no` actions unless `options.actions` states its own, or `options.form` carries an `Action` the dialog can render. |
+| `message` | `message(title, message, options?)` | Shows a message dialog. Gets a single `close` action unless `options.actions` or `options.form` states an action that is [drawn](#actions). |
+| `yesNo` | `yesNo(title, message, options?)` | Shows a confirmation dialog with `yes` / `no` actions unless `options.actions` or `options.form` states an action that is [drawn](#actions). |
 | `custom` | `custom(title, componentName, componentProps, options?)` | Shorthand for `message()` that renders a registered component (`componentName`) with `componentProps` as the body. |
 | `isTop` | `isTop(promise)` | `true` while the dialog behind that promise is the one on top of the stack. |
 | `isInstalled` | `isInstalled()` | `true` once a `<modal-view>` is mounted. Without one, no dialog renders and no action can resolve one, so `.close(value)` is the only way to settle its promise. |
@@ -41,16 +42,17 @@ Passed as the last argument to `message()` / `yesNo()` / `custom()`.
 | Option | Type | Description |
 |---|---|---|
 | `form` | `Form.Group` | A `@dynamicforms/vue-forms` group rendered as the dialog body, one `<df-input>` per `Field` member - see [`<modal-view>`](./modal-view#what-it-actually-does) for what the generated layout covers. Its `Action` members become the dialog's buttons - see [Actions](#actions) for which of them are drawn. |
-| `actions` | `Record<string, Action>` | Explicit actions to show, keyed by name. `Action` is `@dynamicforms/vuetify-inputs`'. Merged over the defaults (`close`, or `yes` / `no`). |
+| `actions` | `FormActions` (`Record<string, Form.Action>`) | Explicit actions to show, keyed by name. Merged over the defaults (`close`, or `yes` / `no`), which are stated only where nothing the caller passed is drawn - see [Actions](#actions). |
 | `size` | `DialogSize` | One of `DialogSize.SMALL` / `MEDIUM` / `LARGE` / `X_LARGE`. Defaults to `DialogSize.DEFAULT`. |
 | `color` | `string` | Passed straight to the title bar's `v-sheet` `color` prop. |
 | `icon` | `string` | Icon shown next to the title. |
 
 ## Actions
 
-A dialog's buttons are drawn by `<df-actions>`, which reads the breakpoint-resolved options only
-[`@dynamicforms/vuetify-inputs`](:vuetify-inputs:)' `Action` carries. That class is what `options.actions` takes and
-what an `Action` member of `options.form` has to be to appear as a button:
+A dialog's buttons are drawn by `<df-actions>` from [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:).
+`options.actions` and the `Action` members of `options.form` are `@dynamicforms/vue-forms`' `Action`, and the
+subclass vuetify-inputs exports is one too: the subclass is what carries the breakpoint-resolved render options -
+a text link, a confirm / reject colour - not what an action needs in order to be a dialog button:
 
 ```typescript
 import { AbortEventHandlingException, ExecuteAction, Field, Group } from '@dynamicforms/vue-forms';
@@ -62,10 +64,14 @@ const form = new Group({ email: new Field({ value: '', label: 'Email address' })
 await modal.message('Subscribe', 'Enter your email address:', { form });   // resolves with 'submit'
 ```
 
-An `Action` of either class is drawn;
-executing it from your own code still settles the dialog. A form that carries nothing but such an action therefore
-still opens with the default button, because a dialog with no button on screen leaves the user nothing to settle
-it with.
+Executing an action from your own code settles the dialog exactly as clicking its button does.
+
+The dialog states its own buttons - `close`, or `yes` / `no` - where nothing the caller passed is drawn.
+`<df-actions>` leaves out an action at `DisplayMode.SUPPRESS` and draws every other one, `HIDDEN` as `d-none` and
+`INVISIBLE` as `invisible`, so it is `SUPPRESS` alone that makes an action count for nothing here. A set that is
+entirely suppressed therefore opens with the dialog's own buttons: without them it would be on screen with no
+button and no keyboard route out of it. The read is the one the actions carry as the dialog opens; raising one to
+`FULL` or dropping one to `SUPPRESS` afterwards neither removes the dialog's own buttons nor adds them.
 
 `await action.execute()` answers what the action's own `ExecuteAction` chain returned - handing an action to a
 dialog changes neither what it runs nor what it reports:

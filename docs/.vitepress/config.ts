@@ -48,6 +48,8 @@ export default defineConfig({
             { text: 'df-modal', link: '/api/df-modal' },
             { text: 'modal service', link: '/api/modal-service' },
             { text: 'FormBuilder', link: '/api/form-builder' },
+            { text: 'form-render', link: '/api/form-render' },
+            { text: 'component-render', link: '/api/component-render' },
           ]
         }
       ],

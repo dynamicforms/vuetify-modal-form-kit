@@ -15,11 +15,7 @@ import { computed } from 'vue';
 
 import { FormBuilderBodyProp, FormBuilderName, FormJSONResponsive } from '../core/form-layout/types';
 
-interface ComponentRenderProps {
-  name: string | symbol;
-  props?: Record<string | symbol, any>;
-  components?: Record<string | symbol, any>;
-}
+import { ComponentRenderProps } from './types';
 
 const props = withDefaults(defineProps<ComponentRenderProps>(), { props: () => ({}), components: () => ({}) });
 

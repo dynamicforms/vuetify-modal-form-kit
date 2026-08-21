@@ -5,6 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] - 2026-08-21
+
+### Added
+
+- `DfModalProps`, `DfModalSlots`, `FormRenderProps` and `ComponentRenderProps` are top-level exports. All four were
+  declared in `dist/index.d.ts`, where the components' own declarations refer to them, and exported from nothing, so
+  a component wrapping `<df-modal>`, `<form-render>` or `<component-render>` had no name for the props it forwards.
+- CI type-checks `dist/index.d.ts` against the lowest `vue` the declared peer range admits, and builds the package and
+  loads the built artifact on the node floor `engines.node` states. The declarations name Vue's own types, whose
+  arity moves between Vue patch releases, so what the tarball ships can need a newer Vue than the range promises
+  without a single source file saying so.
+- `changelog.md` ships in the tarball, alongside `dist`, the readme and the licence.
+
+### Fixed
+
+- An Escape that a non-persistent overlay above the dialog consumes does not also reject the dialog. Vuetify's
+  `VOverlay` closes a `<df-select>` menu or a `<df-date-time>` picker from a `window` keydown listener of its own and
+  never calls `preventDefault()`, so the one keystroke closed the menu and rejected the dialog behind it. The dialog's
+  overlay root carries a `df-modal` class, and Enter and Escape reach an action only while an overlay of the dialog's
+  own holds the highest z-index in `.v-overlay-container` - the reach a click has.
+- Unmounting the `<modal-view>` a dialog is drawn in leaves that dialog on the stack, and a `<modal-view>` mounted
+  afterwards shows it, still settling the promise its caller holds. `<df-modal>` owns the stack entry of a template
+  dialog alone - one it was given no `dialogId` for - which is the rule it already applied when its `model-value`
+  changed; on unmount it removed the entry whoever owned it, so an api-owned dialog left the stack while its
+  definition and its unsettled promise stayed behind and nothing could reach it again.
+- A dialog opens with a button that can settle it where every action the caller states is at `DisplayMode.SUPPRESS`.
+  `<df-actions>` draws no button for a suppressed action, so such a dialog reached the screen with nothing on it and
+  no keyboard route out of it. The default `close`, or `yes` / `no`, is stated where nothing the caller passed in
+  `options.actions` or declared on `options.form` is drawn. The read is the one the actions carry as the dialog
+  opens: an action raised to `FULL` or dropped to `SUPPRESS` afterwards neither removes the dialog's own buttons nor
+  adds them.
+- `FormBuilder.simple()`, `Row.simple()` and `Column.simple()` answer `undefined` for a key a runtime probes a value
+  with - every symbol, plus `then`, `toString`, `valueOf` and `toJSON` - where they answered a component-adding
+  function for every key. Returning a layout built through `simple()` out of an `async` function awaited it, which
+  reads `then`: that opened a row and a column and called `then` on the component builder, which declares no such
+  method, so the `await` threw `TypeError: cmpt[prop] is not a function` over builder methods the caller never
+  called. `JSON.stringify()` of the proxy and a console inspection of it built the same phantom row.
+- `ComponentJSON.props` is `T | null`, which is what `Component.toJSON()` emits for a component carrying no props.
+  The serialized output is unchanged; TypeScript code reading a prop off a serialized component narrows the `null`.
+- The readme, the getting-started guide and the migration guide state what a CommonJS consumer needs. Node supports
+  `require()` of an ES module from 22.12, which `engines.node` states, but this package imports Vuetify's component
+  entries - directly and through `@dynamicforms/vuetify-inputs` - and each of those imports its own stylesheet: the
+  path runs through a bundler that answers for `.css`, not through plain node.
+
 ## [0.7.0] - 2026-08-20
 
 ### Changed (breaking)

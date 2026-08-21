@@ -7,7 +7,7 @@ import { createVuetify } from 'vuetify';
 
 import { FormBuilder } from '../core/form-layout';
 
-import modal from './api';
+import modal, { currentModal } from './api';
 import ModalView from './df-api.component.vue';
 
 const stubs = {
@@ -20,8 +20,33 @@ const stubs = {
   FormRender: { props: ['layout', 'components'], template: '<div class="form-render" />' },
 };
 
+// A view that draws its dialog with the real <df-modal>, with what Vuetify renders stubbed instead. What a
+// <df-modal> does to the dialog stack as it mounts and unmounts is the subject of the cases below, and a stubbed
+// one does none of it.
+const modalStubs = {
+  VDialog: { props: ['modelValue'], template: '<div class="dialog" :data-shown="String(modelValue)"><slot /></div>' },
+  VCard: { template: '<div><slot /></div>' },
+  VCardTitle: { template: '<div><slot /></div>' },
+  VCardText: { template: '<div><slot /></div>' },
+  VCardActions: { template: '<div><slot /></div>' },
+  VSheet: { template: '<div><slot /></div>' },
+  VIcon: { template: '<i />' },
+  VBtn: { template: '<button><slot /></button>' },
+  DfActions: stubs.DfActions,
+  MessagesWidget: stubs.MessagesWidget,
+  FormRender: stubs.FormRender,
+};
+
 function mountView() {
   return mount(ModalView, { global: { stubs, plugins: [createVuetify()] } });
+}
+
+function mountViewWithModal() {
+  return mount(ModalView, { global: { stubs: modalStubs, plugins: [createVuetify()] } });
+}
+
+function shownDialogs(wrapper: ReturnType<typeof mountViewWithModal>) {
+  return wrapper.findAll('.dialog').filter((dialog) => dialog.attributes('data-shown') === 'true').length;
 }
 
 describe('ModalView', () => {
@@ -92,7 +117,7 @@ describe('ModalView', () => {
     await nextTick();
 
     const layout = wrapper.findComponent(stubs.FormRender).props('layout') as FormBuilder;
-    const labels = layout.toJSON().rows.map((row) => row.columns[0].components[0].props.label);
+    const labels = layout.toJSON().rows.map((row) => row.columns[0].components[0].props?.label);
     expect(labels).toEqual(['Ime in priimek', 'Vat Id']);
 
     promise.close('close');
@@ -121,5 +146,71 @@ describe('ModalView', () => {
     await nextTick();
     await promise;
     wrapper.unmount();
+  });
+
+  it('leaves a suppressed member out of the layout it generates', async () => {
+    const wrapper = mountView();
+    const form = new Form.Group({
+      name: new Form.Field({ value: '' }),
+      internalId: new Form.Field({ value: '', visibility: Form.DisplayMode.SUPPRESS }),
+    });
+
+    const promise = modal.message('Details', 'fill this in', { form });
+    await nextTick();
+
+    // a suppressed field draws nothing, so a row of its own would be an empty gutter gap
+    const layout = wrapper.findComponent(stubs.FormRender).props('layout') as FormBuilder;
+    const labels = layout.toJSON().rows.map((row) => row.columns[0].components[0].props?.label);
+    expect(labels).toEqual(['Name']);
+
+    promise.close('close');
+    await nextTick();
+    await promise;
+    wrapper.unmount();
+  });
+
+  it('draws the dialog once per mounted view', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const first = mountViewWithModal();
+    const second = mountViewWithModal();
+    warn.mockRestore();
+
+    const promise = modal.message('Twice over', 'one dialog, two views');
+    await nextTick();
+
+    // The dialog is on screen in both views at once: the stack is one per application and every view draws the
+    // dialog on top of it. This is what the second view's mount warning announces, not what anyone wants of it.
+    expect(shownDialogs(first)).toBe(1);
+    expect(shownDialogs(second)).toBe(1);
+
+    promise.close('close');
+    await nextTick();
+    await promise;
+    first.unmount();
+    second.unmount();
+  });
+
+  it('leaves an api-owned dialog on the stack when the view drawing it unmounts', async () => {
+    const first = mountViewWithModal();
+    const promise = modal.message('Still here', 'the view goes away under it');
+    await nextTick();
+    expect(shownDialogs(first)).toBe(1);
+
+    first.unmount();
+    await nextTick();
+
+    // the dialog belongs to the api, which holds its definition and its unsettled promise, so the stack entry
+    // outlives the <df-modal> that drew it
+    expect(currentModal.value!.dialogId).toBe(promise.dialogId);
+
+    const second = mountViewWithModal();
+    await nextTick();
+    expect(shownDialogs(second)).toBe(1);
+
+    // and it is the dialog it was: the action it opened with still settles the promise the caller holds
+    await currentModal.value!.actions!.close.execute(null);
+    await nextTick();
+    expect(await promise).toBe('close');
+    second.unmount();
   });
 });

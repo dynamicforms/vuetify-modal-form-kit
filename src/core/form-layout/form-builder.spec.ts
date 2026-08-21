@@ -184,14 +184,14 @@ describe('FormBuilder', () => {
     expect(json.rows[0].columns[0].props).toEqual({ cols: 12 });
     expect(json.rows[0].columns[0].components.length).toBe(1);
     expect(json.rows[0].columns[0].components[0].name).toBe('VTextField');
-    expect(json.rows[0].columns[0].components[0].props.label).toBe('First Name');
+    expect(json.rows[0].columns[0].components[0].props!.label).toBe('First Name');
 
     // Second row
     expect(json.rows[1].columns.length).toBe(1);
     expect(json.rows[1].columns[0].props).toEqual({ cols: 12 });
     expect(json.rows[1].columns[0].components.length).toBe(1);
     expect(json.rows[1].columns[0].components[0].name).toBe('VTextField');
-    expect(json.rows[1].columns[0].components[0].props.label).toBe('Last Name');
+    expect(json.rows[1].columns[0].components[0].props!.label).toBe('Last Name');
   });
 
   it('should add components using simple(cols = 2) API', () => {
@@ -213,20 +213,59 @@ describe('FormBuilder', () => {
     expect(json.rows[0].columns[0].props).toEqual({ cols: 6 });
     expect(json.rows[0].columns[0].components.length).toBe(1);
     expect(json.rows[0].columns[0].components[0].name).toBe('VTextField');
-    expect(json.rows[0].columns[0].components[0].props.label).toBe('First Name');
+    expect(json.rows[0].columns[0].components[0].props!.label).toBe('First Name');
 
     // Second column
     expect(json.rows[0].columns[1].props).toEqual({ cols: 6 });
     expect(json.rows[0].columns[1].components.length).toBe(1);
     expect(json.rows[0].columns[1].components[0].name).toBe('VTextField');
-    expect(json.rows[0].columns[1].components[0].props.label).toBe('Last Name');
+    expect(json.rows[0].columns[1].components[0].props!.label).toBe('Last Name');
 
     // Second row, the only column
     expect(json.rows[1].columns.length).toBe(1);
     expect(json.rows[1].columns[0].props).toEqual({ cols: 12 });
     expect(json.rows[1].columns[0].components.length).toBe(1);
     expect(json.rows[1].columns[0].components[0].name).toBe('VTextField');
-    expect(json.rows[1].columns[0].components[0].props.label).toBe('Comments');
+    expect(json.rows[1].columns[0].components[0].props!.label).toBe('Comments');
+  });
+
+  it('resolves a layout returned from an async function', async () => {
+    const fb = new FormBuilder();
+    const build = async () => fb.simple(2).generic('VTextField', { label: 'First Name' });
+
+    // resolving the promise reads `then` off the proxy: a component-adding function there opens a row and a
+    // column and calls `then` on the component builder, which declares none
+    await expect(build()).resolves.toBeDefined();
+
+    expect(fb.toJSON()).toEqual({
+      rows: [
+        {
+          props: {},
+          columns: [{ props: { cols: 6 }, components: [{ name: 'VTextField', props: { label: 'First Name' } }] }],
+        },
+      ],
+    });
+  });
+
+  it('answers undefined for the keys a runtime probes the simple() proxy with', () => {
+    const fb = new FormBuilder();
+    const proxy = <any>fb.simple();
+
+    expect(proxy.then).toBeUndefined();
+    expect(proxy.toString).toBeUndefined();
+    expect(proxy.valueOf).toBeUndefined();
+    expect(proxy.toJSON).toBeUndefined();
+    expect(proxy[Symbol.toPrimitive]).toBeUndefined();
+    expect(proxy[Symbol.toStringTag]).toBeUndefined();
+    expect(proxy[Symbol.iterator]).toBeUndefined();
+    expect(proxy[Symbol.asyncIterator]).toBeUndefined();
+    expect(proxy[Symbol.for('nodejs.util.inspect.custom')]).toBeUndefined();
+
+    // JSON.stringify probes `toJSON`: a component-adding function there serializes the proxy into a row
+    expect(JSON.stringify(<any>fb.simple())).toBe('{}');
+
+    // a probe builds nothing: no row and no column
+    expect(fb.toJSON()).toEqual({ rows: [] });
   });
 
   describe('fromJSON', () => {

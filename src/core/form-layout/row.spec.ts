@@ -150,13 +150,13 @@ describe('Row', () => {
     expect(json.rows[0].columns[0].props).toEqual({ cols: 12 });
     expect(json.rows[0].columns[0].components.length).toBe(1);
     expect(json.rows[0].columns[0].components[0].name).toBe('VTextField');
-    expect(json.rows[0].columns[0].components[0].props.label).toBe('First Name');
+    expect(json.rows[0].columns[0].components[0].props!.label).toBe('First Name');
 
     // Second column
     expect(json.rows[0].columns[1].props).toEqual({ cols: 12 });
     expect(json.rows[0].columns[1].components.length).toBe(1);
     expect(json.rows[0].columns[1].components[0].name).toBe('VTextField');
-    expect(json.rows[0].columns[1].components[0].props.label).toBe('Last Name');
+    expect(json.rows[0].columns[1].components[0].props!.label).toBe('Last Name');
   });
 
   it('keeps every row prop it declares', () => {
@@ -186,6 +186,78 @@ describe('Row', () => {
     expect(row.toJSON().props).toEqual({});
   });
 
+  it('keeps the class and style values RowProps declares', () => {
+    expect(new Row({ class: 'row-class' }).toJSON().props).toEqual({ class: 'row-class' });
+    expect(new Row({ class: ['first', 'second'] }).toJSON().props).toEqual({ class: ['first', 'second'] });
+    expect(new Row({ class: { active: true } }).toJSON().props).toEqual({ class: { active: true } });
+    expect(new Row({ style: 'color: red' }).toJSON().props).toEqual({ style: 'color: red' });
+    expect(new Row({ style: { color: 'red', flexGrow: 1 } }).toJSON().props).toEqual({
+      style: { color: 'red', flexGrow: 1 },
+    });
+    expect(new Row({ style: [{ color: 'red' }, 'margin: 0'] }).toJSON().props).toEqual({
+      style: [{ color: 'red' }, 'margin: 0'],
+    });
+  });
+
+  it('drops a class or style value RowProps does not declare', () => {
+    // `class` is a string, a list of strings or a class-to-boolean object; a list holding an object is none of them
+    expect(new Row({ class: ['first', { active: true }] as any }).toJSON().props).toEqual({});
+    expect(new Row({ class: 42 as any }).toJSON().props).toEqual({});
+    // a CSS property holds a string or a number
+    expect(new Row({ style: { color: ['red'] } as any }).toJSON().props).toEqual({});
+    expect(new Row({ style: 42 as any }).toJSON().props).toEqual({});
+  });
+
+  it('carries class and style into a breakpoint that states neither', () => {
+    const row = Row.fromJSON({
+      props: { class: 'row-class', style: { color: 'red' } },
+      columns: [],
+      md: { props: { dense: true } },
+    });
+
+    expect(row.toJSON('sm').props).toEqual({ class: 'row-class', style: { color: 'red' } });
+    expect(row.toJSON('md').props).toEqual({ class: 'row-class', style: { color: 'red' }, dense: true });
+  });
+
+  it('lets a breakpoint restate class', () => {
+    const row = Row.fromJSON({ props: { class: 'row-class' }, columns: [], md: { props: { class: ['md-class'] } } });
+
+    expect(row.toJSON('sm').props).toEqual({ class: 'row-class' });
+    expect(row.toJSON('md').props).toEqual({ class: ['md-class'] });
+  });
+
+  it('resolves a row returned from an async function', async () => {
+    const row = new Row();
+    const build = async () => row.simple(2).generic('VTextField', { label: 'First Name' });
+
+    // resolving the promise reads `then` off the proxy: a component-adding function there opens a column and
+    // calls `then` on the component builder, which declares none
+    await expect(build()).resolves.toBeDefined();
+
+    expect(row.toJSON()).toEqual({
+      props: {},
+      columns: [{ props: { cols: 6 }, components: [{ name: 'VTextField', props: { label: 'First Name' } }] }],
+    });
+  });
+
+  it('answers undefined for the keys a runtime probes the simple() proxy with', () => {
+    const row = new Row();
+    const proxy = <any>row.simple();
+
+    expect(proxy.then).toBeUndefined();
+    expect(proxy.toString).toBeUndefined();
+    expect(proxy.valueOf).toBeUndefined();
+    expect(proxy.toJSON).toBeUndefined();
+    expect(proxy[Symbol.toPrimitive]).toBeUndefined();
+    expect(proxy[Symbol.toStringTag]).toBeUndefined();
+    expect(proxy[Symbol.iterator]).toBeUndefined();
+    expect(proxy[Symbol.asyncIterator]).toBeUndefined();
+    expect(proxy[Symbol.for('nodejs.util.inspect.custom')]).toBeUndefined();
+
+    // a probe builds nothing: no column
+    expect(row.toJSON().columns).toEqual([]);
+  });
+
   it('should add components using simple(cols = 2) API on Row', () => {
     const fb = new FormBuilder();
 
@@ -208,19 +280,19 @@ describe('Row', () => {
     expect(json.rows[0].columns[0].props).toEqual({ cols: 6 });
     expect(json.rows[0].columns[0].components.length).toBe(1);
     expect(json.rows[0].columns[0].components[0].name).toBe('VTextField');
-    expect(json.rows[0].columns[0].components[0].props.label).toBe('First Name');
+    expect(json.rows[0].columns[0].components[0].props!.label).toBe('First Name');
 
     // Second column
     expect(json.rows[0].columns[1].props).toEqual({ cols: 6 });
     expect(json.rows[0].columns[1].components.length).toBe(1);
     expect(json.rows[0].columns[1].components[0].name).toBe('VTextField');
-    expect(json.rows[0].columns[1].components[0].props.label).toBe('Middle Name');
+    expect(json.rows[0].columns[1].components[0].props!.label).toBe('Middle Name');
 
     // Third column
     expect(json.rows[0].columns[2].props).toEqual({ cols: 6 });
     expect(json.rows[0].columns[2].components.length).toBe(1);
     expect(json.rows[0].columns[2].components[0].name).toBe('VTextField');
-    expect(json.rows[0].columns[2].components[0].props.label).toBe('Last Name');
+    expect(json.rows[0].columns[2].components[0].props!.label).toBe('Last Name');
   });
 
   describe('fromJSON', () => {
