@@ -35,7 +35,4 @@ Work. The decisions that have to be made before some of it can be done are in `g
 The rest of this file is worth doing. This is the part that has to be true before the version number stops being a
 disclaimer.
 
-1. Design goal 2 holds for two mounted `<modal-view>` instances: one dialog on screen, whatever is mounted.
-2. The public surface is closed and its two open questions answered: whether `<modal-view>` is replaceable, and
-   whether `closable` reaches the `modal.*` API.
-3. The version being published is the one `changelog.md` names, and something other than a person checks it.
+1. The version being published is the one `changelog.md` names, and something other than a person checks it.

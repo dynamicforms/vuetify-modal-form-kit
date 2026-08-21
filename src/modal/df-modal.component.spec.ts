@@ -196,7 +196,7 @@ describe('DfModal', () => {
       wrapper.unmount();
     });
 
-    it('closes the dialog from the header button', async () => {
+    it('closes a dialog that states no reject action from the header button', async () => {
       const wrapper = mountModal({ modelValue: true, closable: true });
       expect(dialogTracker.currentRef.value).not.toBeNull();
 
@@ -204,6 +204,43 @@ describe('DfModal', () => {
 
       expect(wrapper.emitted('update:model-value')).toEqual([[false]]);
       expect(dialogTracker.currentRef.value).toBeNull();
+      wrapper.unmount();
+    });
+
+    it('carries the button for an action Escape reaches, without being asked', () => {
+      const reject = actionWithSpy({ label: 'Cancel', defaultReject: true });
+      const wrapper = mountModal({ modelValue: true, actions: [reject.action] });
+
+      expect(wrapper.find('button').exists()).toBe(true);
+      wrapper.unmount();
+    });
+
+    it('runs that action when the button is clicked, as the keystroke would', async () => {
+      const reject = actionWithSpy({ label: 'Cancel', defaultReject: true });
+      const wrapper = mountModal({ modelValue: true, dialogId: Symbol('api'), actions: [reject.action] });
+
+      await wrapper.find('button').trigger('click');
+
+      // the action settles the dialog through the service that owns it; the component states nothing itself
+      expect(reject.spy).toHaveBeenCalledTimes(1);
+      expect(wrapper.emitted('update:model-value')).toBeUndefined();
+      wrapper.unmount();
+    });
+
+    it('carries no button for an action the keyboard cannot reach', () => {
+      const reject = actionWithSpy({ label: 'Cancel', defaultReject: true });
+      reject.action.enabled = false;
+      const wrapper = mountModal({ modelValue: true, actions: [reject.action] });
+
+      expect(wrapper.find('button').exists()).toBe(false);
+      wrapper.unmount();
+    });
+
+    it('refuses the button where the caller says so, whatever the actions state', () => {
+      const reject = actionWithSpy({ label: 'Cancel', defaultReject: true });
+      const wrapper = mountModal({ modelValue: true, closable: false, actions: [reject.action] });
+
+      expect(wrapper.find('button').exists()).toBe(false);
       wrapper.unmount();
     });
   });

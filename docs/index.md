@@ -36,9 +36,9 @@ features:
    Or declare dialogs in Vue templates with `<df-modal>`.
 2. **One dialog on screen at a time** — an internal stack ensures only one dialog is ever visible: opening a second
    dialog suspends the first (kept open but hidden) and shows the second on top; the first reappears once the
-   second closes. The stack is module state, so there is one per page and every Vue app on it shares that one:
-   mount exactly one `<modal-view>`, since a second mounted view warns on the console and draws the same current
-   dialog again.
+   second closes. The stack is module state, so there is one per page and every Vue app on it shares that one,
+   and one view draws it: mount `<modal-view>` once — a second mounted view warns on the console and renders
+   nothing.
 3. **Programmatic form builder** — a fluent `FormBuilder` API lets you define responsive Vuetify grid layouts
    entirely in TypeScript, with no template markup required.
 4. **Keyboard shortcuts** — `<Enter>` confirms and `<Esc>` cancels the active dialog. A keystroke an overlay above

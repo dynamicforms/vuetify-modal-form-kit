@@ -48,7 +48,8 @@ class ColBase implements ComponentProps {
   /**
    * @return returns a proxy that allows to immediately from the column object add components, e.g.
    * `col.simple().generic(...)` will add one component into this column. You may call the ComponentBuilder's
-   * methods as many times as you want to generate components
+   * methods as many times as you want to generate components. It takes no column count, and unlike
+   * `FormBuilder.simple()` the proxy it returns does not restart the layout.
    */
   simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(): T {
     const res = new Proxy({} as T, {
@@ -114,7 +115,8 @@ export class Column extends ResponsiveRenderOptions<ColBase> {
   /**
    * @return returns a proxy that allows to immediately from the column object add components, e.g.
    * `col.simple().generic(...)` will add one component into this column. You may call the ComponentBuilder's
-   * methods as many times as you want to generate components
+   * methods as many times as you want to generate components. It takes no column count, and unlike
+   * `FormBuilder.simple()` the proxy it returns does not restart the layout.
    */
   simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(): T {
     return this._value.simple<T>();

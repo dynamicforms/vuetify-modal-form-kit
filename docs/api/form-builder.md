@@ -36,7 +36,7 @@ Returned by `row()`'s callback.
 | Method | Description |
 |---|---|
 | `col(colProps, colCallback)` | Appends a new `Column`, built by `colCallback`. `colProps` is a [`Column` props object](#column). |
-| `simple(cols = 1)` | Same idea as `FormBuilder.simple()`, scoped to this row's columns. |
+| `simple(cols = 1)` | Same idea as `FormBuilder.simple()`, scoped to this row's columns. It does not chain: `simple` on the returned proxy is a component-adding call like any other name, where the form's restarts the layout. |
 | `breakpoint(name, rowCallback)` | Per-breakpoint override for this row; the callback receives a bare row and has to return it. |
 | `Row.fromJSON(json)` | Static. Reads a serialized row - `toJSON()`'s `rows[]` entries - back into a `Row`; a `Row` passed in is handed back unchanged. |
 
@@ -51,7 +51,7 @@ Returned by `col()`'s callback.
 |---|---|
 | `component(builderCallback)` | Adds one component to this column, built via the default [component builder](#component-builder). |
 | `component(BuilderClass, builderCallback)` | Same, but with a custom component-builder class instead of the default one. |
-| `simple()` | Shortcut for `component()` - lets you chain builder methods (e.g. `.dfInput(...)`) directly on the column. |
+| `simple()` | Shortcut for `component()` - lets you chain builder methods (e.g. `.dfInput(...)`) directly on the column. It takes no column count, because a column holds components rather than columns, and like a row's it does not restart. |
 | `breakpoint(name, colCallback)` | Per-breakpoint override for this column. The callback receives a bare column whose Vuetify props live under `.props`, and has to return it: `.breakpoint('sm', (col) => { col.props.cols = 12; return col; })`. |
 | `Column.fromJSON(json)` | Static. Reads a serialized column - `toJSON()`'s `columns[]` entries - back into a `Column`; a `Column` passed in is handed back unchanged. |
 

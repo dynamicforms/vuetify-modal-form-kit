@@ -36,7 +36,9 @@ class RowBase implements ComponentProps {
    * @param cols specifies how many columns we have designed this row to have. each column will be 12 / cols wide
    * @return returns a proxy that allows to immediately from the row object add components into their own
    * columns, e.g. `row.simple(2).generic(...)` will add your generic component into a column 6 wide. You may call
-   * the ComponentBuilder's methods as many times as you want to generate more columns with components
+   * the ComponentBuilder's methods as many times as you want to generate more columns with components. Unlike
+   * `FormBuilder.simple()`, the proxy this returns does not restart: `simple` on it is a component-adding call
+   * like any other name.
    */
   simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(cols: TwelveDivisible = 1): T {
     const res = new Proxy({} as T, {
@@ -95,7 +97,9 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
    * @param cols specifies how many columns we have designed this row to have. each column will be 12 / cols wide
    * @return returns a proxy that allows to immediately from the row object add components into their own
    * columns, e.g. `row.simple(2).generic(...)` will add your generic component into a column 6 wide. You may call
-   * the ComponentBuilder's methods as many times as you want to generate more columns with components
+   * the ComponentBuilder's methods as many times as you want to generate more columns with components. Unlike
+   * `FormBuilder.simple()`, the proxy this returns does not restart: `simple` on it is a component-adding call
+   * like any other name.
    */
   simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(cols: TwelveDivisible = 1): T {
     return this._value.simple<T>(cols);

@@ -48,9 +48,13 @@ nested/queued `modal.*` calls - it always just renders "the current one".
 
 A dialog belongs to the `modal` service, not to the view drawing it: unmounting the `<modal-view>` while a dialog
 is on screen takes the dialog off the screen and leaves it on the stack, holding its unsettled promise. The next
-`<modal-view>` to mount draws it again, actions and all. Mount exactly one all the same - the stack is module
-state, so there is one per page and every Vue app on it shares that one, and a second mounted view warns on the
-console and draws the same current dialog a second time.
+`<modal-view>` to mount draws it again, actions and all.
+
+One stack is drawn by one view. Mounting a second `<modal-view>` warns on the console and renders nothing, so a
+stray one in a layout component costs a warning rather than a dialog on screen twice; it takes the drawing over
+if the view that had it unmounts, which is what makes a route transition with both briefly mounted harmless. The
+stack itself is module state - one per page, shared by every Vue app on it, and under SSR living for the process
+rather than the request - so this library is browser-side and single-app.
 
 ## The generated layout
 

@@ -5,10 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.7.1] - 2026-08-21
+## [0.8.0] - 2026-08-21
 
 ### Added
 
+- `ModalOptions.components` states components the dialog body may name, over the nine `df-*` ones `<modal-view>`
+  supplies. A component the application wrote reaches `modal.custom()` and a `FormBuilder` layout without being
+  registered globally, and a built-in name given here is replaced for that dialog alone.
+- `CloseablePromise.payload` carries what the executor of the action that settled the dialog returned. The promise
+  goes on resolving with the action's key, which stays a `string` a `switch` reads; the payload is read off the
+  promise after awaiting it. A dialog closed through `close(value)`, or settled by an action that produced
+  nothing, carries none.
+- `<df-modal>` draws the header close button for the action Escape reaches, without being asked: a click on it
+  runs that action, so a dialog opened through the `modal` service settles with the action's own key rather than
+  leaving the screen under its caller. `closable` states the answer where the caller wants one whatever the
+  actions say, and a dialog that states no reject action falls back to emitting `update:model-value(false)` as
+  before.
 - `DfModalProps`, `DfModalSlots`, `FormRenderProps` and `ComponentRenderProps` are top-level exports. All four were
   declared in `dist/index.d.ts`, where the components' own declarations refer to them, and exported from nothing, so
   a component wrapping `<df-modal>`, `<form-render>` or `<component-render>` had no name for the props it forwards.
@@ -18,8 +30,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   without a single source file saying so.
 - `changelog.md` ships in the tarball, alongside `dist`, the readme and the licence.
 
+### Changed
+
+- One `<modal-view>` draws the dialog stack. A second mounted view warns, as it did, and now renders nothing
+  rather than drawing the same dialog over a second overlay; it takes the drawing over if the view that had it
+  unmounts, so a route transition with both briefly mounted shows one dialog throughout.
+- `closable` defaults to deriving its answer from the actions rather than to `false`, so a dialog that states a
+  `defaultReject` action carries a close button where it did not. Pass `closable: false` for one that must be
+  answered through its buttons.
+
 ### Fixed
 
+- The `modal` service carries `options.components` onto the dialog it records, so what the caller states reaches
+  the view that draws it.
 - An Escape that a non-persistent overlay above the dialog consumes does not also reject the dialog. Vuetify's
   `VOverlay` closes a `<df-select>` menu or a `<df-date-time>` picker from a `window` keydown listener of its own and
   never calls `preventDefault()`, so the one keystroke closed the menu and rejected the dialog behind it. The dialog's

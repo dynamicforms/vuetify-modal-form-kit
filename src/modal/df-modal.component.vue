@@ -23,7 +23,7 @@
         <v-sheet
           :color="props.color || undefined"
           class="d-flex align-center px-4 py-4"
-          :class="{ 'position-relative': closable }"
+          :class="{ 'position-relative': showsCloseButton }"
           :elevation="!!props.color ? 4 : 0"
         >
           <v-icon v-if="icon" class="me-2" :icon="icon" />
@@ -31,12 +31,12 @@
             <messages-widget :message="[title]" />
           </slot>
           <v-btn
-            v-if="closable"
+            v-if="showsCloseButton"
             icon
             variant="text"
             class="position-absolute"
             style="right: 0.25em"
-            @click="onModelValueUpdate(false)"
+            @click="(e: MouseEvent) => onClose(e)"
           >
             <v-icon icon="mdi-close" />
           </v-btn>
@@ -67,7 +67,7 @@ import dialogTracker from './top-modal-tracker';
 
 const props = withDefaults(defineProps<DfModalProps>(), {
   modelValue: false,
-  closable: false,
+  closable: undefined,
   size: DialogSize.DEFAULT,
   dialogId: undefined,
   formControl: undefined,
@@ -152,13 +152,28 @@ function isReachable(action: Form.Action) {
 // execute() is asynchronous and this is a document listener, so nothing wraps it the way Vue wraps a template
 // handler: a rejecting handler would leave an unhandled rejection. The error goes where a template handler's
 // would have gone.
-function run(action: Form.Action, e: KeyboardEvent) {
+function run(action: Form.Action, e: Event) {
   e.preventDefault();
   action.execute(e).catch((error: unknown) => {
     const handler = instance?.appContext.config.errorHandler;
     if (handler) handler(error, instance?.proxy ?? null, 'df-modal keyboard shortcut');
     else console.error(error);
   });
+}
+
+// The action Escape reaches, which is also what the header's close button is a click-target for.
+const rejectAction = computed(() =>
+  props.actions.find((action) => renderOptions(action).defaultReject && isReachable(action)),
+);
+
+// A dialog that states a way of rejecting itself carries the button for it; `closable` states the answer
+// where the caller wants one whatever the actions say.
+const showsCloseButton = computed(() => props.closable ?? rejectAction.value !== undefined);
+
+function onClose(e: MouseEvent) {
+  // the same thing Escape does, so the dialog settles with the action's key rather than closing under its caller
+  if (rejectAction.value) run(rejectAction.value, e);
+  else onModelValueUpdate(false);
 }
 
 // Vuetify teleports every overlay into .v-overlay-container and gives it the z-index its stack hands out when the
