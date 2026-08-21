@@ -1,6 +1,6 @@
 # Todo
 
-Work. The decisions that have to be made before some of it can be done are in `gaps.md`.
+Work.
 
 ## Blocked on the peers
 
