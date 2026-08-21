@@ -284,6 +284,32 @@ describe('modal service', () => {
     await settled(promise);
   });
 
+  it('leaves the dialog under it open when a dialog over the same action aborts', async () => {
+    // one Action instance handed to two dialogs registers a resolver per dialog on the one chain the declaration
+    // holds, so the outer one reads what the inner one answered: an abort has to stay an abort on the way out
+    const submit = new Action({ value: { label: 'Send' } });
+    submit.registerAction(
+      new Form.ExecuteAction(() => {
+        throw new Form.AbortEventHandlingException('not yet');
+      }),
+    );
+
+    const under = modal.message('Under', 'first', { actions: { submit } });
+    const over = modal.message('Over', 'second', { actions: { submit } });
+
+    const answer = await submit.execute(null);
+
+    expect(answer).toBeInstanceOf(Form.AbortEventHandlingException);
+    // neither settled: the dialog on top is still the one on top, and the one under it is still on the stack
+    expect(currentModal.value!.dialogId).toBe(over.dialogId);
+
+    over.close('close');
+    await settled(over);
+    expect(currentModal.value!.dialogId).toBe(under.dialogId);
+    under.close('close');
+    await settled(under);
+  });
+
   it('lets an ordinary failure reject, and leaves the dialog open', async () => {
     const failure = new Error('the backend said no');
     const submit = new Action({ value: { label: 'Send' } });

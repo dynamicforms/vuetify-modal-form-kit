@@ -4,10 +4,13 @@ Work.
 
 ## Blocked on the peers
 
-- `ResponsiveActionRenderOptions.cleanBreakpoint` copies five of the members `ActionRenderOptions` declares and
-  drops `name`, `defaultConfirm`, `defaultReject` and `passthroughAttrs`, so a breakpoint stating one of those four
-  states nothing. This library reads all four off the value rather than through the resolved options, which is why
-  it does not notice; a caller writing `{ md: { defaultConfirm: true } }` gets no error and no effect.
+- `ResponsiveActionRenderOptions.cleanBreakpoint` copies five of the nine members `ActionRenderOptions` declares,
+  so `name`, `defaultConfirm`, `defaultReject` and `passthroughAttrs` are absent from what
+  `getRenderOptionsForBreakpoint()` answers - not only at a breakpoint that states them, but at the base as well.
+  Every reader gets them by going around the resolution instead: `<df-actions>` reads `action.value.passthroughAttrs`
+  and `defaultActionColor(action.value)`, and `df-modal.component.vue`'s `renderOptions()` casts the raw value for
+  the two flags. That is why the dialog cannot use the peer's own resolver, and why `{ md: { defaultReject: true } }`
+  is silently inert.
 - `DfInputHint` and `DfLabel` declare their props inline, so neither has a name `DfInputComponentProps` exports.
   `VuetifyInputsComponentBuilder` therefore has nine methods for eleven exported components, and a layout wanting
   either falls to `generic('df-input-hint', props)` with `props: any`.
@@ -16,6 +19,16 @@ Work.
   list and the object beside it, and the builder's tag literals agree with what renders by coincidence.
 - `<modal-view>`'s component map grows with the peer. `df-list` is on vuetify-inputs' own list, and a dialog cannot
   render one until the map names it.
+
+- `@dynamicforms/vue-forms` `docs/api/actions.md:95-120` states one shape of an abort: the value a trigger answers
+  with. `supr` is `walk()` bound directly (`src/actions/actions-map.ts:147`) and carries no catch of its own, so a
+  mid-chain handler meets an abort as a throw and only the outermost caller meets it as a value. The two shapes
+  are the right ones - inside the chain an exception unwinds, as JS does, and the public edge answers a value -
+  but only the second is written down, and no spec covers an inner handler aborting under an outer one.
+- `@dynamicforms/vue-forms` `ActionsMap.run()` catches synchronously, so an `async` handler's rejection passes it
+  untouched: `execute()` rejects where the same abort from a synchronous handler resolves with the exception. Any
+  handler that awaits `supr` - which is every handler wrapping an asynchronous executor - has to catch the abort
+  itself to keep the documented contract, which is what `src/modal/api.ts:186-193` does.
 
 ## The layout builder
 
