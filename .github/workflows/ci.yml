@@ -41,6 +41,18 @@ jobs:
       - name: Run tests
         run: npm test
 
+      # A release carries its version in package.json and its notes in changelog.md, both written by hand in the
+      # pull request that makes it, and changelog.md ships inside the tarball. This is what states that the two
+      # agree, at the point the pair is written rather than at the point it is published.
+      - name: Verify the changelog names this version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if ! grep -qF "## [$version]" changelog.md; then
+            echo "::error::package.json is $version and changelog.md has no '## [$version]' heading"
+            exit 1
+          fi
+          echo "changelog.md names $version"
+
       - name: Build library
         run: npm run build
 

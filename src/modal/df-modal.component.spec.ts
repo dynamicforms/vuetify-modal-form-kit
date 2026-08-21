@@ -32,7 +32,6 @@ interface ModalProps {
   dialogId?: symbol;
   actions?: Action[];
   size?: DialogSize;
-  closable?: boolean;
 }
 
 function mountModal(props: ModalProps) {
@@ -189,45 +188,14 @@ describe('DfModal', () => {
     });
   });
 
-  describe('closable', () => {
-    it('renders no header button unless it is asked for one', () => {
+  describe('the close button', () => {
+    it('carries none for a dialog that states no way of rejecting itself', () => {
       const wrapper = mountModal({ modelValue: true });
       expect(wrapper.find('button').exists()).toBe(false);
       wrapper.unmount();
     });
 
-    it('closes a dialog that states no reject action from the header button', async () => {
-      const wrapper = mountModal({ modelValue: true, closable: true });
-      expect(dialogTracker.currentRef.value).not.toBeNull();
-
-      await wrapper.find('button').trigger('click');
-
-      expect(wrapper.emitted('update:model-value')).toEqual([[false]]);
-      expect(dialogTracker.currentRef.value).toBeNull();
-      wrapper.unmount();
-    });
-
-    it('carries the button for an action Escape reaches, without being asked', () => {
-      const reject = actionWithSpy({ label: 'Cancel', defaultReject: true });
-      const wrapper = mountModal({ modelValue: true, actions: [reject.action] });
-
-      expect(wrapper.find('button').exists()).toBe(true);
-      wrapper.unmount();
-    });
-
-    it('runs that action when the button is clicked, as the keystroke would', async () => {
-      const reject = actionWithSpy({ label: 'Cancel', defaultReject: true });
-      const wrapper = mountModal({ modelValue: true, dialogId: Symbol('api'), actions: [reject.action] });
-
-      await wrapper.find('button').trigger('click');
-
-      // the action settles the dialog through the service that owns it; the component states nothing itself
-      expect(reject.spy).toHaveBeenCalledTimes(1);
-      expect(wrapper.emitted('update:model-value')).toBeUndefined();
-      wrapper.unmount();
-    });
-
-    it('carries no button for an action the keyboard cannot reach', () => {
+    it('carries none where the only reject action is one the keyboard cannot reach', () => {
       const reject = actionWithSpy({ label: 'Cancel', defaultReject: true });
       reject.action.enabled = false;
       const wrapper = mountModal({ modelValue: true, actions: [reject.action] });
@@ -236,11 +204,23 @@ describe('DfModal', () => {
       wrapper.unmount();
     });
 
-    it('refuses the button where the caller says so, whatever the actions state', () => {
+    it('carries one for the action Escape reaches', () => {
       const reject = actionWithSpy({ label: 'Cancel', defaultReject: true });
-      const wrapper = mountModal({ modelValue: true, closable: false, actions: [reject.action] });
+      const wrapper = mountModal({ modelValue: true, actions: [reject.action] });
 
-      expect(wrapper.find('button').exists()).toBe(false);
+      expect(wrapper.find('button').exists()).toBe(true);
+      wrapper.unmount();
+    });
+
+    it('runs that action when clicked, as the keystroke would', async () => {
+      const reject = actionWithSpy({ label: 'Cancel', defaultReject: true });
+      const wrapper = mountModal({ modelValue: true, dialogId: Symbol('api'), actions: [reject.action] });
+
+      await wrapper.find('button').trigger('click');
+
+      // the action settles the dialog through whatever owns it; the component states nothing itself
+      expect(reject.spy).toHaveBeenCalledTimes(1);
+      expect(wrapper.emitted('update:model-value')).toBeUndefined();
       wrapper.unmount();
     });
   });

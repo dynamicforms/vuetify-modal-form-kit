@@ -8,7 +8,7 @@ if that's your use case, you don't need to touch `df-modal` directly, see [`moda
 
 ```vue
 <!-- title is a RenderableValue: const title = new RenderableValue('Log in') -->
-<df-modal v-model="isOpen" :title="title" :actions="actions" closable icon="mdi-login">
+<df-modal v-model="isOpen" :title="title" :actions="actions" icon="mdi-login">
   <template #body>...</template>
   <template #actions>
     <df-actions :actions="actions" class="d-flex justify-end" style="gap: 0.5em" />
@@ -24,7 +24,6 @@ forwards its props and slots.
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `modelValue` | `boolean` | `false` | Controls visibility. Use with `v-model`. |
-| `closable` | `boolean` | derived | Whether the title bar carries a close (`x`) button. Unset, the dialog answers it: the button is drawn where `actions` holds an action [Escape reaches](#keyboard-shortcuts), and clicking it is that keystroke - the action runs and the dialog settles with its key. `true` draws the button whether or not such an action exists, `false` draws none. See [The close button](#the-close-button). |
 | `size` | `DialogSize` | `DialogSize.DEFAULT` | One of `DialogSize.SMALL` / `MEDIUM` / `LARGE` / `X_LARGE`. Each of those switches to fullscreen below its own breakpoint; `DEFAULT` sizes itself to its content and never does. |
 | `formControl` | `Form.Group` | — | Exposed to the `body` slot as `formControl`; `df-modal` itself doesn't render a form from it. |
 | `dialogId` | `symbol` | — | Used internally by the `modal` service to manage the one-dialog-at-a-time stack. Leave unset for template dialogs. It also states who owns the stack entry: `df-modal` pushes only a template dialog's, and leaves one it was given a `dialogId` for on the stack when it unmounts. A `model-value` going false still removes whichever entry the component holds. |
@@ -61,14 +60,13 @@ The `x` in the title bar is a second way of reaching the action Escape reaches: 
 keystroke does. So a dialog opened through the `modal` service closes with the key its own action carries -
 `'close'` from `modal.message()`, `'no'` from `modal.yesNo()` - and the promise settles with it.
 
-`closable` overrides the question in either direction: `false` for a dialog that must be answered through its
-buttons, `true` for one whose header should carry an `x` although no action states `defaultReject`.
+A dialog that states no reachable `defaultReject` action carries no `x`, because there would be nothing for it
+to do: the button is that action's click-target and settles nothing on its own. Give a dialog an `x` by giving
+it the action - `Action.closeAction()`, or any action whose value states `defaultReject` - and the same action
+answers the keyboard.
 
-That last combination has one caveat. With no reject action to run, the button falls back to emitting
-`update:model-value(false)`, which closes a template dialog and is what its `v-model` is for. A dialog the
-`modal` service owns - one this component was given a `dialogId` for - is not settled that way: it leaves the
-screen and its caller's promise waits. Where such a dialog needs an `x`, state a `defaultReject` action instead
-of forcing `closable`.
+There is no prop for this. Drawing the `x` and reaching the action from Escape are one question, so a dialog
+cannot have the keystroke without the button or the button without the keystroke.
 
 ## Keyboard shortcuts
 

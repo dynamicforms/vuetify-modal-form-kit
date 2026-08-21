@@ -67,7 +67,6 @@ import dialogTracker from './top-modal-tracker';
 
 const props = withDefaults(defineProps<DfModalProps>(), {
   modelValue: false,
-  closable: undefined,
   size: DialogSize.DEFAULT,
   dialogId: undefined,
   formControl: undefined,
@@ -166,14 +165,13 @@ const rejectAction = computed(() =>
   props.actions.find((action) => renderOptions(action).defaultReject && isReachable(action)),
 );
 
-// A dialog that states a way of rejecting itself carries the button for it; `closable` states the answer
-// where the caller wants one whatever the actions say.
-const showsCloseButton = computed(() => props.closable ?? rejectAction.value !== undefined);
+// A dialog that states a way of rejecting itself carries the button for it, and one that does not carries none:
+// the button is the click-target of the action Escape reaches, so there is nothing for it to do without one.
+const showsCloseButton = computed(() => rejectAction.value !== undefined);
 
 function onClose(e: MouseEvent) {
   // the same thing Escape does, so the dialog settles with the action's key rather than closing under its caller
   if (rejectAction.value) run(rejectAction.value, e);
-  else onModelValueUpdate(false);
 }
 
 // Vuetify teleports every overlay into .v-overlay-container and gives it the z-index its stack hands out when the

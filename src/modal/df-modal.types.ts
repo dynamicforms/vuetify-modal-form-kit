@@ -4,17 +4,6 @@ import DialogSize from './dialog-size';
 
 export interface DfModalProps {
   modelValue: boolean;
-  /**
-   * Whether the header carries a close button. Unset, the dialog answers it for itself: the button is drawn where
-   * the `actions` prop holds an action Escape reaches, and clicking it is that keystroke - the action runs, and
-   * the dialog settles with its key. `true` draws the button whether or not such an action exists, and `false`
-   * draws none.
-   *
-   * A dialog with no reachable `defaultReject` action and `closable: true` falls back to emitting
-   * `update:model-value(false)`, which closes a template dialog. That does not settle a dialog the `modal`
-   * service owns - one this component was given a `dialogId` for - so state a `defaultReject` action there.
-   */
-  closable?: boolean;
   size?: DialogSize;
   formControl?: Form.Group;
   dialogId?: symbol;

@@ -35,26 +35,3 @@ is only that a caller who deliberately chose the key gets the other name back, a
 
 Recommended: leave it. It is the only item left in this file where the current behaviour is already written down
 as a rule; adding the knob is worth doing if a real caller asks and not before.
-
-## Release
-
-**Nothing in the repository checks that a release is coherent before it goes out.**
-
-Publishing is done by a tool of yours outside this repository, so what follows is about what the repository
-itself can state, not about replacing that tool.
-
-Two things are true here whatever publishes. `changelog.md` ships inside the tarball (`package.json` `files`),
-and nothing compares the version it names at the top with `package.json`'s: a release whose changelog heading was
-never bumped ships a file describing the previous one. And `prepack` builds, so `npm publish` cannot ship a stale
-`dist/`, but nothing asserts that the tree being published is the tree CI went green on - a local publish from a
-dirty working copy is indistinguishable from a clean one.
-
-- *A guard in CI.* One step reading `package.json`'s version and requiring a `## [x.y.z]` heading for it in
-  `changelog.md`. A few lines, catches the failure that actually happens, and says nothing about how you publish.
-- *The same guard in the publish tool.* Better placed if the tool is where a release is decided, and outside this
-  repository's reach.
-- *Leave it.* The check is a person's, as it is now.
-
-Recommended: the CI guard, unless the publish tool already makes the comparison - which is the question here. It
-is cheap, it runs on the pull request rather than at publish time, and it is useful to anyone who ever publishes
-this package by another route.

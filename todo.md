@@ -41,10 +41,3 @@ Work. The decisions that have to be made before some of it can be done are in `g
   and draws nothing for it, so a nested `Group` or `List` validates and counts towards `form.valid` off screen.
   Laying a `Group` out recursively answers the easy half; a `List` has no answer without a row template, so the
   rule would be harder to state than the warning is.
-
-## What 1.0 requires
-
-The rest of this file is worth doing. This is the part that has to be true before the version number stops being a
-disclaimer.
-
-1. The version being published is the one `changelog.md` names, and something other than a person checks it.

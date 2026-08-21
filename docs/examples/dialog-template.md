@@ -11,7 +11,7 @@ with a plain `v-model`, instead of going through `modal.message()` / `modal.yesN
 <template>
   <v-btn @click="isOpen = true">Open Login Dialog</v-btn>
 
-  <df-modal v-model="isOpen" :title="title" :actions="actions" closable icon="mdi-login">
+  <df-modal v-model="isOpen" :title="title" :actions="actions" icon="mdi-login">
     <template #body>
       <v-text-field v-model="username" label="Username" autofocus />
       <v-text-field v-model="password" label="Password" type="password" />

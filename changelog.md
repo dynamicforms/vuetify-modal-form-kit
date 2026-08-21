@@ -16,25 +16,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   goes on resolving with the action's key, which stays a `string` a `switch` reads; the payload is read off the
   promise after awaiting it. A dialog closed through `close(value)`, or settled by an action that produced
   nothing, carries none.
-- `<df-modal>` draws the header close button for the action Escape reaches, without being asked: a click on it
-  runs that action, so a dialog opened through the `modal` service settles with the action's own key rather than
-  leaving the screen under its caller. `closable` states the answer where the caller wants one whatever the
-  actions say, and a dialog that states no reject action falls back to emitting `update:model-value(false)` as
-  before.
+- `<df-modal>` draws the header close button for the action Escape reaches, and a click on it runs that action.
+  A dialog opened through the `modal` service therefore settles with the action's own key - `'close'` from
+  `message()`, `'no'` from `yesNo()` - where the button used to emit `update:model-value(false)`, which takes a
+  service-owned dialog off the screen and leaves its caller's promise waiting.
+
+### Changed (breaking)
+
+- `<df-modal>`'s `closable` prop is gone. Whether the header carries an `x` is the same question as whether
+  Escape reaches an action: the button is that action's click-target, so a dialog that states a reachable
+  `defaultReject` action carries one and a dialog that states none carries nothing the button could do. A
+  template dialog that passed `closable` and states no such action states `Action.closeAction()` instead, which
+  answers both the button and the keystroke.
 
 ### Changed
 
 - One `<modal-view>` draws the dialog stack. A second mounted view warns, as it did, and now renders nothing
   rather than drawing the same dialog over a second overlay; it takes the drawing over if the view that had it
   unmounts, so a route transition with both briefly mounted shows one dialog throughout.
-- `closable` defaults to deriving its answer from the actions rather than to `false`, so a dialog that states a
-  `defaultReject` action carries a close button where it did not. Pass `closable: false` for one that must be
-  answered through its buttons.
 
 ### Fixed
 
 - The `modal` service carries `options.components` onto the dialog it records, so what the caller states reaches
   the view that draws it.
+- CI states that `changelog.md` names the version in `package.json`. A release carries both, written by hand in
+  the pull request that makes it, and `changelog.md` ships inside the tarball, so a heading that was never
+  bumped shipped notes for the release before it.
 
 ## [0.7.1] - 2026-08-21
 
