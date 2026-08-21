@@ -57,7 +57,7 @@
 <script setup lang="ts">
 import * as Form from '@dynamicforms/vue-forms';
 import { MessagesWidget } from '@dynamicforms/vue-forms';
-import { ActionRenderOptions } from '@dynamicforms/vuetify-inputs';
+import { getRenderOptionsForBreakpoint, useBreakpoint } from '@dynamicforms/vuetify-inputs';
 import { computed, getCurrentInstance, onMounted, onUnmounted, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 
@@ -77,6 +77,7 @@ const props = withDefaults(defineProps<DfModalProps>(), {
 });
 const instance = getCurrentInstance();
 const display = useDisplay();
+const breakpoint = useBreakpoint();
 const size = computed(() => props.size);
 
 const fullScreen = computed(() => {
@@ -135,10 +136,12 @@ watch(
   { immediate: true },
 );
 
-// defaultConfirm / defaultReject live on the action's value, not on a class: <df-actions> reads them there and so
-// does this, which is what lets a dialog take an action of either class.
-function renderOptions(action: Form.Action): ActionRenderOptions {
-  return (action.value ?? {}) as ActionRenderOptions;
+// What the action's value renders as at the current width, resolved by the same function <df-actions> draws a
+// button with, so the button and the keystroke answer one reading. defaultConfirm / defaultReject live on the
+// value and not on a class, which is what lets a dialog take an action of either class, and
+// ActionBreakpointRenderOptions leaves both out, so a breakpoint stating one is a type error.
+function renderOptions(action: Form.Action) {
+  return getRenderOptionsForBreakpoint(action.value ?? {}, breakpoint.value);
 }
 
 // The keyboard reaches an action that is rendered at FULL, that is enabled all the way up - `effectiveEnabled` is
@@ -150,7 +153,8 @@ function isReachable(action: Form.Action) {
 
 // execute() is asynchronous and this is a document listener, so nothing wraps it the way Vue wraps a template
 // handler: a rejecting handler would leave an unhandled rejection. The error goes where a template handler's
-// would have gone.
+// would have gone. An action a handler ended with an AbortEventHandlingException resolves with that exception, so
+// a refusal to run is not reported as a failure.
 function run(action: Form.Action, e: Event) {
   e.preventDefault();
   action.execute(e).catch((error: unknown) => {
@@ -209,8 +213,7 @@ function onKeydown(e: KeyboardEvent) {
     const action = props.actions.find((a) => renderOptions(a).defaultConfirm && isReachable(a));
     if (action) run(action, e);
   } else if (e.key === 'Escape') {
-    const action = props.actions.find((a) => renderOptions(a).defaultReject && isReachable(a));
-    if (action) run(action, e);
+    if (rejectAction.value) run(rejectAction.value, e);
   }
 }
 

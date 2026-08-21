@@ -1,4 +1,11 @@
-import { BreakpointNames } from '@dynamicforms/vuetify-inputs';
+import { BreakpointNames, BreakpointsJSON, DfInputComponentTag } from '@dynamicforms/vuetify-inputs';
+
+/**
+ * The tag of a component `@dynamicforms/vuetify-inputs` draws with, which is what a field states in order to be
+ * drawn as something other than `df-input`. It is re-exported so that the `Extras` augmentation declaring that
+ * key names a type the emitted declarations import rather than one they only mention.
+ */
+export type { DfInputComponentTag };
 
 export const FormBuilderName = Symbol('FormBuilder');
 export const FormBuilderBodyProp = Symbol('FormBuilderBodyProp');
@@ -8,9 +15,10 @@ type BaseBkpt = BreakpointNames | 'base';
 export interface FormJSON {
   rows: RowJSON[];
 }
-export type FormJSONResponsive = FormJSON & {
-  [key in BreakpointNames]?: FormJSON;
-};
+// what a form breakpoint serializes to: it states only what it changes, so a missing `rows` inherits the list
+// from the breakpoint below it, while an empty one states that the form has no rows there
+export type FormJSONBreakpoint = Partial<FormJSON>;
+export type FormJSONResponsive = BreakpointsJSON<FormJSON, FormJSONBreakpoint>;
 
 // row declarations
 interface CSSProperties {
@@ -44,9 +52,7 @@ export interface RowJSON {
 // what a row breakpoint serializes to: it states only what it changes, so a missing `columns` inherits the list
 // from the breakpoint below it, while an empty one states that the row has no columns there
 export type RowJSONBreakpoint = Omit<RowJSON, 'columns'> & { columns?: ColumnJSON[] };
-export type RowJSONResponsive = RowJSON & {
-  [key in BreakpointNames]?: RowJSONBreakpoint;
-};
+export type RowJSONResponsive = BreakpointsJSON<RowJSON, RowJSONBreakpoint>;
 
 // column declaractions
 
@@ -55,8 +61,10 @@ export type RowJSONResponsive = RowJSON & {
 interface ColsProps {
   cols?: number | 'auto' | boolean;
 }
-type OffsetProps = { [K in BaseBkpt as K extends 'base' ? 'offset' : `offset-${K}`]?: number | 'auto' | boolean };
-type OrderProps = { [K in BaseBkpt as K extends 'base' ? 'order' : `order-${K}`]?: number | 'auto' | boolean };
+// v-col renders each of these into the class `offset-<value>` / `order-<value>`, so what they take is what
+// Vuetify's stylesheet declares a class for: a number, and for `order` the two named positions besides
+type OffsetProps = { [K in BaseBkpt as K extends 'base' ? 'offset' : `offset-${K}`]?: number };
+type OrderProps = { [K in BaseBkpt as K extends 'base' ? 'order' : `order-${K}`]?: number | 'first' | 'last' };
 
 export interface ColumnProps extends ColsProps, OffsetProps, OrderProps {
   alignSelf?: 'start' | 'end' | 'center' | 'auto' | 'baseline' | 'stretch';
@@ -72,9 +80,7 @@ export interface ColumnJSON {
 // what a column breakpoint serializes to: it states only what it changes, so a missing `components` inherits the
 // list from the breakpoint below it, while an empty one states that the column has none there
 export type ColumnJSONBreakpoint = Omit<ColumnJSON, 'components'> & { components?: ComponentJSON[] };
-export type ColumnJSONResponsive = ColumnJSON & {
-  [key in BreakpointNames]?: ColumnJSONBreakpoint;
-};
+export type ColumnJSONResponsive = BreakpointsJSON<ColumnJSON, ColumnJSONBreakpoint>;
 
 // component declarations
 export type ComponentProps<T extends Record<string | symbol, any> = Record<string | symbol, any>> = T & {

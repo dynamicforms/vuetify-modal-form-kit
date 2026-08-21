@@ -1,5 +1,5 @@
 import * as Form from '@dynamicforms/vue-forms';
-import { Action } from '@dynamicforms/vuetify-inputs';
+import { Action, dfInputComponentsByTag, type DfInputComponentTag } from '@dynamicforms/vuetify-inputs';
 import { mount } from '@vue/test-utils';
 import { vi } from 'vitest';
 import { nextTick } from 'vue';
@@ -169,6 +169,44 @@ describe('ModalView', () => {
     wrapper.unmount();
   });
 
+  it('draws a field as the component it states, and as a df-input where it states none', async () => {
+    const wrapper = mountView();
+    const form = new Form.Group({
+      name: new Form.Field({ value: '' }),
+      active: new Form.Field({ value: false, component: 'df-checkbox' }),
+    });
+
+    const promise = modal.message('Details', 'fill this in', { form });
+    await nextTick();
+
+    const layout = wrapper.findComponent(stubs.FormRender).props('layout') as FormBuilder;
+    const names = layout.toJSON().rows.map((row) => row.columns[0].components[0].name);
+    expect(names).toEqual(['df-input', 'df-checkbox']);
+
+    promise.close('close');
+    await nextTick();
+    await promise;
+    wrapper.unmount();
+  });
+
+  it('lays out a field stating a tag the builder has no method for', async () => {
+    const wrapper = mountView();
+    // a tag @dynamicforms/vuetify-inputs draws with before VuetifyInputsComponentBuilder has a method for it
+    const futureTag = 'df-list' as string as DfInputComponentTag;
+    const form = new Form.Group({ lines: new Form.Field({ value: [], component: futureTag }) });
+
+    const promise = modal.message('Details', 'fill this in', { form });
+    await nextTick();
+
+    const layout = wrapper.findComponent(stubs.FormRender).props('layout') as FormBuilder;
+    expect(layout.toJSON().rows[0].columns[0].components[0].name).toBe('df-list');
+
+    promise.close('close');
+    await nextTick();
+    await promise;
+    wrapper.unmount();
+  });
+
   it('resolves a component the caller named over the ones it supplies', async () => {
     const wrapper = mountView();
     const Custom = { name: 'CustomPanel', template: '<div class="custom-panel" />' };
@@ -178,9 +216,11 @@ describe('ModalView', () => {
     await nextTick();
 
     const components = wrapper.findComponent(stubs.FormRender).props('components') as Record<string, unknown>;
-    // the caller's name wins over the built-in of the same name, and the rest of the built-in map is under it
+    // the caller's name wins over the peer's component of the same name, and the rest of the peer's map is under
+    // it - every tag of it, `df-label` and `df-input-hint` included
     expect(components['df-input']).toBe(Custom);
     expect(components['df-select']).toBeDefined();
+    expect(Object.keys(components)).toEqual(expect.arrayContaining(Object.keys(dfInputComponentsByTag)));
 
     promise.close('close');
     await nextTick();

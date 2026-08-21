@@ -23,17 +23,7 @@
 <script setup lang="ts">
 import * as Form from '@dynamicforms/vue-forms';
 import { MessagesWidget } from '@dynamicforms/vue-forms';
-import {
-  DfActions,
-  DfInput,
-  DfTextArea,
-  DfSelect,
-  DfCheckbox,
-  DfDateTime,
-  DfFile,
-  DfColor,
-  DfRtfEditor,
-} from '@dynamicforms/vuetify-inputs';
+import { DfActions, dfInputComponentsByTag } from '@dynamicforms/vuetify-inputs';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 import { FormBuilder } from '../core/form-layout';
@@ -77,7 +67,7 @@ function warnUnrendered(form: Form.Group, names: string[]) {
   if (!names.length || warnedForms.has(form)) return;
   warnedForms.add(form);
   console.warn(
-    `<modal-view> lays out the Field members of the form it is given, one <df-input> each. It has no layout for ` +
+    `<modal-view> lays out the Field members of the form it is given, one input each. It has no layout for ` +
       `${names.join(', ')}, so ${names.length > 1 ? 'those members are' : 'that member is'} not on screen - while ` +
       'still validating, and still counted by form.valid. Pass a FormBuilder layout of your own to render ' +
       'nested groups and lists.',
@@ -100,7 +90,8 @@ const formLayout = computed(() => {
     if (field instanceof Form.Field) {
       // a suppressed field renders nothing, so a row and a column of its own would be an empty gutter gap
       if (field.visibility === Form.DisplayMode.SUPPRESS) return;
-      builder.dfInput({
+      // the component is the field's to state, and a field that states none is drawn as a plain input
+      builder.byTag(field.extra.component ?? 'df-input', {
         // the field's own label wins over the one read off its name: an element carries its presentation, and
         // the name is only what is left when it carries none
         label: field.extra.label ?? generateLabel(fieldName),
@@ -116,20 +107,10 @@ const formLayout = computed(() => {
   return formBuilder;
 });
 
-// The components a layout may name. The caller's own win, so an application component reaches a dialog body
-// without being registered globally, and a name this map already holds can be replaced for one dialog.
-const builtInComponents = {
-  'df-input': DfInput,
-  'df-text-area': DfTextArea,
-  'df-select': DfSelect,
-  'df-checkbox': DfCheckbox,
-  'df-date-time': DfDateTime,
-  'df-file': DfFile,
-  'df-color': DfColor,
-  'df-rtf-editor': DfRtfEditor,
-  'df-actions': DfActions,
-};
-const components = computed(() => ({ ...builtInComponents, ...(currentModal.value?.components ?? {}) }));
+// The components a layout may name: what `@dynamicforms/vuetify-inputs` draws with, under the caller's own. The
+// caller's win, so an application component reaches a dialog body without being registered globally, and a tag
+// the peer's map already holds can be replaced for one dialog.
+const components = computed(() => ({ ...dfInputComponentsByTag, ...(currentModal.value?.components ?? {}) }));
 
 // One view draws, whatever is mounted: two of them rendering the same `currentModal` would put one dialog on
 // screen twice, over two overlays. The first mounted draws, and hands that over to the next one still up when

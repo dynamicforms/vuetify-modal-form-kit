@@ -1,3 +1,4 @@
+import { dfInputComponentsByTag, Label } from '@dynamicforms/vuetify-inputs';
 import { vi } from 'vitest';
 
 import { Column } from '../column';
@@ -52,6 +53,18 @@ const shorthands: ShorthandCase[] = [
     invoke: (builder, props) => builder.dfInput(props),
   },
   {
+    method: 'dfInputHint',
+    componentName: 'df-input-hint',
+    props: { message: 'Two letters or more', messageClasses: 'text-caption' },
+    invoke: (builder, props) => builder.dfInputHint(props),
+  },
+  {
+    method: 'dfLabel',
+    componentName: 'df-label',
+    props: { label: new Label('Name'), allowWrap: true },
+    invoke: (builder, props) => builder.dfLabel(props),
+  },
+  {
     method: 'dfRtfEditor',
     componentName: 'df-rtf-editor',
     props: { label: 'Body' },
@@ -104,6 +117,54 @@ describe('VuetifyInputsComponentBuilder', () => {
       shorthands.map(({ componentName }) => componentName),
     );
     expect(addCallback.mock.calls.map(([component]) => component.props)).toEqual(shorthands.map(({ props }) => props));
+  });
+
+  it.each(Object.keys(dfInputComponentsByTag))('byTag builds a %s', (tag) => {
+    const addCallback = vi.fn();
+    const builder = new VuetifyInputsComponentBuilder(addCallback);
+    const props = { label: 'Name' };
+
+    expect(builder.byTag(tag, props)).toBe(builder);
+
+    const component = addCallback.mock.calls[0][0];
+    expect(component.name).toBe(tag);
+    expect(component.props).toBe(props);
+  });
+
+  it('byTag builds what the method of the same tag builds', () => {
+    const props = { label: 'Active' };
+    const viaTag = vi.fn();
+    const viaMethod = vi.fn();
+
+    new VuetifyInputsComponentBuilder(viaTag).byTag('df-checkbox', props);
+    new VuetifyInputsComponentBuilder(viaMethod).dfCheckbox(props);
+
+    expect(viaTag.mock.calls[0][0].toJSON()).toEqual(viaMethod.mock.calls[0][0].toJSON());
+  });
+
+  it.each(['generic', 'constructor', 'to-string', 'nested-form'])(
+    'byTag builds the component named %s rather than reaching a member of its own',
+    (tag) => {
+      const addCallback = vi.fn();
+      const builder = new VuetifyInputsComponentBuilder(addCallback);
+      const props = { label: 'Active' };
+
+      // the tag is data - a field states it, or a payload does - so a name the builder happens to carry is a
+      // component name like any other and must not be called as a method
+      expect(builder.byTag(tag, props)).toBe(builder);
+      expect(addCallback).toHaveBeenCalledOnce();
+      expect(addCallback.mock.calls[0][0].toJSON()).toEqual({ name: tag, props });
+    },
+  );
+
+  it('byTag builds a tag no method owns, so a component the peer gains still reaches the layout', () => {
+    const addCallback = vi.fn();
+    const builder = new VuetifyInputsComponentBuilder(addCallback);
+    const props = { label: 'Lines' };
+
+    expect(builder.byTag('df-list', props)).toBe(builder);
+
+    expect(addCallback.mock.calls[0][0].toJSON()).toEqual({ name: 'df-list', props });
   });
 
   it('should build nested form components with the FormBuilder symbol name', () => {

@@ -116,15 +116,15 @@ describe('Layout Integration Tests', () => {
     expect(json.rows[0].columns.length).toBe(2);
 
     // Check sm breakpoint
-    expect(json.sm?.rows.length).toBe(2);
-    expect(json.sm?.rows[0].columns.length).toBe(1);
-    expect(json.sm?.rows[1].columns.length).toBe(1);
+    expect(json.sm?.rows?.length).toBe(2);
+    expect(json.sm?.rows?.[0].columns.length).toBe(1);
+    expect(json.sm?.rows?.[1].columns.length).toBe(1);
 
     // Check xs breakpoint
-    expect(json.xs?.rows.length).toBe(2);
-    expect(json.xs?.rows[0].columns.length).toBe(1);
-    expect(json.xs?.rows[1].columns.length).toBe(1);
-    expect(json.xs?.rows[0].columns[0].components[0].props!.dense).toBe(true);
+    expect(json.xs?.rows?.length).toBe(2);
+    expect(json.xs?.rows?.[0].columns.length).toBe(1);
+    expect(json.xs?.rows?.[1].columns.length).toBe(1);
+    expect(json.xs?.rows?.[0].columns[0].components[0].props!.dense).toBe(true);
   });
 
   it('should support nested forms', () => {
@@ -236,7 +236,7 @@ describe('Layout Integration Tests', () => {
 
     // Check main form
     expect(json.rows.length).toBe(2);
-    expect(json.sm?.rows.length).toBe(2);
+    expect(json.sm?.rows?.length).toBe(2);
 
     // Check that nested form is properly referenced
     const nestedFormComponent = json.rows[1].columns[0].components[0];
@@ -244,12 +244,12 @@ describe('Layout Integration Tests', () => {
     expect(nestedFormComponent.props).toEqual(contactForm.toJSON());
 
     // Check that nested form is also properly referenced in responsive layout
-    const nestedFormComponentSm = json.sm?.rows[1].columns[0].components[0];
+    const nestedFormComponentSm = json.sm?.rows?.[1].columns[0].components[0];
     expect(nestedFormComponentSm?.name).toBe(FormBuilderName);
     expect(nestedFormComponentSm?.props).toEqual(contactForm.toJSON());
 
     // And the nested form itself should have its own responsive layout
-    expect(contactForm.toJSON().sm?.rows.length).toBe(2);
+    expect(contactForm.toJSON().sm?.rows?.length).toBe(2);
   });
 
   it('resolves column breakpoints the way <form-render> asks for them', () => {

@@ -35,7 +35,7 @@ currently active dialog and forwards its data straight into `df-modal`'s props a
 | `df-modal` prop/slot | Fed from |
 |---|---|
 | `formControl`, `size`, `dialogId`, `title`, `color`, `icon`, `actions` | The active dialog's data (set by whichever `modal.*` call opened it, see [`ModalOptions`](./modal-service#modaloptions)) |
-| `#body` | A `MessagesWidget` for the `message` text, plus - if a form was passed - a `FormRender` in which every `Field` on `options.form` is rendered as a `<df-input>`. See [the generated layout](#the-generated-layout) below for the label, the members it skips and the ones it does not draw. |
+| `#body` | A `MessagesWidget` for the `message` text, plus - if a form was passed - a `FormRender` in which every `Field` on `options.form` is rendered as the input it names. See [the generated layout](#the-generated-layout) below for the component, the label, the members it skips and the ones it does not draw. |
 | `#actions` | A `<df-actions>` fed the same actions forwarded to the `actions` prop |
 
 Because the same `Action[]` reaches both `df-modal`'s `actions` prop and the `<df-actions>` inside `#actions`,
@@ -61,10 +61,15 @@ rather than the request - so this library is browser-side and single-app.
 `<modal-view>` builds a single-column `FormBuilder` layout over the members of `options.form`, in declaration
 order. It covers exactly the `Field` members:
 
+- **The component is the field's own.** `new Field({ value: false, component: 'df-checkbox' })` is drawn as a
+  checkbox; a field that names no component is drawn as a `<df-input>`. `component` is a key this library declares
+  on vue-forms' `Extras`, so every element carries it, and it takes `DfInputComponentTag` - the tag of any
+  component [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) draws with. The catalogue is that package's, so a
+  component it gains is drawable here the moment the peer is upgraded.
 - **The label is the field's own.** `new Field({ value: '', label: 'Email address' })` draws that text; the field
   name read as Title Case - `emailAddress` and `email_address` both give `Email Address` - is what is left when
   the field carries none.
-- **A member at `DisplayMode.SUPPRESS` is skipped.** `<df-input>` renders nothing at that mode, so a row and a
+- **A member at `DisplayMode.SUPPRESS` is skipped.** The input renders nothing at that mode, so a row and a
   column of its own would be an empty gutter gap. A `HIDDEN` or `INVISIBLE` member keeps its row: the input draws
   those two itself, as `d-none` and as `invisible`.
 - **An `Action` member goes to the actions slot**, not into the body - see
