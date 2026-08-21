@@ -36,61 +36,25 @@ is only that a caller who deliberately chose the key gets the other name back, a
 Recommended: leave it. It is the only item left in this file where the current behaviour is already written down
 as a rule; adding the knob is worth doing if a real caller asks and not before.
 
-## The generated layout
-
-**The generated layout renders every `Field` as `<df-input>`.**
-
-`src/modal/df-api.component.vue:100-109` calls `builder.dfInput({ label, control: field })` for every
-`Form.Field`, whatever the field holds: a boolean gets a text input, a field with a `choices` list gets no
-`<df-select>`, a date gets no picker. Everything else the element carries reaches the component on its own,
-through `control`.
-
-- *Leave it, documented.* The generated layout is a convenience for a form of plain scalars, and anything else is
-  the documented reason to pass a `FormBuilder` of your own — which is what the unrendered-member warning at
-  `:76-85` already points at.
-- *Choose the component from the field.* A field with choices becomes `<df-select>`, a boolean `<df-checkbox>`, a
-  date `<df-date-time>`. It is what a caller expects, and it makes this library's dialog the place where the
-  field-to-component mapping lives — a mapping that belongs to `@dynamicforms/vuetify-inputs`, which will grow
-  components this map does not know about.
-- *Let the field state it.* Read `field.extra.component` (or the like) and fall back to `dfInput`. The caller
-  states the component once, next to the field, and the library holds no mapping table.
-
-Recommended: the third, if anything. It is the only one that does not put a peer's component catalogue into this
-repository, and it composes with the first: a form that states nothing still gets `<df-input>` per field.
-
-**A nested `Group` or `List` on `options.form`.**
-
-`src/modal/df-api.component.vue:112` collects any member that is neither an `Action` nor a `Field` into
-`unrendered`, and `warnUnrendered` (`:76-85`) says once per form that those members are not on screen while still
-validating and still counted by `form.valid`. The warning names the members and points at passing a `FormBuilder`
-of your own; it does not answer whether the generated layout ought to lay them out.
-
-- *Leave it, and keep the warning.* A nested group is a layout question — columns, order, whether the group gets
-  a card of its own — and a generated answer would be wrong about as often as it was right. The warning already
-  states the consequence a caller has to know about (`form.valid` counts what is not on screen).
-- *Lay out a `Group` recursively.* One row per member, nested. Answers the easy half; a `List` has no answer at
-  all without a row template, so the warning stays for lists and the rule becomes harder to state than it is now.
-- *Refuse.* Throw instead of warning. It is a real programming error to hand a dialog a form whose members it will
-  not draw — but it also breaks a form that carries a group used elsewhere and irrelevant here.
-
-Recommended: the first. It is the documented state today, and this is the point of the `FormBuilder`.
-
----
-
 ## Release
 
-**There is no release workflow.**
+**Nothing in the repository checks that a release is coherent before it goes out.**
 
-`.github/workflows/` holds `ci.yml` alone, with the jobs `build`, `peer-range`, `vue-floor` and `node-floor`. The
-version bump, the tag and `npm publish` are hand-made, and nothing checks that `changelog.md` names the version in
-`package.json` — the file is in the tarball (`package.json:8-11`), so a stale changelog ships.
+Publishing is done by a tool of yours outside this repository, so what follows is about what the repository
+itself can state, not about replacing that tool.
 
-- *A guard in CI.* One step that reads `package.json`'s version and greps `changelog.md` for a `## [x.y.z]`
-  heading. A few lines, catches the failure that actually happens, and leaves publishing by hand.
-- *A tag-triggered release workflow.* `on: push: tags: v*` → build → the changelog guard → `npm publish` with
-  `--provenance`, using an npm token in repository secrets. Removes the hand-made step and the risk of publishing
-  an unbuilt tree; costs a token in the repository and a decision about who may push a tag.
-- *Leave it.* Nothing changes.
+Two things are true here whatever publishes. `changelog.md` ships inside the tarball (`package.json` `files`),
+and nothing compares the version it names at the top with `package.json`'s: a release whose changelog heading was
+never bumped ships a file describing the previous one. And `prepack` builds, so `npm publish` cannot ship a stale
+`dist/`, but nothing asserts that the tree being published is the tree CI went green on - a local publish from a
+dirty working copy is indistinguishable from a clean one.
 
-Recommended: both halves of the first two, in that order — add the changelog guard to `ci.yml` now, and the
-tag-triggered publish when the token exists. The guard is useful whether or not the publish is ever automated.
+- *A guard in CI.* One step reading `package.json`'s version and requiring a `## [x.y.z]` heading for it in
+  `changelog.md`. A few lines, catches the failure that actually happens, and says nothing about how you publish.
+- *The same guard in the publish tool.* Better placed if the tool is where a release is decided, and outside this
+  repository's reach.
+- *Leave it.* The check is a person's, as it is now.
+
+Recommended: the CI guard, unless the publish tool already makes the comparison - which is the question here. It
+is cheap, it runs on the pull request rather than at publish time, and it is useful to anyone who ever publishes
+this package by another route.

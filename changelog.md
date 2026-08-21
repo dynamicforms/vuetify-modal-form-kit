@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.8.0] - 2026-08-21
+## [0.7.2] - 2026-08-21
 
 ### Added
 
@@ -21,14 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   leaving the screen under its caller. `closable` states the answer where the caller wants one whatever the
   actions say, and a dialog that states no reject action falls back to emitting `update:model-value(false)` as
   before.
-- `DfModalProps`, `DfModalSlots`, `FormRenderProps` and `ComponentRenderProps` are top-level exports. All four were
-  declared in `dist/index.d.ts`, where the components' own declarations refer to them, and exported from nothing, so
-  a component wrapping `<df-modal>`, `<form-render>` or `<component-render>` had no name for the props it forwards.
-- CI type-checks `dist/index.d.ts` against the lowest `vue` the declared peer range admits, and builds the package and
-  loads the built artifact on the node floor `engines.node` states. The declarations name Vue's own types, whose
-  arity moves between Vue patch releases, so what the tarball ships can need a newer Vue than the range promises
-  without a single source file saying so.
-- `changelog.md` ships in the tarball, alongside `dist`, the readme and the licence.
 
 ### Changed
 
@@ -43,6 +35,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The `modal` service carries `options.components` onto the dialog it records, so what the caller states reaches
   the view that draws it.
+
+## [0.7.1] - 2026-08-21
+
+### Added
+
+- `DfModalProps`, `DfModalSlots`, `FormRenderProps` and `ComponentRenderProps` are top-level exports. All four were
+  declared in `dist/index.d.ts`, where the components' own declarations refer to them, and exported from nothing, so
+  a component wrapping `<df-modal>`, `<form-render>` or `<component-render>` had no name for the props it forwards.
+- CI type-checks `dist/index.d.ts` against the lowest `vue` the declared peer range admits, and builds the package and
+  loads the built artifact on the node floor `engines.node` states. The declarations name Vue's own types, whose
+  arity moves between Vue patch releases, so what the tarball ships can need a newer Vue than the range promises
+  without a single source file saying so.
+- `changelog.md` ships in the tarball, alongside `dist`, the readme and the licence.
+
+### Fixed
+
 - An Escape that a non-persistent overlay above the dialog consumes does not also reject the dialog. Vuetify's
   `VOverlay` closes a `<df-select>` menu or a `<df-date-time>` picker from a `window` keydown listener of its own and
   never calls `preventDefault()`, so the one keystroke closed the menu and rejected the dialog behind it. The dialog's
@@ -71,7 +79,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `require()` of an ES module from 22.12, which `engines.node` states, but this package imports Vuetify's component
   entries - directly and through `@dynamicforms/vuetify-inputs` - and each of those imports its own stylesheet: the
   path runs through a bundler that answers for `.css`, not through plain node.
-
 ## [0.7.0] - 2026-08-20
 
 ### Changed (breaking)

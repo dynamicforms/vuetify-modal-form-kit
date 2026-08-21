@@ -30,6 +30,18 @@ Work. The decisions that have to be made before some of it can be done are in `g
   It is lax rather than over-strict - nothing valid is lost - and what it lets through reaches `<v-row>` /
   `<v-col>` as a class binding Vue then has to make sense of.
 
+## The generated layout
+
+- `src/modal/df-api.component.vue:100-109` renders every `Form.Field` as `<df-input>` whatever it holds: a boolean
+  gets a text input, a field carrying choices gets no `<df-select>`, a date gets no picker. The component to draw
+  is the field's to state - `field.extra.component`, falling back to `dfInput` - rather than a type-to-component
+  table here, which would put `@dynamicforms/vuetify-inputs`' catalogue in this repository and go stale as it
+  grows. It needs a key on vue-forms' `Extras`, so it reaches the peer or is augmented here.
+- `src/modal/df-api.component.vue:112` collects a member that is neither an `Action` nor a `Field` into a warning
+  and draws nothing for it, so a nested `Group` or `List` validates and counts towards `form.valid` off screen.
+  Laying a `Group` out recursively answers the easy half; a `List` has no answer without a row template, so the
+  rule would be harder to state than the warning is.
+
 ## What 1.0 requires
 
 The rest of this file is worth doing. This is the part that has to be true before the version number stops being a

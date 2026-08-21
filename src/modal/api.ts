@@ -36,6 +36,18 @@ export interface CloseablePromise<T> extends Promise<T> {
 export interface ModalOptions {
   form?: Form.Group;
   size?: DialogSize;
+  /**
+   * The dialog's buttons, keyed by name, merged over the defaults it would otherwise state.
+   *
+   * The dialog resolves with the name of the action that settled it, and an action can carry two: the field name
+   * it has inside `form`, and the key it is written under here. Where one action is reachable both ways - which
+   * is how a form member is also stated as a dialog button - the field name is the one the dialog resolves with:
+   *
+   * ```typescript
+   * const form = new Form.Group({ submit });   // field name: 'submit'
+   * await modal.message(title, body, { form, actions: { send: submit } });   // resolves with 'submit'
+   * ```
+   */
   actions?: FormActions;
   color?: string;
   icon?: string;
