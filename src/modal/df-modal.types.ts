@@ -4,7 +4,6 @@ import DialogSize from './dialog-size';
 
 export interface DfModalProps {
   modelValue: boolean;
-  closable?: boolean;
   size?: DialogSize;
   formControl?: Form.Group;
   dialogId?: symbol;

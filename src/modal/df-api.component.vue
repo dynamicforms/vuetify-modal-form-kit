@@ -1,6 +1,6 @@
 <template>
   <df-modal
-    v-if="currentModal"
+    v-if="currentModal && isDrawingView"
     v-model="isOpen"
     :form-control="currentModal.form"
     :size="currentModal.size"
@@ -39,7 +39,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { FormBuilder } from '../core/form-layout';
 import { FormRender } from '../layout';
 
-import { currentModal, installed, installedCount } from './api';
+import { currentModal, installed, mountedViews } from './api';
 import DfModal from './df-modal.component.vue';
 
 const isOpen = ref(false);
@@ -116,8 +116,9 @@ const formLayout = computed(() => {
   return formBuilder;
 });
 
-// Register components
-const components = {
+// The components a layout may name. The caller's own win, so an application component reaches a dialog body
+// without being registered globally, and a name this map already holds can be replaced for one dialog.
+const builtInComponents = {
   'df-input': DfInput,
   'df-text-area': DfTextArea,
   'df-select': DfSelect,
@@ -128,15 +129,25 @@ const components = {
   'df-rtf-editor': DfRtfEditor,
   'df-actions': DfActions,
 };
+const components = computed(() => ({ ...builtInComponents, ...(currentModal.value?.components ?? {}) }));
+
+// One view draws, whatever is mounted: two of them rendering the same `currentModal` would put one dialog on
+// screen twice, over two overlays. The first mounted draws, and hands that over to the next one still up when
+// it leaves.
+const ownId = Symbol('modal-view');
+const isDrawingView = computed(() => mountedViews.value[0] === ownId);
 
 onMounted(() => {
   if (installed.value) {
-    console.warn('Seems like there is more than one df-modal-api in the v-dom');
+    console.warn(
+      'A <modal-view> (ModalView) is already mounted, and one dialog stack is drawn by one view: this one renders ' +
+        'nothing. Mount <modal-view> once, somewhere in the app.',
+    );
   }
-  installedCount.value += 1;
+  mountedViews.value = [...mountedViews.value, ownId];
 });
 
 onUnmounted(() => {
-  installedCount.value -= 1;
+  mountedViews.value = mountedViews.value.filter((view) => view !== ownId);
 });
 </script>

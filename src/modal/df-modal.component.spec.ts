@@ -32,7 +32,6 @@ interface ModalProps {
   dialogId?: symbol;
   actions?: Action[];
   size?: DialogSize;
-  closable?: boolean;
 }
 
 function mountModal(props: ModalProps) {
@@ -189,21 +188,39 @@ describe('DfModal', () => {
     });
   });
 
-  describe('closable', () => {
-    it('renders no header button unless it is asked for one', () => {
+  describe('the close button', () => {
+    it('carries none for a dialog that states no way of rejecting itself', () => {
       const wrapper = mountModal({ modelValue: true });
       expect(wrapper.find('button').exists()).toBe(false);
       wrapper.unmount();
     });
 
-    it('closes the dialog from the header button', async () => {
-      const wrapper = mountModal({ modelValue: true, closable: true });
-      expect(dialogTracker.currentRef.value).not.toBeNull();
+    it('carries none where the only reject action is one the keyboard cannot reach', () => {
+      const reject = actionWithSpy({ label: 'Cancel', defaultReject: true });
+      reject.action.enabled = false;
+      const wrapper = mountModal({ modelValue: true, actions: [reject.action] });
+
+      expect(wrapper.find('button').exists()).toBe(false);
+      wrapper.unmount();
+    });
+
+    it('carries one for the action Escape reaches', () => {
+      const reject = actionWithSpy({ label: 'Cancel', defaultReject: true });
+      const wrapper = mountModal({ modelValue: true, actions: [reject.action] });
+
+      expect(wrapper.find('button').exists()).toBe(true);
+      wrapper.unmount();
+    });
+
+    it('runs that action when clicked, as the keystroke would', async () => {
+      const reject = actionWithSpy({ label: 'Cancel', defaultReject: true });
+      const wrapper = mountModal({ modelValue: true, dialogId: Symbol('api'), actions: [reject.action] });
 
       await wrapper.find('button').trigger('click');
 
-      expect(wrapper.emitted('update:model-value')).toEqual([[false]]);
-      expect(dialogTracker.currentRef.value).toBeNull();
+      // the action settles the dialog through whatever owns it; the component states nothing itself
+      expect(reject.spy).toHaveBeenCalledTimes(1);
+      expect(wrapper.emitted('update:model-value')).toBeUndefined();
       wrapper.unmount();
     });
   });

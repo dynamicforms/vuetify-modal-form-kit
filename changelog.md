@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.2] - 2026-08-21
+
+### Added
+
+- `ModalOptions.components` states components the dialog body may name, over the nine `df-*` ones `<modal-view>`
+  supplies. A component the application wrote reaches `modal.custom()` and a `FormBuilder` layout without being
+  registered globally, and a built-in name given here is replaced for that dialog alone.
+- `CloseablePromise.payload` carries what the executor of the action that settled the dialog returned. The promise
+  goes on resolving with the action's key, which stays a `string` a `switch` reads; the payload is read off the
+  promise after awaiting it. A dialog closed through `close(value)`, or settled by an action that produced
+  nothing, carries none.
+- `<df-modal>` draws the header close button for the action Escape reaches, and a click on it runs that action.
+  A dialog opened through the `modal` service therefore settles with the action's own key - `'close'` from
+  `message()`, `'no'` from `yesNo()` - where the button used to emit `update:model-value(false)`, which takes a
+  service-owned dialog off the screen and leaves its caller's promise waiting.
+
+### Changed (breaking)
+
+- `<df-modal>`'s `closable` prop is gone. Whether the header carries an `x` is the same question as whether
+  Escape reaches an action: the button is that action's click-target, so a dialog that states a reachable
+  `defaultReject` action carries one and a dialog that states none carries nothing the button could do. A
+  template dialog that passed `closable` and states no such action states `Action.closeAction()` instead, which
+  answers both the button and the keystroke.
+
+### Changed
+
+- One `<modal-view>` draws the dialog stack. A second mounted view warns, as it did, and now renders nothing
+  rather than drawing the same dialog over a second overlay; it takes the drawing over if the view that had it
+  unmounts, so a route transition with both briefly mounted shows one dialog throughout.
+
+### Fixed
+
+- The `modal` service carries `options.components` onto the dialog it records, so what the caller states reaches
+  the view that draws it.
+- CI states that `changelog.md` names the version in `package.json`. A release carries both, written by hand in
+  the pull request that makes it, and `changelog.md` ships inside the tarball, so a heading that was never
+  bumped shipped notes for the release before it.
+
 ## [0.7.1] - 2026-08-21
 
 ### Added
@@ -48,7 +86,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `require()` of an ES module from 22.12, which `engines.node` states, but this package imports Vuetify's component
   entries - directly and through `@dynamicforms/vuetify-inputs` - and each of those imports its own stylesheet: the
   path runs through a bundler that answers for `.css`, not through plain node.
-
 ## [0.7.0] - 2026-08-20
 
 ### Changed (breaking)

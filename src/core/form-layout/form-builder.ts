@@ -32,7 +32,8 @@ class FormBase implements ComponentProps {
    * @return returns a proxy that allows to immediately from the FormBuilder object add components into their own
    * rows and columns, e.g. `new FormBuilder().simple().generic(...)` will create a layout with one row, column and
    * within it your generic component. You may call the ComponentBuilder's methods as many times as you want
-   * to generate more rows and columns with components
+   * to generate more rows and columns with components. `simple` on the returned proxy restarts the layout at a
+   * new column count; a row's and a column's proxy answer it as a component-adding call like any other name.
    */
   simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(cols: TwelveDivisible = 1): SimpleProxy<T> {
     let currentRow: Row | null = null;
@@ -97,7 +98,8 @@ export class FormBuilder extends ResponsiveRenderOptions<FormBase> {
    * @return returns a proxy that allows to immediately from the FormBuilder object add components into their own
    * rows and columns, e.g. `new FormBuilder().simple().generic(...)` will create a layout with one row, column and
    * within it your generic component. You may call the ComponentBuilder's methods as many times as you want
-   * to generate more rows and columns with components
+   * to generate more rows and columns with components. `simple` on the returned proxy restarts the layout at a
+   * new column count; a row's and a column's proxy answer it as a component-adding call like any other name.
    */
   simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(cols: TwelveDivisible = 1): SimpleProxy<T> {
     return this._value.simple<T>(cols);

@@ -21,6 +21,25 @@ part in this, so keep the two in sync if you set both. The promise also carries:
 |---|---|
 | `.close(value)` | Closes the dialog from outside, resolving the promise with `value`. |
 | `.dialogId` | `symbol` identifying this dialog in the internal stack. |
+| `.payload` | What the executor of the action that settled the dialog returned, once it has - `undefined` before that, and for a dialog closed from outside or settled by an action that produced nothing. |
+
+### Getting data out of a dialog
+
+The promise resolves with a key, which stays a `string` a `switch` reads. Anything the action produced besides
+that key is on `.payload`, so it is read off the promise after awaiting it rather than off the awaited value:
+
+```typescript
+const save = new Action({ value: { label: 'Save', defaultConfirm: true } });
+save.registerAction(new Form.ExecuteAction(async () => api.save(form.value)));
+
+const dialog = modal.message('Edit', 'change what you need', { form, actions: { save } });
+if ((await dialog) === 'save') {
+  const record = dialog.payload;   // what the save executor answered
+}
+```
+
+The other route out is the form itself: a dialog handed a `Form.Group` edits that group, and the caller reads it
+back when the dialog settles. `.payload` is for what the action computes rather than what the user typed.
 
 ## Methods
 
@@ -42,10 +61,28 @@ Passed as the last argument to `message()` / `yesNo()` / `custom()`.
 | Option | Type | Description |
 |---|---|---|
 | `form` | `Form.Group` | A `@dynamicforms/vue-forms` group rendered as the dialog body, one `<df-input>` per `Field` member - see [`<modal-view>`](./modal-view#what-it-actually-does) for what the generated layout covers. Its `Action` members become the dialog's buttons - see [Actions](#actions) for which of them are drawn. |
-| `actions` | `FormActions` (`Record<string, Form.Action>`) | Explicit actions to show, keyed by name. Merged over the defaults (`close`, or `yes` / `no`), which are stated only where nothing the caller passed is drawn - see [Actions](#actions). |
+| `actions` | `FormActions` (`Record<string, Form.Action>`) | Explicit actions to show, keyed by name. Merged over the defaults (`close`, or `yes` / `no`), which are stated only where nothing the caller passed is drawn - see [Actions](#actions). One action can be reachable both here and as a member of `form`; the field name is what the dialog then resolves with - see [Which name settles the dialog](#which-name-settles-the-dialog). |
 | `size` | `DialogSize` | One of `DialogSize.SMALL` / `MEDIUM` / `LARGE` / `X_LARGE`. Defaults to `DialogSize.DEFAULT`. |
 | `color` | `string` | Passed straight to the title bar's `v-sheet` `color` prop. |
 | `icon` | `string` | Icon shown next to the title. |
+| `components` | `Record<string \| symbol, any>` | Components the dialog body may name, over the nine `df-*` ones `<modal-view>` supplies. A component the application wrote is reachable from `custom()` and from a `FormBuilder` layout without being registered globally; a built-in name given here is replaced for this dialog alone. |
+
+### Which name settles the dialog
+
+An action carries the name it is reached by, and it can have two at once: the field name it has inside
+`options.form`, and the key it is written under in `options.actions`. That happens when the same instance is
+passed both ways, which is how a form member is also stated as one of the dialog's buttons. The field name is
+the one the dialog resolves with:
+
+```typescript
+const submit = new Action({ value: { label: 'Send', defaultConfirm: true } });
+const form = new Form.Group({ submit });                  // field name: 'submit'
+
+await modal.message('Subscribe', 'your address', { form, actions: { send: submit } });
+// resolves with 'submit', never with 'send'
+```
+
+Where the key is the name you want back, name the form member to match it.
 
 ## Actions
 

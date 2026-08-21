@@ -3,7 +3,7 @@ import { Action, ActionRenderOptions } from '@dynamicforms/vuetify-inputs';
 import { vi } from 'vitest';
 import { nextTick } from 'vue';
 
-import modal, { currentModal, installedCount } from './api';
+import modal, { currentModal, mountedViews } from './api';
 import DialogSize from './dialog-size';
 
 // the promise is resolved from a nextTick callback, so one flush is not enough to see it settle
@@ -114,6 +114,34 @@ describe('modal service', () => {
     }
   });
 
+  it('carries what the settling action returned, beside the key it resolved with', async () => {
+    const submit = new Action({ value: { label: 'Send' } });
+    submit.registerAction(new Form.ExecuteAction(async () => ({ id: 42, stored: true })));
+    const form = new Form.Group({ submit });
+
+    const dialog = modal.message('Subscribe', 'Enter your email address:', { form });
+    await submit.execute(null);
+
+    // the dialog resolves with the key, which stays a string a switch reads; the payload is beside it
+    expect(await settled(dialog)).toBe('submit');
+    expect(dialog.payload).toEqual({ id: 42, stored: true });
+  });
+
+  it('carries no payload where the action produced none, or the dialog was closed from outside', async () => {
+    const submit = new Action({ value: { label: 'Send' } });
+    const form = new Form.Group({ submit });
+
+    const answered = modal.message('Subscribe', 'again', { form });
+    await submit.execute(null);
+    await settled(answered);
+    expect(answered.payload).toBeUndefined();
+
+    const closed = modal.message('Working', 'Please wait...');
+    closed.close('cancelled');
+    await settled(closed);
+    expect(closed.payload).toBeUndefined();
+  });
+
   it('closes from the outside through the returned promise', async () => {
     const promise = modal.message('Working', 'Please wait...');
     expect(currentModal.value).not.toBeNull();
@@ -174,11 +202,11 @@ describe('modal service', () => {
     expect(warn).toHaveBeenCalledOnce();
 
     warn.mockClear();
-    installedCount.value = 1;
+    mountedViews.value = [Symbol('view')];
     const rendered = modal.message('On screen', 'a view is mounted');
     await nextTick();
     expect(warn).not.toHaveBeenCalled();
-    installedCount.value = 0;
+    mountedViews.value = [];
 
     rendered.close('close');
     await settled(rendered);
@@ -351,11 +379,11 @@ describe('modal service', () => {
     const warn = vi.mocked(console.warn);
 
     const promise = modal.message('Opened first', 'the view mounts right after');
-    installedCount.value = 1;
+    mountedViews.value = [Symbol('view')];
     await nextTick();
     expect(warn).not.toHaveBeenCalled();
 
-    installedCount.value = 0;
+    mountedViews.value = [];
     promise.close('close');
     await settled(promise);
   });

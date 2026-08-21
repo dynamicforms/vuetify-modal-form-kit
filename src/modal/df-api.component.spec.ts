@@ -169,24 +169,47 @@ describe('ModalView', () => {
     wrapper.unmount();
   });
 
-  it('draws the dialog once per mounted view', async () => {
+  it('resolves a component the caller named over the ones it supplies', async () => {
+    const wrapper = mountView();
+    const Custom = { name: 'CustomPanel', template: '<div class="custom-panel" />' };
+    const form = new Form.Group({ name: new Form.Field({ value: '' }) });
+
+    const promise = modal.message('Details', 'fill this in', { form, components: { 'df-input': Custom } });
+    await nextTick();
+
+    const components = wrapper.findComponent(stubs.FormRender).props('components') as Record<string, unknown>;
+    // the caller's name wins over the built-in of the same name, and the rest of the built-in map is under it
+    expect(components['df-input']).toBe(Custom);
+    expect(components['df-select']).toBeDefined();
+
+    promise.close('close');
+    await nextTick();
+    await promise;
+    wrapper.unmount();
+  });
+
+  it('draws the dialog in one view, whatever is mounted', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const first = mountViewWithModal();
     const second = mountViewWithModal();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('renders nothing'));
     warn.mockRestore();
 
-    const promise = modal.message('Twice over', 'one dialog, two views');
+    const promise = modal.message('Once over', 'one dialog, two views');
     await nextTick();
 
-    // The dialog is on screen in both views at once: the stack is one per application and every view draws the
-    // dialog on top of it. This is what the second view's mount warning announces, not what anyone wants of it.
+    // one stack is drawn by one view: the second renders nothing, which is what its mount warning announces
     expect(shownDialogs(first)).toBe(1);
+    expect(shownDialogs(second)).toBe(0);
+
+    // and the one still up takes the drawing over when the one that had it leaves
+    first.unmount();
+    await nextTick();
     expect(shownDialogs(second)).toBe(1);
 
     promise.close('close');
     await nextTick();
     await promise;
-    first.unmount();
     second.unmount();
   });
 

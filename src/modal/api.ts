@@ -12,14 +12,51 @@ export type FormActions = Record<string, Form.Action>;
 export interface CloseablePromise<T> extends Promise<T> {
   close: (value: T) => void;
   dialogId: symbol;
+  /**
+   * What the executor of the action that settled the dialog returned, once it has. The dialog resolves with the
+   * key of that action - a string a `switch` reads - and this is where anything the action produced besides that
+   * key is found: the record a save handler answered with, the row a picker chose.
+   *
+   * It is `undefined` until the dialog settles, so it is read off the promise after awaiting it rather than off
+   * the awaited value:
+   *
+   * ```typescript
+   * const dialog = modal.message('Edit', 'change what you need', { form, actions: { save } });
+   * const answer = await dialog;        // 'save'
+   * const record = dialog.payload;      // what the save executor returned
+   * ```
+   *
+   * A dialog settled through `close(value)` carries none, and so does one settled by an action that produced
+   * nothing: an action with no executor of its own answers `null`, which is read here as no payload. Where that
+   * distinction matters, `await action.execute()` hands back the chain's answer untouched.
+   */
+  payload?: unknown;
 }
 
 export interface ModalOptions {
   form?: Form.Group;
   size?: DialogSize;
+  /**
+   * The dialog's buttons, keyed by name, merged over the defaults it would otherwise state.
+   *
+   * The dialog resolves with the name of the action that settled it, and an action can carry two: the field name
+   * it has inside `form`, and the key it is written under here. Where one action is reachable both ways - which
+   * is how a form member is also stated as a dialog button - the field name is the one the dialog resolves with:
+   *
+   * ```typescript
+   * const form = new Form.Group({ submit });   // field name: 'submit'
+   * await modal.message(title, body, { form, actions: { send: submit } });   // resolves with 'submit'
+   * ```
+   */
   actions?: FormActions;
   color?: string;
   icon?: string;
+  /**
+   * Components the dialog body may name, over the ones `<modal-view>` supplies. A layout - the one generated from
+   * `form`, or one a `FormBuilder` in the body states - resolves a component name against this map first, so an
+   * application's own component is reachable from `modal.custom()` without being registered globally.
+   */
+  components?: Record<string | symbol, any>;
 }
 
 export interface ModalData extends ModalOptions {
@@ -31,9 +68,12 @@ export interface ModalData extends ModalOptions {
 }
 
 const modalDefinitions = {} as Record<symbol, ModalData>;
+// The mounted <modal-view> instances, in the order they mounted. One dialog stack is drawn by one view, so the
+// first of these draws and the rest render nothing; a view that leaves hands the drawing to the next one still up.
+export const mountedViews = ref<symbol[]>([]);
 // counted, not a flag: one <modal-view> unmounting must not report the modal system as gone while another is
 // still mounted
-export const installedCount = ref(0);
+export const installedCount = computed(() => mountedViews.value.length);
 export const installed = computed(() => installedCount.value > 0);
 
 class ModalAPI {
@@ -120,7 +160,7 @@ class ModalAPI {
       });
     }
 
-    let resolvePromise: (value: string) => void;
+    let resolvePromise: (value: string, payload?: unknown) => void;
 
     const id = Symbol('modalstack');
     const actions: FormActions = { ...defaultActions, ...(options?.actions ?? {}) };
@@ -150,7 +190,7 @@ class ModalAPI {
           throw error;
         }
         if (mine && !(answer instanceof Form.AbortEventHandlingException) && dialogTracker.currentRef.value === id) {
-          resolvePromise(field.fieldName || name);
+          resolvePromise(field.fieldName || name, answer);
         }
         // the answer the chain reached, not this handler's own: an action handed to a dialog goes on reporting
         // what its own executor returned
@@ -174,10 +214,13 @@ class ModalAPI {
     Object.entries(actions).forEach(([name, action]) => attachResolver(action, name));
 
     const promise = new Promise<string>((resolve) => {
-      resolvePromise = (value: string) => {
+      resolvePromise = (value: string, payload?: unknown) => {
         dialogTracker.remove(id);
         delete modalDefinitions[id];
         registered.forEach(([target, handler]) => target.unregisterAction(handler));
+        // read off the promise once it has settled: the dialog resolves with the key, which stays a string.
+        // `null` is what a chain with no executor answers, and is no payload.
+        promise.payload = payload ?? undefined;
         // Use nextTick to ensure Vue updates the DOM before cleanup
         // This prevents race conditions when opening a new dialog immediately after closing one
         nextTick(() => resolve(value));
@@ -194,6 +237,7 @@ class ModalAPI {
         resolve: (value: string) => resolvePromise(value),
         color: options?.color,
         icon: options?.icon,
+        components: options?.components,
       };
     }) as CloseablePromise<string>;
 

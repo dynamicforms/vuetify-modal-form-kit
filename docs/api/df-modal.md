@@ -8,7 +8,7 @@ if that's your use case, you don't need to touch `df-modal` directly, see [`moda
 
 ```vue
 <!-- title is a RenderableValue: const title = new RenderableValue('Log in') -->
-<df-modal v-model="isOpen" :title="title" :actions="actions" closable icon="mdi-login">
+<df-modal v-model="isOpen" :title="title" :actions="actions" icon="mdi-login">
   <template #body>...</template>
   <template #actions>
     <df-actions :actions="actions" class="d-flex justify-end" style="gap: 0.5em" />
@@ -24,10 +24,9 @@ forwards its props and slots.
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `modelValue` | `boolean` | `false` | Controls visibility. Use with `v-model`. |
-| `closable` | `boolean` | `false` | Shows a close (`x`) button in the title bar that sets `modelValue` to `false`. |
 | `size` | `DialogSize` | `DialogSize.DEFAULT` | One of `DialogSize.SMALL` / `MEDIUM` / `LARGE` / `X_LARGE`. Each of those switches to fullscreen below its own breakpoint; `DEFAULT` sizes itself to its content and never does. |
 | `formControl` | `Form.Group` | — | Exposed to the `body` slot as `formControl`; `df-modal` itself doesn't render a form from it. |
-| `dialogId` | `symbol` | — | Used internally by the `modal` service to manage the one-dialog-at-a-time stack. Leave unset for template dialogs. It also states who owns the stack entry: `df-modal` pushes only a template dialog's, and leaves one it was given a `dialogId` for on the stack when it unmounts. A `model-value` going false still removes whichever entry the component holds, which is the route the `closable` button takes. |
+| `dialogId` | `symbol` | — | Used internally by the `modal` service to manage the one-dialog-at-a-time stack. Leave unset for template dialogs. It also states who owns the stack entry: `df-modal` pushes only a template dialog's, and leaves one it was given a `dialogId` for on the stack when it unmounts. A `model-value` going false still removes whichever entry the component holds. |
 | `title` | `Form.RenderableValue` | — | Dialog title. Accepts plain text, Markdown (`MdString`), or a custom component. Falls back to the `title` slot if omitted. |
 | `color` | `string` | — | Title bar background color. |
 | `icon` | `string` | — | Icon shown next to the title. |
@@ -53,6 +52,21 @@ pushed when `model-value` goes true and removed when it goes false or the compon
 through the [`modal` service](./modal-service) is the service's, and it stays on the stack when the `df-modal`
 drawing it unmounts: the definition and the promise behind it outlive the component, and the next
 [`<modal-view>`](./modal-view) to mount draws it again.
+
+## The close button
+
+The `x` in the title bar is a second way of reaching the action Escape reaches: the dialog draws it where the
+`actions` prop holds a `defaultReject` action that is reachable, and a click runs that action, exactly as the
+keystroke does. So a dialog opened through the `modal` service closes with the key its own action carries -
+`'close'` from `modal.message()`, `'no'` from `modal.yesNo()` - and the promise settles with it.
+
+A dialog that states no reachable `defaultReject` action carries no `x`, because there would be nothing for it
+to do: the button is that action's click-target and settles nothing on its own. Give a dialog an `x` by giving
+it the action - `Action.closeAction()`, or any action whose value states `defaultReject` - and the same action
+answers the keyboard.
+
+There is no prop for this. Drawing the `x` and reaching the action from Escape are one question, so a dialog
+cannot have the keystroke without the button or the button without the keystroke.
 
 ## Keyboard shortcuts
 

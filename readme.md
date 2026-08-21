@@ -7,9 +7,10 @@ A Vue 3 + Vuetify 3 library built around four design goals:
    events or callbacks. Dialogs can also be declared directly in Vue templates using `<DfModal>`.
 2. **One dialog on screen at a time** — the library maintains an internal stack; if code tries to open a second dialog
    while one is already open, the first is suspended (hidden, not closed) until the second is closed, at which point
-   it reappears. The stack is module state, so there is one per page and every Vue app on it shares that one: mount
-   exactly one `<ModalView />`, since a second mounted view warns on the console and draws the same current dialog
-   again.
+   it reappears. The stack is module state, so there is one per page and every Vue app on it shares that one, and
+   one view draws it: mount `<ModalView />` once — a second mounted view warns on the console and renders nothing,
+   taking the drawing over only if the first unmounts. The library is browser-side and single-app; under SSR the
+   stack lives for the process rather than the request.
 3. **Programmatic form builder** — define responsive Vuetify grid layouts (rows → columns → components) entirely in
    TypeScript using a fluent `FormBuilder` API, without writing any template markup.
 4. **Keyboard shortcuts** — `<Enter>` confirms and `<Esc>` cancels the active dialog. A keystroke an overlay above
@@ -159,8 +160,23 @@ All dialog methods accept an optional options object:
   actions?: FormActions    // Record<string, Action>: override or extend the dialog's buttons
   color?: string           // header background color
   icon?: string            // header icon (MDI name)
+  components?: Record<string | symbol, any>  // components the body may name, over the built-in df-* ones
 }
 ```
+
+### Getting data out of a dialog
+
+The promise resolves with the key of the action that settled the dialog. What that action's executor returned is
+on the promise beside it:
+
+```typescript
+const dialog = modal.message('Edit', 'change what you need', { form, actions: { save } })
+if (await dialog === 'save') {
+  const record = dialog.payload   // what the save executor answered
+}
+```
+
+The other route out is the form itself, which the dialog edits in place.
 
 ### Dialog sizes
 
