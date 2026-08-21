@@ -123,19 +123,18 @@ export class FormBuilder extends ResponsiveRenderOptions<FormBase> {
     if ((!bp || !isObjectLike(bp)) && !defaultIfEmpty) return null;
 
     const result = new FormBase();
-    // the base carries the field even when it holds nothing: the merge takes its field set from what
-    // defaultIfEmpty returns. A breakpoint leaves it undefined instead, so that it states nothing about the
-    // rows rather than emptying the ones it inherits.
+    // the base carries the field even when it holds nothing, so that cleaning it answers a FormBase rather than
+    // null: getOptionsForBreakpoint builds its result out of that answer, and the callers read the rows off it
+    // through toJSON. A breakpoint leaves it undefined instead, so that it states nothing about the rows rather
+    // than emptying the ones it inherits.
     if (defaultIfEmpty) result.rows = [];
 
-    if (bp) {
-      // a serialized layout holds plain objects where the builder API holds Rows; lifting them here covers every
-      // way data reaches _value, and leaves a Row that is already an instance alone
-      if (isArray(bp.rows)) result.rows = bp.rows.map((row) => Row.fromJSON(row));
-    }
+    // a serialized layout holds plain objects where the builder API holds Rows; lifting them here covers every
+    // way data reaches _value, and leaves a Row that is already an instance alone
+    if (isArray(bp?.rows)) result.rows = bp.rows.map((row) => Row.fromJSON(row));
 
     // a breakpoint carrying an empty list states that the form has no rows there, and is kept; one that says
     // nothing about them has no rows field at all and is dropped
-    return result.rows || defaultIfEmpty ? result : null;
+    return result.rows ? result : null;
   }
 }

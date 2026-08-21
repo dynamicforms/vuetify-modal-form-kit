@@ -1,4 +1,4 @@
-import { DisplayMode, ExecuteAction, Group } from '@dynamicforms/vue-forms';
+import { AbortEventHandlingException, DisplayMode, ExecuteAction, Group } from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
 import { mount } from '@vue/test-utils';
 import { vi } from 'vitest';
@@ -448,6 +448,36 @@ describe('DfModal', () => {
       await nextTick();
 
       expect(error).toHaveBeenCalledWith(failure);
+      error.mockRestore();
+      wrapper.unmount();
+    });
+
+    it('reports nothing where an asynchronous handler ends the chain', async () => {
+      const action = new Action({ value: { label: 'Save', defaultConfirm: true } });
+      const spy = vi.fn();
+      action.registerAction(
+        new ExecuteAction(async () => {
+          spy();
+          throw new AbortEventHandlingException('not this time');
+        }),
+      );
+
+      const errorHandler = vi.fn();
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const wrapper = mount(DfModal, {
+        props: { modelValue: true, dialogId, actions: [action] },
+        global: { stubs, plugins: [createVuetify()], config: { errorHandler } },
+      });
+
+      press('Enter');
+      await nextTick();
+      await nextTick();
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      // execute() answers with the abort instead of rejecting with it, so the catch branch never sees it
+      expect(errorHandler).not.toHaveBeenCalled();
+      expect(error).not.toHaveBeenCalled();
+
       error.mockRestore();
       wrapper.unmount();
     });

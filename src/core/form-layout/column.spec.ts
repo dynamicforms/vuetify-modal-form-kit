@@ -126,10 +126,12 @@ describe('Column', () => {
     expect(new Column({ style: 42 as any }).toJSON().props).toEqual({});
   });
 
-  it('takes a number for offset and order, and nothing else', () => {
+  it('takes a number for offset and order, and the named positions for order', () => {
     expect(new Column({ offset: 2, order: 3 }).toJSON().props).toEqual({ offset: 2, order: 3 });
-    // ColumnProps declares number | 'auto' | boolean for both; the filter takes the number alone
-    expect(new Column({ offset: 'auto', order: 'auto' }).toJSON().props).toEqual({});
+    expect(new Column({ order: 'first' }).toJSON().props).toEqual({ order: 'first' });
+    expect(new Column({ 'order-md': 'last' }).toJSON('md').props).toEqual({ 'order-md': 'last' });
+    // v-col renders the value into a class name, and Vuetify declares neither `offset-auto` nor `order-auto`
+    expect(new Column({ offset: 'auto', order: 'auto' } as any).toJSON().props).toEqual({});
   });
 
   it('carries alignSelf, class and style into a breakpoint that states none of them', () => {

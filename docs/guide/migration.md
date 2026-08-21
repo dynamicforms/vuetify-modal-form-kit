@@ -8,6 +8,107 @@ exists.
 
 <!-- New releases go directly below this comment, above the previous one, as `## Upgrading to vX.Y.Z (from vA.B.x)`. -->
 
+## Upgrading to v0.7.3 (from v0.7.2)
+
+Both peer floors move by a patch each, and both of those patches carry behaviour this library used to work around.
+Nothing this library exports is renamed or removed, and the additions - a field naming the component it is drawn
+as, two more builder shorthands and `byTag()` - need nothing from existing code. Two things do reach yours: one
+type that narrowed, and layout and action overrides you may have written that were inert and are not any more.
+There is a [checklist](#checklist-for-0-7-3) at the end of this section.
+
+### The peer ranges
+
+| Peer | Before | Now |
+|---|---|---|
+| `@dynamicforms/vue-forms` | `^0.17.0` | `^0.17.1` |
+| `@dynamicforms/vuetify-inputs` | `^0.9.1` | `^0.9.2` |
+
+```json
+{
+  "dependencies": {
+    "@dynamicforms/vue-forms": "^0.17.1",
+    "@dynamicforms/vuetify-inputs": "^0.9.2",
+    "@dynamicforms/vuetify-modal-form-kit": "^0.7.3"
+  }
+}
+```
+
+Neither peer release renames or removes an export, so the upgrade itself is the version bump; what it moves is
+in the three sections below.
+
+### `offset` and `order` take what Vuetify paints
+
+`FormLayout.ColumnProps` declared `offset` and `order` as `number | 'auto' | boolean` and kept only the number, so
+three quarters of what the type admitted vanished on the way to the serialized props. `<v-col>` renders each into
+the class `offset-<value>` / `order-<value>`, and Vuetify's stylesheet declares no `offset-auto`, no `order-auto`
+and no boolean form, so the declaration is now what the layout keeps: `offset` is a `number`, and `order` is a
+`number`, `'first'` or `'last'`.
+
+```typescript
+col.props.order = 'first';    // a real Vuetify class, kept now, dropped before
+col.props.offset = 'auto';    // a compile error now, and nothing on screen before
+```
+
+The type checker finds the `'auto'` and boolean assignments for you. There is nothing to replace them with, because
+they never rendered: drop them, or state the width you meant.
+
+### An action option only a breakpoint states now takes effect
+
+vuetify-inputs 0.9.2 takes the fields taking part in the responsive cascade from each breakpoint's own keys, where
+it took them from the base options. An action's value carries each option as a member of its own, so an option the
+base never named was dropped at every width, and is resolved now:
+
+```typescript
+// draws no icon at any width before 0.9.2, and one from md upwards from it
+new Action({ value: { label: 'Save', md: { icon: 'save-outline', showIcon: true } } });
+```
+
+Load the dialogs whose action values state options at a breakpoint alone: those options are on screen from this
+release. Where the old rendering is the one you want, take the option out of the breakpoint.
+
+A row, column or form layout is unaffected, whatever its breakpoints state. Each of those carries its children
+under a single key - `rows`, `columns`, `components` - which the base always states, so the field set the cascade
+walked always held it.
+
+The same release makes `getRenderOptionsForBreakpoint()` answer `name`, `defaultConfirm`, `defaultReject` and
+`passthroughAttrs`, which `<df-modal>` now reads an action's flags through - the reading `<df-actions>` draws the
+button from. `defaultConfirm` and `defaultReject` belong to the action rather than to a screen width, so a
+breakpoint stating either is a type error where it was silently inert:
+
+```typescript
+new Action({ value: { label: 'Cancel', defaultReject: true, md: { defaultReject: true } } });   // TS error at md
+```
+
+Move the flag to the value itself, which is where the dialog and the button row both read it.
+
+### An abort from an asynchronous handler is an answer
+
+vue-forms 0.17.1 converts an `AbortEventHandlingException` at the trigger whether or not the chain ran through an
+asynchronous handler. `Action.execute()` resolves with the exception where it rejected with it, so a dialog action
+whose handler refuses to close the dialog reads the same either way:
+
+```typescript
+// before: this catch fired for an abort raised in an `async` handler
+try { await save.execute(); } catch (e) { if (e instanceof AbortEventHandlingException) reportRefusal(e); }
+
+// now: the abort is the answer, and the catch is for genuine failures alone
+const answer = await save.execute();
+if (answer instanceof AbortEventHandlingException) reportRefusal(answer);
+```
+
+Inside the chain nothing moves: a handler that awaits its own `supr` still meets the abort as a throw. What
+changes is the public edge, and with it the keyboard route - a refused run no longer reaches
+`app.config.errorHandler` as though the handler had failed.
+
+### Checklist for 0.7.3
+
+1. Bump both peers - `@dynamicforms/vue-forms@^0.17.1`, `@dynamicforms/vuetify-inputs@^0.9.2`.
+2. Let the type checker find the `offset` / `order` assignments of `'auto'` or a boolean, and drop them.
+3. Load the dialogs whose action values state an option at a breakpoint alone: that option renders now.
+4. Search your action values for `defaultConfirm` / `defaultReject` inside a breakpoint object, and move them onto
+   the value.
+5. Replace any `catch` that read an `AbortEventHandlingException` off `execute()` with a read of the answer.
+
 ## Upgrading to v0.7.0 (from v0.6.x)
 
 Both peers move at once — eleven releases of `@dynamicforms/vue-forms`, one of `@dynamicforms/vuetify-inputs` — and

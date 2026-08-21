@@ -40,7 +40,7 @@ npm install @dynamicforms/vuetify-modal-form-kit
 **Peer dependencies** (must be installed separately):
 
 ```bash
-npm install vue@^3.5.2 vuetify@^3.9 @dynamicforms/vue-forms@^0.17.0 @dynamicforms/vuetify-inputs@^0.9.1 \
+npm install vue@^3.5.2 vuetify@^3.9 @dynamicforms/vue-forms@^0.17.1 @dynamicforms/vuetify-inputs@^0.9.2 \
   lodash-es vue-markdown-render @mdi/font
 ```
 
@@ -123,7 +123,9 @@ const form = new Group({
 await modal.message('Subscribe', 'Enter your email address:', { form })
 ```
 
-Each non-`Action` `Field` on the group is rendered as a `<df-input>`. Its label is the one the field carries -
+Each non-`Action` `Field` on the group is rendered as the component it names - `new Field({ value: false,
+component: 'df-checkbox' })` - and as a `<df-input>` where it names none; `component` takes any tag
+`@dynamicforms/vuetify-inputs` draws with. Its label is the one the field carries -
 `new Field({ value: '', label: 'Email address' })` - and the field name, read as Title Case, is what is left when
 it carries none. A field at `DisplayMode.SUPPRESS` is skipped, so it costs no empty row. A nested `Group` or
 `List` member is not laid out at all: it still validates and still counts towards `form.valid`, and the dialog
@@ -139,7 +141,8 @@ ones rather than with nothing to settle it.
 
 An action keeps answering for its own executor: `await action.execute()` resolves with what the action's own
 `ExecuteAction` chain returned, and the dialog settles alongside it. An `AbortEventHandlingException` is an
-answer rather than a rejection - `execute()` resolves with the exception, and the dialog stays open.
+answer rather than a rejection - `execute()` resolves with the exception, and the dialog stays open - whether the
+handler that ended the run was synchronous or not.
 
 ### Custom component dialog
 
@@ -160,7 +163,7 @@ All dialog methods accept an optional options object:
   actions?: FormActions    // Record<string, Action>: override or extend the dialog's buttons
   color?: string           // header background color
   icon?: string            // header icon (MDI name)
-  components?: Record<string | symbol, any>  // components the body may name, over the built-in df-* ones
+  components?: Record<string | symbol, any>  // components the body may name, over vuetify-inputs' df-* ones
 }
 ```
 
@@ -248,7 +251,7 @@ Rows and columns take breakpoints of their own, through the same method.
 
 ### Available component shortcuts
 
-The builder exposes convenience methods for all standard `@dynamicforms/vuetify-inputs` components:
+The builder has one method per `@dynamicforms/vuetify-inputs` component, each typed to that component's props:
 
 | Method | Component |
 |---|---|
@@ -260,8 +263,14 @@ The builder exposes convenience methods for all standard `@dynamicforms/vuetify-
 | `.dfFile(props)` | File upload |
 | `.dfColor(props)` | Color picker |
 | `.dfRtfEditor(props)` | Rich text editor |
+| `.dfLabel(props)` | Input label |
+| `.dfInputHint(props)` | Input hint text |
 | `.dfActions(props)` | Action buttons |
+| `.byTag(tag, props)` | The component a tag names, through the method above that owns the tag |
 | `.generic(name, props)` | Any component by registered name |
+
+`.byTag()` is what a layout built from data reaches for: it takes the tag as a value and builds exactly what the
+hand-written method builds, falling to `.generic(tag, props)` for a tag no method owns.
 
 ### Nested forms
 
@@ -352,8 +361,8 @@ class MyBuilder extends FormLayout.VuetifyInputsComponentBuilder {}
 | Node | >=22.12 |
 | Vue | ^3.5.2 |
 | Vuetify | ^3.9 |
-| @dynamicforms/vue-forms | ^0.17.0 |
-| @dynamicforms/vuetify-inputs | ^0.9.1 |
+| @dynamicforms/vue-forms | ^0.17.1 |
+| @dynamicforms/vuetify-inputs | ^0.9.2 |
 
 ---
 

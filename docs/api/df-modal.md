@@ -100,7 +100,9 @@ click reaches exactly what a keystroke reaches.
 
 `execute()` is asynchronous, and a document listener gets none of the wrapping Vue puts around a template
 handler. A handler that rejects is therefore routed here to `app.config.errorHandler`, with
-`'df-modal keyboard shortcut'` as the info string, and to `console.error` where the app declares no handler.
+`'df-modal keyboard shortcut'` as the info string, and to `console.error` where the app declares no handler. A
+handler that ends the run with an `AbortEventHandlingException` is not a rejection: `execute()` resolves with the
+exception, whether that handler was synchronous or `async`, so a refusal to act reaches neither route.
 
 Set `defaultConfirm` / `defaultReject` on the action's `value`, the same way the `modal` service does internally
 (they also drive that action's color - `primary` / `secondary` - in `<df-actions>`, see
@@ -109,6 +111,11 @@ Set `defaultConfirm` / `defaultReject` on the action's `value`, the same way the
 ```typescript
 const loginAction = new Action({ value: { name: 'login', label: 'Log in', defaultConfirm: true /* ... */ } });
 ```
+
+The dialog reads the two flags through vuetify-inputs' `getRenderOptionsForBreakpoint()`, the same resolution
+`<df-actions>` draws the button from, so the button and the keystroke read one answer. Both flags belong to the
+action rather than to a screen width - `ActionBreakpointRenderOptions` leaves them out, so stating one inside a
+breakpoint is a type error - and the width therefore never moves which action Enter or Escape reaches.
 
 The `actions` prop and the `actions` slot are fed the *same* `Action` instances - pressing Enter/Esc calls
 `.execute()` on exactly the object a click on the matching `<df-actions>` button would call it on, so there's no

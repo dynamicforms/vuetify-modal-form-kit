@@ -1,7 +1,7 @@
 import { responsiveBreakpoints } from '@dynamicforms/vuetify-inputs';
 
 import { FormBuilder } from './form-builder';
-import { FormBuilderName, FormJSON, FormJSONResponsive } from './types';
+import { FormBuilderName, FormJSONResponsive } from './types';
 
 describe('FormBuilder', () => {
   it('should create an empty form', () => {
@@ -387,9 +387,19 @@ describe('FormBuilder', () => {
     it('inherits the rows a breakpoint says nothing about', () => {
       const fb = FormBuilder.fromJSON({
         rows: [{ props: {}, columns: [{ props: { cols: 6 }, components: [] }] }],
-        md: <FormJSON>{},
+        md: {},
       });
 
+      expect(fb.getOptionsForBreakpoint('md').toJSON('md').rows.length).toBe(1);
+    });
+
+    it('takes the rows from a breakpoint where the base states none', () => {
+      const fb = FormBuilder.fromJSON({
+        rows: [],
+        md: { rows: [{ props: {}, columns: [{ props: { cols: 12 }, components: [] }] }] },
+      });
+
+      expect(fb.getOptionsForBreakpoint('sm').toJSON('sm').rows).toEqual([]);
       expect(fb.getOptionsForBreakpoint('md').toJSON('md').rows.length).toBe(1);
     });
 

@@ -4,9 +4,10 @@ import {
   responsiveBreakpoints,
   ResponsiveRenderOptions,
 } from '@dynamicforms/vuetify-inputs';
-import { isArray, isBoolean, isNumber, isObjectLike, isString } from 'lodash-es';
+import { isBoolean, isNumber, isObjectLike, isString } from 'lodash-es';
 
 import { Component, ComponentBuilderBase, VuetifyInputsComponentBuilder } from './component';
+import { isValidClass, isValidStyle, withBreakpointVariants } from './prop-validators';
 import { isRuntimeProbe } from './simple-proxy';
 import { ColumnJSON, ColumnJSONResponsive, ColumnPropsPartial, ComponentProps } from './types';
 
@@ -152,27 +153,15 @@ export class Column extends ResponsiveRenderOptions<ColBase> {
     const validAlignSelf = ['start', 'end', 'center', 'auto', 'baseline', 'stretch'];
     const isValidCols = (v: unknown): boolean => isNumber(v) || v === 'auto' || isBoolean(v);
     const isValidOffset = (v: unknown): boolean => isNumber(v);
-    const isValidOrder = (v: unknown): boolean => isNumber(v);
-
-    const isValidClass = (v: unknown): boolean =>
-      isString(v) || (isArray(v) && v.every((i) => isString(i))) || (isObjectLike(v) && !Array.isArray(v));
-
-    const isValidStyle = (v: unknown): boolean => {
-      if (isString(v)) return true;
-      if (isArray(v)) return v.every(isValidStyle);
-      if (isObjectLike(v)) {
-        return Object.entries(v as object).every(([k, val]) => isString(k) && (isString(val) || isNumber(val)));
-      }
-      return false;
-    };
+    // v-col renders `order-<value>`, and Vuetify's stylesheet declares that class for 0 through 12 and for the
+    // two named positions
+    const isValidOrder = (v: unknown): boolean => isNumber(v) || v === 'first' || v === 'last';
 
     // `offset-<bp>` and `order-<bp>` camelize onto v-col's offsetMd / orderMd props; `cols` has no such variant,
     // as v-col names per-breakpoint widths sm/md/lg/xl/xxl instead
-    const responsiveKeys = ['offset', 'order'];
     const validKeys = new Set<string>([
+      ...withBreakpointVariants('offset', 'order'),
       'cols',
-      ...responsiveKeys,
-      ...responsiveBreakpoints.flatMap((b) => responsiveKeys.map((k) => `${k}-${b}`)),
       'alignSelf',
       'class',
       'style',

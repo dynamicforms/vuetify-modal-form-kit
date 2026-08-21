@@ -41,7 +41,8 @@ Returned by `row()`'s callback.
 | `Row.fromJSON(json)` | Static. Reads a serialized row - `toJSON()`'s `rows[]` entries - back into a `Row`; a `Row` passed in is handed back unchanged. |
 
 Row props (all optional): `align`, `align-content`, `justify` (Vuetify's `v-row` alignment values, e.g. `'center'`,
-`'space-between'`), `dense`, `class`, `style`, plus breakpoint-suffixed variants (`align-md`, `justify-lg`, ...).
+`'space-between'`), `dense`, `noGutters`, `class`, `style`, plus breakpoint-suffixed variants of the three
+alignment props (`align-md`, `justify-lg`, ...).
 
 ## `Column`
 
@@ -56,9 +57,11 @@ Returned by `col()`'s callback.
 | `Column.fromJSON(json)` | Static. Reads a serialized column - `toJSON()`'s `columns[]` entries - back into a `Column`; a `Column` passed in is handed back unchanged. |
 
 Column props (all optional): `cols` (a number, `'auto'` or `false`; omitting it leaves the width to `<v-col>`,
-which is auto), `offset` and `order` (numbers), `alignSelf`, `class`, `style`. `offset-md`, `order-lg` and the
-other breakpoint-suffixed variants reach Vuetify's `offsetMd` / `orderLg` props. Per-breakpoint column *width*
-goes through `breakpoint(name, colCallback)` rather than a `cols-md` key.
+which is auto), `offset` (a number) and `order` (a number, `'first'` or `'last'`), `alignSelf`, `class`, `style`.
+`<v-col>` renders each of the last two into the class `offset-<value>` / `order-<value>`, so what they take is
+what Vuetify's stylesheet declares a class for; anything else is dropped from the serialized props. `offset-md`,
+`order-lg` and the other breakpoint-suffixed variants reach Vuetify's `offsetMd` / `orderLg` props.
+Per-breakpoint column *width* goes through `breakpoint(name, colCallback)` rather than a `cols-md` key.
 
 ## Component builder
 
@@ -68,7 +71,8 @@ The object passed to `component()`'s callback (`VuetifyInputsComponentBuilder` b
 |---|---|
 | `generic(name, props)` | Renders any component registered on `<FormRender :components>` (or a native tag, e.g. `'h3'`) with `props`. Use the special `FormBuilderBodyProp` symbol key in `props` to set the element's body/inner content (see the Registration Form example in [FormBuilder examples](/examples/form-builder)). |
 | `nestedForm(form)` | Embeds another `FormBuilder` layout as a nested form. Serialized by `toJSON()` and rendered by `<FormRender>` as a form of its own - it resolves the nested layout's breakpoints itself and inherits the outer `:components` map. Nesting has no depth limit. |
-| `dfInput` / `dfTextArea` / `dfSelect` / `dfCheckbox` / `dfDateTime` / `dfFile` / `dfColor` / `dfRtfEditor` / `dfActions` | Shorthands for `generic('df-*', props)`, typed to the matching component's props from [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:). |
+| `dfInput` / `dfTextArea` / `dfSelect` / `dfCheckbox` / `dfDateTime` / `dfFile` / `dfColor` / `dfRtfEditor` / `dfLabel` / `dfInputHint` / `dfActions` | Shorthands for `generic('df-*', props)`, typed to the matching component's props from [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:). There is one per component that library draws with. |
+| `byTag(tag, props)` | The component `tag` names, built through the `df*` shorthand that owns the tag - `'df-date-time'` builds exactly what `dfDateTime(props)` builds - and through `generic(tag, props)` where no shorthand owns it. This is the call for a layout that reads the tag out of data rather than writing it: a tag [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) gains before this builder has a shorthand for it still reaches the layout. |
 
 `FormBuilder` and `FormBuilderBodyProp` are top-level exports of `@dynamicforms/vuetify-modal-form-kit`. The rest
 of the layout tree - `Row`, `Column`, `Component`, `ComponentBuilderBase`, `ComponentBuilderInterface`,

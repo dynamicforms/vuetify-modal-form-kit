@@ -179,17 +179,11 @@ class ModalAPI {
       if (attached.has(target)) return;
       attached.add(target);
       const handler = new Form.ExecuteAction(async (field, supr, ...params) => {
-        const mine = field === target;
-        let answer;
-        try {
-          answer = await supr(field, ...params);
-        } catch (error) {
-          // an abort is an answer: the run ends, the dialog stays open, and the caller reads the exception off
-          // what execute() resolves with rather than off a rejection
-          if (mine && error instanceof Form.AbortEventHandlingException) return error;
-          throw error;
-        }
-        if (mine && !(answer instanceof Form.AbortEventHandlingException) && dialogTracker.currentRef.value === id) {
+        const answer = await supr(field, ...params);
+        // the guard settles this dialog only for the binding it holds and only while it is the dialog on screen.
+        // A refused run reaches nothing here: an abort travels the chain as a throw, and only the trigger turns it
+        // into the answer execute() resolves with, so the dialog stays open.
+        if (field === target && dialogTracker.currentRef.value === id) {
           resolvePromise(field.fieldName || name, answer);
         }
         // the answer the chain reached, not this handler's own: an action handed to a dialog goes on reporting

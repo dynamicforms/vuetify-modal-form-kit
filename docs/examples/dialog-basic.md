@@ -24,8 +24,9 @@ A message dialog, a yes/no confirmation, a validated form dialog, and sized dial
   its `Action` fields (e.g. `submit`, `cancel`) become the dialog's buttons - the dialog adds its own `close` only
   where none of them is drawn - and the returned promise resolves to whichever one was clicked. An action of either
   class is drawn: the [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) `Action` adds the responsive render
-  options, not the ability to be drawn. Each `Field` is laid out as a `<df-input>` carrying the field's own label,
-  and a nested `Group` or `List` member is not laid out at all - see
+  options, not the ability to be drawn. Each `Field` is laid out as the component it names in `field.extra.component`
+  - a `<df-input>` where it names none - carrying the field's own label, and a nested `Group` or `List` member is
+  not laid out at all - see
   [`<modal-view>`](/api/modal-view#the-generated-layout).
 - **Custom components** - `modal.custom('Title', componentName, componentProps)` renders any registered component
   as the dialog body instead of a message/form.

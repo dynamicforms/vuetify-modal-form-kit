@@ -5,6 +5,64 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.3] - 2026-08-21
+
+### Added
+
+- A field states the component it is drawn as. `new Form.Field({ value: false, component: 'df-checkbox' })` is a
+  checkbox in the layout `modal.message()` / `modal.yesNo()` generate, where every `Field` was a `<df-input>`
+  whatever it held. `component` is a key this library declares on `@dynamicforms/vue-forms`' `Extras`, so every
+  element carries it, and it takes `DfInputComponentTag` - the tag of any component
+  `@dynamicforms/vuetify-inputs` draws with. A field that states none is drawn as a `<df-input>`.
+- `VuetifyInputsComponentBuilder.byTag(tag, props)` builds the component a tag names, through the `df*` method
+  that owns the tag where there is one and through `generic(tag, props)` where there is none. A layout built from
+  data - one that reads the tag rather than writing it - therefore produces exactly what the hand-written method
+  produces, and a tag the peer gains before this builder has a method for it still reaches the layout.
+- `VuetifyInputsComponentBuilder.dfInputHint(props)` and `.dfLabel(props)`, typed to
+  `DfInputComponentProps.DfInputHintProps` and `DfLabelProps`, which `@dynamicforms/vuetify-inputs` 0.9.2 exports.
+  The builder has one method per component that library draws with; the two had to go through `generic()` with
+  `props: any`.
+
+### Changed (breaking)
+
+- `ColumnProps.offset` is `number` and `ColumnProps.order` is `number | 'first' | 'last'`, where both were
+  declared `number | 'auto' | boolean`. `<v-col>` renders each into the class `offset-<value>` / `order-<value>`,
+  and Vuetify's stylesheet declares neither `offset-auto` nor `order-auto` nor a boolean form, so the declared
+  type is now what the serialized props keep. `order: 'first'` and `order: 'last'` are real classes and survive
+  where they were dropped silently; an `'auto'` or a boolean, which rendered nothing either way, is a compile
+  error rather than a value that vanishes.
+- A form breakpoint serializes as `FormJSONBreakpoint` (`Partial<FormJSON>`), reached through
+  `FormLayout.FormJSONBreakpoint`, where it was typed as a whole `FormJSON`. A breakpoint states only what it
+  changes, so one that says nothing about the rows omits the key, and stating it that way needed a cast. `rows`
+  is optional on a read breakpoint with it: `json.md.rows.length` compiled and does not, and reads
+  `json.md?.rows ?? []`.
+
+### Changed
+
+- The peer floors move to `@dynamicforms/vue-forms` `^0.17.1` and `@dynamicforms/vuetify-inputs` `^0.9.2`. Both
+  releases exist to close findings this library raised, and the workarounds they replace are gone: nothing this
+  library exports was renamed or removed, and the two peers are one upgrade.
+- `<modal-view>` supplies `@dynamicforms/vuetify-inputs`' own `dfInputComponentsByTag` as the map a dialog body
+  resolves component names against, in place of a nine-name list written out here. The caller's `options.components`
+  still win over it, and a component the peer gains is drawable in a dialog the moment the peer is upgraded -
+  `df-label` and `df-input-hint` are two the list did not name.
+### Fixed
+
+- An `AbortEventHandlingException` raised by an asynchronous handler is an answer, as one raised by a synchronous
+  handler already was: `action.execute()` resolves with the exception, the dialog stays open, and a keyboard
+  shortcut reports nothing to `app.config.errorHandler`. Every handler that awaited `supr` - which is every
+  handler wrapping an asynchronous executor - rejected instead, and the dialog resolver caught the abort itself to
+  restore the contract. `@dynamicforms/vue-forms` 0.17.1 converts it at the trigger, and that catch is gone.
+- `<df-modal>` reads an action's render options through `getRenderOptionsForBreakpoint()`, the resolution
+  `<df-actions>` draws the button from, rather than casting the raw value for `defaultConfirm` / `defaultReject`.
+  The button and the keystroke now answer one reading of the action. The resolver dropped both flags before
+  `@dynamicforms/vuetify-inputs` 0.9.2, which is why the cast was there.
+- An action option that only a breakpoint states is resolved at that breakpoint, so a dialog button stating
+  `md: { icon: 'save-outline', showIcon: true }` over a value that names no icon draws one from `md` up. The
+  cascade read the fields taking part in it off the base, and an action's value carries each option as a member
+  of its own, so an option the base did not name was dropped at every width. A row, column or form layout is
+  unaffected: each of those carries its children under one key the base always states.
+
 ## [0.7.2] - 2026-08-21
 
 ### Added

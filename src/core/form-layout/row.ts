@@ -1,9 +1,10 @@
 import { BreakpointNames, responsiveBreakpoints, ResponsiveRenderOptions } from '@dynamicforms/vuetify-inputs';
 import { BreakpointsJSON } from '@dynamicforms/vuetify-inputs';
-import { isArray, isBoolean, isNumber, isObjectLike, isString } from 'lodash-es';
+import { isBoolean, isObjectLike, isString } from 'lodash-es';
 
 import { Column } from './column';
 import { ComponentBuilderBase, VuetifyInputsComponentBuilder } from './component';
+import { isValidClass, isValidStyle, withBreakpointVariants } from './prop-validators';
 import { isRuntimeProbe } from './simple-proxy';
 import {
   ColumnPropsPartial,
@@ -132,22 +133,8 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
     const AllowedAlignContent = ['start', 'center', 'end', 'stretch', 'space-between', 'space-around', 'space-evenly'];
     const AllowedJustify = ['start', 'center', 'end', 'space-between', 'space-around', 'space-evenly'];
 
-    const isValidClass = (v: unknown): boolean =>
-      isString(v) || (isArray(v) && v.every((i) => isString(i))) || (isObjectLike(v) && !Array.isArray(v));
-
-    const isValidStyle = (v: unknown): boolean => {
-      if (isString(v)) return true;
-      if (isArray(v)) return v.every(isValidStyle);
-      if (isObjectLike(v)) {
-        return Object.entries(v as object).every(([k, val]) => isString(k) && (isString(val) || isNumber(val)));
-      }
-      return false;
-    };
-
-    const baseKeys = ['align', 'align-content', 'justify'];
     const validKeys = new Set<string>([
-      ...baseKeys,
-      ...responsiveBreakpoints.flatMap((b) => baseKeys.map((k) => `${k}-${b}`)),
+      ...withBreakpointVariants('align', 'align-content', 'justify'),
       'dense',
       'noGutters',
       'class',
@@ -159,10 +146,8 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
       const val = bpProps[key as keyof RowPropsPartial];
       if (!validKeys.has(key) || val === undefined) return;
 
-      if (key === 'dense') {
-        if (isBoolean(val)) result[key] = val as any;
-      } else if (key === 'noGutters') {
-        if (isBoolean(val)) result[key] = val as any;
+      if (key === 'dense' || key === 'noGutters') {
+        if (isBoolean(val)) result[key] = val;
       } else if (key === 'class') {
         if (isValidClass(val)) result[key] = val as any;
       } else if (key === 'style') {
