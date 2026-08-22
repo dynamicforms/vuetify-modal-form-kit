@@ -11,6 +11,9 @@ hero:
     - theme: alt
       text: View on GitHub
       link: https://github.com/dynamicforms/vuetify-modal-form-kit
+    - theme: alt
+      text: Changelog
+      link: /guide/changelog
 features:
   - title: Programmatic & Template Dialog API
     details: Open dialogs from code with a promise-based API (e.g. await modal.message()) and get the result back 

@@ -35,6 +35,7 @@ export default defineConfig({
         {
           text: 'Migration',
           items: [
+            { text: 'Changelog', link: '/guide/changelog' },
             { text: 'Migration guide', link: '/guide/migration' },
           ]
         }
