@@ -58,7 +58,9 @@ export class ComponentBuilderBase implements ComponentBuilderInterface<Component
    * would then carry the same id twice, and a <Teleport :to> only ever reaches the first element bearing it.
    */
   teleportAnchor(idRef: Ref<string>): this {
-    if (!idRef.value) idRef.value = useId();
+    // useId() types as `string | undefined` at the declared vue peer floor (3.5.2); it returns a string once
+    // called inside an active component instance, which the fluent chain that reaches this method guarantees.
+    if (!idRef.value) idRef.value = useId() as string;
     return this.generic('div', { id: idRef.value, style: 'display: contents' });
   }
 }
