@@ -261,6 +261,7 @@ The builder has one method per `@dynamicforms/vuetify-inputs` component, each ty
 | `.dfCheckbox(props)` | Checkbox |
 | `.dfDateTime(props)` | Date / time picker |
 | `.dfFile(props)` | File upload |
+| `.dfImage(props)` | Image upload |
 | `.dfColor(props)` | Color picker |
 | `.dfRtfEditor(props)` | Rich text editor |
 | `.dfLabel(props)` | Input label |

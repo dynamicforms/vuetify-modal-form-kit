@@ -47,6 +47,12 @@ const shorthands: ShorthandCase[] = [
     invoke: (builder, props) => builder.dfFile(props),
   },
   {
+    method: 'dfImage',
+    componentName: 'df-image',
+    props: { label: 'Photo' },
+    invoke: (builder, props) => builder.dfImage(props),
+  },
+  {
     method: 'dfInput',
     componentName: 'df-input',
     props: { label: 'Name', inputType: 'text' },
