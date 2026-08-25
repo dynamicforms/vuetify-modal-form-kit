@@ -37,6 +37,10 @@ export class VuetifyInputsComponentBuilder extends ComponentBuilderBase {
     return this.generic('df-file', props);
   }
 
+  dfImage(props: Partial<DfInputComponentProps.DfImageProps>) {
+    return this.generic('df-image', props);
+  }
+
   dfInput(props: Partial<DfInputComponentProps.DfInputProps>) {
     return this.generic('df-input', props);
   }
