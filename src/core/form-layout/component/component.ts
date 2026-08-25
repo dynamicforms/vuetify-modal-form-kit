@@ -60,7 +60,9 @@ export class ComponentBuilderBase implements ComponentBuilderInterface<Component
   teleportAnchor(idRef: Ref<string>): this {
     // useId() types as `string | undefined` at the declared vue peer floor (3.5.2); it returns a string once
     // called inside an active component instance, which the fluent chain that reaches this method guarantees.
-    if (!idRef.value) idRef.value = useId() as string;
+    // vue@3.5.2 also separates its counter with a colon (e.g. "v:0"), which a CSS id selector - what a
+    // <Teleport :to="'#' + id"> needs - cannot carry unescaped, so colons are replaced before handing the id out.
+    if (!idRef.value) idRef.value = (useId() as string).replace(/:/g, '-');
     return this.generic('div', { id: idRef.value, style: 'display: contents' });
   }
 }
