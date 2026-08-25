@@ -18,6 +18,9 @@ Below is an example of a basic form layout created with FormBuilder:
 - Default editors supported from [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:)
 - Nesting capabilities for complex form structures
 - Integration with all Vuetify input components
+- Template-declared content for individual cells via Vue's `<Teleport>`, for fields whose markup and `v-model`
+  are more natural to write directly in the consumer's own template - see
+  [Template-declared content (Teleport)](#template-declared-content-teleport)
 
 ## API Usage
 
@@ -88,6 +91,69 @@ mainForm.row({ }, (row) => row
 
 A nested layout is part of what `toJSON()` serializes, and `<FormRender>` renders it as a form of its own inside the
 column that holds it: it resolves the nested layout's breakpoints itself and inherits the outer `:components` map.
+
+## Template-declared content (Teleport)
+
+A cell's content reaches the layout in one of two ways. Code-declared content — `.generic()`, `.dfInput()`,
+and the rest of the component builder API — is resolved at render time against the `components` map passed
+to `<FormRender :components>`. Teleport-anchored content instead has FormBuilder reserve only the cell: the
+actual component, along with its `v-model` and event handlers, is written directly in the consumer's own
+template and delivered into the cell through Vue's built-in `<Teleport>`.
+
+`teleportAnchor(idRef)` renders a `<div :id>` anchor in the cell using the same `.generic()` mechanism as any
+other component, so no new rendering machinery is involved. The `useTeleportAnchor()` composable creates a
+matching `id`/`target` pair for the `<Teleport :to>` on the template side:
+
+```typescript
+const email = ref('');
+const emailAnchor = useTeleportAnchor();
+
+formBuilder.row({ }, (row) => row
+  .col({ cols: 6 }, (col) => col
+    .component((cmpt) => cmpt.teleportAnchor(emailAnchor.id))));
+```
+```html
+<Teleport :to="emailAnchor.target.value" defer>
+  <v-text-field v-model="email" label="Email" type="email" />
+</Teleport>
+```
+
+The `.value` is required: `emailAnchor` is a plain object, not a ref itself, so Vue's template auto-unwrapping -
+which only reaches a ref that is a top-level property of the render context - does not reach into its `target`
+property. Writing `:to="emailAnchor.target"` binds the `ComputedRef` object itself rather than the string it
+holds, which leaves `<Teleport>` unable to resolve a target.
+
+Reach for code-declared content when the layout is backend-driven or otherwise serialized: a teleport anchor's
+id is only meaningful in the app instance that generated it, so it round-trips through `toJSON()`/`fromJSON()`
+like any other component but isn't meant to be rendered by a different app instance than the one that built it
+— the same constraint the `components` map itself already has. Reach for teleport-anchored content when the
+layout is always built and rendered by the same component and you want normal template ergonomics for the
+field itself.
+
+`defer`, a Vue 3.5+ `<Teleport>` prop, is what makes this work regardless of which of the anchor and the
+`<Teleport>` mounts first within the same render.
+
+### The same field across breakpoints
+
+Only one breakpoint's layout ever renders at a time, so the same `idRef` can be passed to more than one
+`teleportAnchor()` call: `teleportAnchor` writes a fresh id into an empty ref and reuses whatever is already
+there otherwise. Redeclaring a field across breakpoints and passing it the same ref each time keeps it anchored
+to the one `<Teleport>` in the template, instead of orphaning it the moment the breakpoint changes:
+
+```typescript
+formBuilder.row({ }, (row) => row
+  .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.teleportAnchor(emailAnchor.id))));
+
+formBuilder.breakpoint('sm', (form) => form.row({ }, (row) => row
+  .col({ cols: 12 }, (col) => col.component((cmpt) => cmpt.teleportAnchor(emailAnchor.id)))));
+```
+
+Passing the same ref to two *different* fields, rather than the same field at two breakpoints, leaves both
+anchors carrying the same id in a layout that can render them both at once. `<FormRender>` warns when that
+happens, since a `<Teleport :to="'#' + id">` only ever reaches the first element bearing that id — the other
+field would render as a permanently empty anchor.
+
+The Contact Information section of the example above demonstrates this.
 
 ## See also
 

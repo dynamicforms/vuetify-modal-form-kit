@@ -1,8 +1,9 @@
 import { mount } from '@vue/test-utils';
-import { markRaw } from 'vue';
+import { vi } from 'vitest';
+import { defineComponent, markRaw } from 'vue';
 import { createVuetify } from 'vuetify';
 
-import { FormBuilder, FormJSONResponsive } from '../core/form-layout';
+import { FormBuilder, FormJSONResponsive, useTeleportAnchor } from '../core/form-layout';
 
 import FormRender from './form-render.vue';
 
@@ -257,6 +258,122 @@ describe('FormRender', () => {
         setViewportWidth(1400);
         expectSameHtml(nestedResponsiveForm());
       });
+    });
+  });
+
+  describe('duplicate component ids', () => {
+    let warn: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      warn.mockRestore();
+    });
+
+    it('warns when two components in the same rendered layout share an id', () => {
+      const form = new FormBuilder();
+      form.row({}, (row) =>
+        row
+          .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.generic('my-input', { label: 'A', id: 'dup' })))
+          .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.generic('my-input', { label: 'B', id: 'dup' }))),
+      );
+
+      const wrapper = render(form);
+
+      expect(warn).toHaveBeenCalled();
+      expect(warn.mock.calls[0][0]).toContain('dup');
+
+      wrapper.unmount();
+    });
+
+    it('does not warn when ids are unique', () => {
+      const form = new FormBuilder();
+      form.row({}, (row) =>
+        row
+          .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.generic('my-input', { label: 'A', id: 'one' })))
+          .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.generic('my-input', { label: 'B', id: 'two' }))),
+      );
+
+      const wrapper = render(form);
+
+      expect(warn).not.toHaveBeenCalled();
+
+      wrapper.unmount();
+    });
+
+    it('does not warn for the same id reused across mutually exclusive breakpoints', () => {
+      const form = new FormBuilder();
+      form.row({}, (row) =>
+        row.col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.generic('my-input', { label: 'A', id: 'shared' }))),
+      );
+      form.breakpoint('sm', (bpForm) =>
+        bpForm.row({}, (row) =>
+          row.col({ cols: 12 }, (col) =>
+            col.component((cmpt) => cmpt.generic('my-input', { label: 'A', id: 'shared' })),
+          ),
+        ),
+      );
+
+      setViewportWidth(1400);
+      const wrapper = render(form);
+
+      expect(warn).not.toHaveBeenCalled();
+
+      wrapper.unmount();
+      setViewportWidth(defaultWidth);
+    });
+  });
+
+  describe('teleport-anchored content', () => {
+    // Teleport resolves its target through the real document, so the host has to be attached to it - a detached
+    // mount (the default) leaves querySelector unable to find an anchor <form-render> renders perfectly well.
+    function renderWithTeleport(toBinding: string) {
+      // teleportAnchor() calls Vue's useId(), which needs an active component instance - building the form has
+      // to happen inside Host's own setup(), the same way a consumer builds it inside their own <script setup>
+      const anchor = useTeleportAnchor();
+
+      const Host = defineComponent({
+        components: { FormRender },
+        setup() {
+          const form = new FormBuilder();
+          form.row({}, (row) => row.col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.teleportAnchor(anchor.id))));
+          return { form, anchor, target: anchor.target };
+        },
+        template: `
+          <div>
+            <form-render :layout="form" />
+            <Teleport :to="${toBinding}" defer><input data-test="teleported" /></Teleport>
+          </div>
+        `,
+      });
+
+      const wrapper = mount(Host, { attachTo: document.body, global: { stubs, plugins: [createVuetify()] } });
+      return { wrapper, anchor };
+    }
+
+    it('delivers the template content into a target exposed as a bare setup binding', () => {
+      // `target` is itself the top-level setup binding here, so Vue unwraps it in the template on its own
+      const { wrapper, anchor } = renderWithTeleport('target');
+
+      const input = wrapper.find('[data-test="teleported"]');
+      expect(input.exists()).toBe(true);
+      expect(input.element.parentElement).toBe(wrapper.find(`#${anchor.id.value}`).element);
+
+      wrapper.unmount();
+    });
+
+    it('needs .value when the target is read off the anchor object rather than exposed directly', () => {
+      // this is the shape the docs recommend - useTeleportAnchor()'s return value kept as one named object -
+      // where `anchor` itself, not `anchor.target`, is the top-level binding Vue can unwrap
+      const { wrapper, anchor } = renderWithTeleport('anchor.target.value');
+
+      const input = wrapper.find('[data-test="teleported"]');
+      expect(input.exists()).toBe(true);
+      expect(input.element.parentElement).toBe(wrapper.find(`#${anchor.id.value}`).element);
+
+      wrapper.unmount();
     });
   });
 });

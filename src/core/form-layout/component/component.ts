@@ -1,3 +1,5 @@
+import { Ref, useId } from 'vue';
+
 import type { FormBuilder } from '../form-builder';
 import { ComponentJSON, ComponentProps, FormBuilderName } from '../types';
 
@@ -45,5 +47,18 @@ export class ComponentBuilderBase implements ComponentBuilderInterface<Component
 
   nestedForm(form: FormBuilder): this {
     return this.generic(FormBuilderName, form);
+  }
+
+  /**
+   * Renders a <div> anchor sized to `display: contents` so it takes no part in the grid's flex layout, and writes
+   * its id into `idRef` so a <Teleport :to> in the consumer's template can target it by a real JS symbol. A
+   * populated `idRef` is reused as-is rather than replaced: the same field redeclared across breakpoints - each
+   * breakpoint mutually exclusive with the others at render time - passes the same ref to stay one stable
+   * <Teleport> target. Two different fields must not share a ref: the layout that resolves for one breakpoint
+   * would then carry the same id twice, and a <Teleport :to> only ever reaches the first element bearing it.
+   */
+  teleportAnchor(idRef: Ref<string>): this {
+    if (!idRef.value) idRef.value = useId();
+    return this.generic('div', { id: idRef.value, style: 'display: contents' });
   }
 }

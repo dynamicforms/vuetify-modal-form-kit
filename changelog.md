@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-08-25
+
+### Added
+
+- `ComponentBuilderBase.teleportAnchor(idRef)` adds a `<div>` anchor to the layout and writes the id it generates
+  into an empty `idRef`, reusing what's already there otherwise, for a consumer's own template to target with
+  Vue's `<Teleport>`. A field's actual markup and `v-model` then live in the template, while `FormBuilder` still
+  supplies where it lands in the layout - including across the field's own breakpoint redeclarations, which pass
+  the same ref.
+- `useTeleportAnchor()` pairs an id ref with the `'#'`-prefixed Teleport target string built from it, ready to
+  hand to `<Teleport :to="...">`.
+- `<FormRender>` warns if the layout it is about to render carries the same id on more than one component, since
+  a `<Teleport :to="'#' + id">` only ever reaches the first element bearing it.
+
 ## [0.7.4] - 2026-08-22
 
 ### Changed

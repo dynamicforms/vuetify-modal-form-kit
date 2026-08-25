@@ -39,3 +39,11 @@ The layout is resolved against the current Vuetify breakpoint and re-resolved wh
 overrides through `getOptionsForBreakpoint()`, and the row- and column-level ones through the `toJSON(breakpoint)`
 that follows. A nested layout resolves its own breakpoints, at any depth - see
 [what a breakpoint inherits](/examples/form-builder-responsive#what-a-breakpoint-inherits).
+
+## Duplicate ids
+
+`<form-render>` warns, via `console.warn`, if the layout it is about to render carries the same `id` prop on more
+than one component - most commonly two [`teleportAnchor()`](./form-builder#component-builder) calls sharing a ref
+that was meant for two different fields rather than the same field across breakpoints. It only checks what it
+renders itself: a nested form's own `<form-render>` instance checks its own ids, at the breakpoint it resolves to,
+independently of the outer one.

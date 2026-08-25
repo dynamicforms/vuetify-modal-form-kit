@@ -71,10 +71,16 @@ The object passed to `component()`'s callback (`VuetifyInputsComponentBuilder` b
 |---|---|
 | `generic(name, props)` | Renders any component registered on `<FormRender :components>` (or a native tag, e.g. `'h3'`) with `props`. Use the special `FormBuilderBodyProp` symbol key in `props` to set the element's body/inner content (see the Registration Form example in [FormBuilder examples](/examples/form-builder)). |
 | `nestedForm(form)` | Embeds another `FormBuilder` layout as a nested form. Serialized by `toJSON()` and rendered by `<FormRender>` as a form of its own - it resolves the nested layout's breakpoints itself and inherits the outer `:components` map. Nesting has no depth limit. |
+| `teleportAnchor(idRef)` | Adds a `<div>` anchor to the layout (via `generic('div', { id, style: 'display: contents' })`) that a `<Teleport :to="'#' + idRef.value">` in the consumer's own template can target, so the field markup and its `v-model`/event handlers live in the template rather than the `components` map. Generates the id via Vue's `useId()` and writes it into `idRef.value` the first time; a ref that already holds one is reused as-is, which is how the same field stays anchored to one `<Teleport>` across its own breakpoint redeclarations - see [FormBuilder examples](/examples/form-builder). |
 | `dfInput` / `dfTextArea` / `dfSelect` / `dfCheckbox` / `dfDateTime` / `dfFile` / `dfColor` / `dfRtfEditor` / `dfLabel` / `dfInputHint` / `dfActions` | Shorthands for `generic('df-*', props)`, typed to the matching component's props from [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:). There is one per component that library draws with. |
 | `byTag(tag, props)` | The component `tag` names, built through the `df*` shorthand that owns the tag - `'df-date-time'` builds exactly what `dfDateTime(props)` builds - and through `generic(tag, props)` where no shorthand owns it. This is the call for a layout that reads the tag out of data rather than writing it: a tag [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) gains before this builder has a shorthand for it still reaches the layout. |
 
-`FormBuilder` and `FormBuilderBodyProp` are top-level exports of `@dynamicforms/vuetify-modal-form-kit`. The rest
+`FormBuilder`, `FormBuilderBodyProp` and `useTeleportAnchor` are top-level exports of
+`@dynamicforms/vuetify-modal-form-kit` - `useTeleportAnchor()` returns `{ id: Ref<string>, target: ComputedRef<string> }`,
+pairing an id with its ready-made Teleport target (`target` is `'#' + id.value`). Since the pair is a plain object
+rather than a ref itself, a template needs `anchor.target.value` on `<Teleport :to>` - Vue's auto-unwrapping does
+not reach a ref nested inside a returned object, only one that is itself a top-level property of the render
+context. The rest
 of the layout tree - `Row`, `Column`, `Component`, `ComponentBuilderBase`, `ComponentBuilderInterface`,
 `VuetifyInputsComponentBuilder`, `FormBuilderName`, `SimpleProxy`, `TwelveDivisible` and the props and JSON types of
 rows, columns and components - is reached through the `FormLayout` namespace alone, which is what a custom component
