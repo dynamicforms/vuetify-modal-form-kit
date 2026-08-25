@@ -1,4 +1,6 @@
+import { mount } from '@vue/test-utils';
 import { vi } from 'vitest';
+import { defineComponent, ref } from 'vue';
 
 import { Column } from '../column';
 import { FormBuilderBodyProp } from '../types';
@@ -206,5 +208,104 @@ describe('Custom ComponentBuilder', () => {
       label: 'Submit',
       color: 'primary',
     });
+  });
+});
+
+// useId() needs an active component instance, so calls to teleportAnchor() run inside a mounted setup().
+function withActiveInstance<T>(fn: () => T): T {
+  let result!: T;
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        result = fn();
+        return () => null;
+      },
+    }),
+  );
+  wrapper.unmount();
+  return result;
+}
+
+describe('ComponentBuilderBase.teleportAnchor', () => {
+  it('adds a display-contents div carrying the generated id', () => {
+    const mockAddCallback = vi.fn();
+    const idRef = ref('');
+
+    withActiveInstance(() => {
+      const builder = new ComponentBuilderBase(mockAddCallback);
+      builder.teleportAnchor(idRef);
+    });
+
+    expect(mockAddCallback).toHaveBeenCalledTimes(1);
+    const component = mockAddCallback.mock.calls[0][0] as Component;
+    expect(component).toBeInstanceOf(Component);
+
+    const json = component.toJSON();
+    expect(json.name).toBe('div');
+    expect(typeof json.props!.id).toBe('string');
+    expect(json.props!.id).not.toBe('');
+    expect(json).toEqual({
+      name: 'div',
+      props: { id: json.props!.id, style: 'display: contents' },
+    });
+  });
+
+  it('writes the generated id into the passed-in ref', () => {
+    const mockAddCallback = vi.fn();
+    const idRef = ref('');
+
+    withActiveInstance(() => {
+      const builder = new ComponentBuilderBase(mockAddCallback);
+      builder.teleportAnchor(idRef);
+    });
+
+    const component = mockAddCallback.mock.calls[0][0] as Component;
+    expect(idRef.value).not.toBe('');
+    expect(component.toJSON().props!.id).toBe(idRef.value);
+  });
+
+  it('generates distinct ids across separate calls', () => {
+    const mockAddCallback = vi.fn();
+    const firstRef = ref('');
+    const secondRef = ref('');
+
+    withActiveInstance(() => {
+      new ComponentBuilderBase(mockAddCallback).teleportAnchor(firstRef);
+      new ComponentBuilderBase(mockAddCallback).teleportAnchor(secondRef);
+    });
+
+    expect(firstRef.value).not.toBe('');
+    expect(secondRef.value).not.toBe('');
+    expect(firstRef.value).not.toBe(secondRef.value);
+  });
+
+  it('reuses an id already written into the ref, for the same field across breakpoints', () => {
+    const mockAddCallback = vi.fn();
+    const idRef = ref('');
+
+    withActiveInstance(() => {
+      new ComponentBuilderBase(mockAddCallback).teleportAnchor(idRef);
+      const firstId = idRef.value;
+      new ComponentBuilderBase(mockAddCallback).teleportAnchor(idRef);
+
+      expect(idRef.value).toBe(firstId);
+    });
+
+    expect(mockAddCallback).toHaveBeenCalledTimes(2);
+    const [first, second] = mockAddCallback.mock.calls.map(([component]) => (component as Component).toJSON());
+    expect(first.props!.id).toBe(idRef.value);
+    expect(second.props!.id).toBe(idRef.value);
+  });
+
+  it('returns the builder for chaining', () => {
+    const mockAddCallback = vi.fn();
+    const idRef = ref('');
+
+    const builder = withActiveInstance(() => {
+      const b = new ComponentBuilderBase(mockAddCallback);
+      return b.teleportAnchor(idRef);
+    });
+
+    expect(builder).toBeInstanceOf(ComponentBuilderBase);
   });
 });

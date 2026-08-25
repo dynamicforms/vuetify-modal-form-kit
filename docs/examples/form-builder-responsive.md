@@ -19,6 +19,9 @@ The FormBuilder component supports responsive layouts with different configurati
 - Default editors supported from [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:)
 - Nesting capabilities for complex form structures
 - Integration with all Vuetify input components
+- Template-declared content for individual cells via Vue's `<Teleport>`, for fields whose markup and `v-model`
+  are more natural to write directly in the consumer's own template - see
+  [Template-declared content (Teleport)](/examples/form-builder#template-declared-content-teleport)
 
 ## Responsive Designs
 

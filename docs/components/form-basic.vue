@@ -3,17 +3,44 @@
     <v-card>
       <v-card-title>Basic Form Layout Example</v-card-title>
       <v-card-text>
+        <v-alert type="info" variant="tonal" density="compact" class="mb-2">
+          Personal Information and Additional Information are declared entirely in code. Contact Information's
+          position in the layout comes from FormBuilder too, but its field markup and v-model live in this
+          template, wired up through a teleport anchor.
+        </v-alert>
         <form-render :layout="formLayout" :components="components"/>
+        <!-- .value is required here: emailAnchor/contactMethodAnchor are plain objects, not refs themselves, so
+             Vue's template auto-unwrapping does not reach into their .target property -->
+        <Teleport :to="emailAnchor.target.value" defer>
+          <v-text-field v-model="email" label="Email" type="email" />
+        </Teleport>
+        <Teleport :to="contactMethodAnchor.target.value" defer>
+          <v-select v-model="contactMethod" label="Preferred Contact Method" :items="contactMethodItems" />
+        </Teleport>
       </v-card-text>
     </v-card>
   </div>
 </template>
 
 <script setup>
-import { FormBuilder, FormRender, FormBuilderBodyProp } from '../../src';
+import { ref } from 'vue';
+
+import { FormBuilder, FormRender, FormBuilderBodyProp, useTeleportAnchor } from '../../src';
 
 // Import Vuetify components for direct use
 import { VTextField, VTextarea, VSelect, VCheckbox, VBtn, VRadioGroup, VRadio } from 'vuetify/components';
+
+// Reactive state and teleport anchors for the Contact Information fields, declared here rather than in the
+// components map: the builder only reserves their position in the layout.
+const email = ref('');
+const contactMethod = ref('');
+const emailAnchor = useTeleportAnchor();
+const contactMethodAnchor = useTeleportAnchor();
+const contactMethodItems = [
+  { title: 'Email', value: 'email' },
+  { title: 'Phone', value: 'phone' },
+  { title: 'Mail', value: 'mail' },
+];
 
 // Create form layout using FormBuilder
 const formBuilder = new FormBuilder();
@@ -25,19 +52,17 @@ formBuilder.simple()
   .dfInput({ label: 'First name', placeholder: 'Enter your first name' })
   .dfInput({ label: 'Last name', placeholder: 'Enter your last name' })
   .simple()
-  .generic('h3', { [FormBuilderBodyProp]: 'Contact Information', class: 'mt-0' })
-  .simple(2)
-  .generic('VTextField', { label: 'Email', type: 'email', modelValue: '' })
-  .generic('VSelect', {
-    label: 'Preferred Contact Method',
-    items: [
-      { title: 'Email', value: 'email' },
-      { title: 'Phone', value: 'phone' },
-      { title: 'Mail', value: 'mail' }
-    ],
-    modelValue: '',
-  })
-  .simple()
+  .generic('h3', { [FormBuilderBodyProp]: 'Contact Information', class: 'mt-0' });
+
+// Contact Information Section - the two fields below are teleported in from the template instead of being
+// resolved through the components map
+formBuilder.row({}, (row) => row
+  .col({ cols: 6, offset: 0 }, (col) => col
+    .component((cmpt) => cmpt.teleportAnchor(emailAnchor.id)))
+  .col({ cols: 6, offset: 0 }, (col) => col
+    .component((cmpt) => cmpt.teleportAnchor(contactMethodAnchor.id))));
+
+formBuilder.simple()
   .generic('h3', { [FormBuilderBodyProp]: 'Additional Information', class: 'mt-0' })
   .generic('VTextarea', { label: 'Comments', rows: 3, modelValue: '' });
 /*
