@@ -17,18 +17,22 @@
 
 <script setup lang="ts">
 import { getBreakpointName } from '@dynamicforms/vuetify-inputs';
-import { computed, getCurrentInstance } from 'vue';
+import { computed, getCurrentInstance, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 
 import { FormBuilder, FormBuilderName, FormJSON } from '../core/form-layout';
 
 import ComponentRenderer from './component-render.vue';
-import { FormRenderProps } from './types';
+import { FormRenderEmits, FormRenderProps } from './types';
 
 const props = withDefaults(defineProps<FormRenderProps>(), { components: () => ({}) });
+const emit = defineEmits<FormRenderEmits>();
 
 const responsiveLayout = computed(() => FormBuilder.fromJSON(props.layout));
 const display = useDisplay();
+const breakpoint = computed(() => getBreakpointName(display));
+// see FormRenderEmits.breakpoint for why a consumer needs this
+watch(breakpoint, (bp) => emit('breakpoint', bp), { immediate: true });
 
 // a <Teleport :to="'#' + id"> only ever reaches the first element bearing that id, so two components sharing one
 // within what a single breakpoint renders leaves one of them permanently empty - warn about it here, once per
@@ -57,10 +61,9 @@ function warnDuplicateIds(layout: FormJSON) {
 }
 
 const layoutToRender = computed(() => {
-  const breakpoint = getBreakpointName(display);
   // the breakpoint has to reach toJSON as well: it is what row- and column-level breakpoint overrides are
   // resolved against, and getOptionsForBreakpoint only resolves the form-level ones
-  const resolved = responsiveLayout.value.getOptionsForBreakpoint(breakpoint).toJSON(breakpoint);
+  const resolved = responsiveLayout.value.getOptionsForBreakpoint(breakpoint.value).toJSON(breakpoint.value);
   warnDuplicateIds(resolved);
   return resolved;
 });

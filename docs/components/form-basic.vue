@@ -8,13 +8,15 @@
           position in the layout comes from FormBuilder too, but its field markup and v-model live in this
           template, wired up through a teleport anchor.
         </v-alert>
-        <form-render :layout="formLayout" :components="components"/>
+        <form-render :layout="formLayout" :components="components" @breakpoint="breakpoint = $event"/>
         <!-- .value is required here: emailAnchor/contactMethodAnchor are plain objects, not refs themselves, so
-             Vue's template auto-unwrapping does not reach into their .target property -->
-        <Teleport :to="emailAnchor.target.value" defer>
+             Vue's template auto-unwrapping does not reach into their .target property. Both Teleports are keyed
+             on the resolved breakpoint so a switch that moves a field to a different row/column - and so recreates
+             its anchor - forces them to remount and re-resolve rather than keep pointing at the removed anchor. -->
+        <Teleport :key="breakpoint" :to="emailAnchor.target.value" defer>
           <v-text-field v-model="email" label="Email" type="email" />
         </Teleport>
-        <Teleport :to="contactMethodAnchor.target.value" defer>
+        <Teleport :key="breakpoint" :to="contactMethodAnchor.target.value" defer>
           <v-select v-model="contactMethod" label="Preferred Contact Method" :items="contactMethodItems" />
         </Teleport>
       </v-card-text>
@@ -36,6 +38,7 @@ const email = ref('');
 const contactMethod = ref('');
 const emailAnchor = useTeleportAnchor();
 const contactMethodAnchor = useTeleportAnchor();
+const breakpoint = ref();
 const contactMethodItems = [
   { title: 'Email', value: 'email' },
   { title: 'Phone', value: 'phone' },

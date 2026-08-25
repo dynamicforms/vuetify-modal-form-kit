@@ -1,7 +1,9 @@
+import { BreakpointNames } from '@dynamicforms/vuetify-inputs';
+
 import { FormBuilder, FormJSONResponsive } from '../core/form-layout';
 
-// the props of the two render components live here, not in their SFCs: `<script setup>` has no exports, and a
-// consumer wrapping either component needs a name for the props type it forwards
+// the props and emits of the two render components live here, not in their SFCs: `<script setup>` has no exports,
+// and a consumer wrapping either component needs a name for the types it forwards
 
 /** Props of `<form-render>`. */
 export interface FormRenderProps {
@@ -9,6 +11,18 @@ export interface FormRenderProps {
   layout: FormBuilder | FormJSONResponsive;
   /** component name to component definition; `<form-render>` adds itself to it under `FormBuilderName` */
   components?: Record<string | symbol, any>;
+}
+
+/** Emits of `<form-render>`. */
+export interface FormRenderEmits {
+  /**
+   * fires with the currently resolved breakpoint, once immediately and again on every change. A resolved layout
+   * can rearrange which row/column holds a `teleportAnchor()` cell, which forces Vue to recreate that cell's
+   * `<div :id>` rather than patch it in place; a `<Teleport :to>` only re-resolves its target when the `to`
+   * string itself changes, so it otherwise keeps pointing at the element that just got removed. Key a consumer's
+   * `<Teleport>` on this value to force it to remount and re-resolve alongside the anchor.
+   */
+  breakpoint: [breakpoint: BreakpointNames];
 }
 
 /** Props of `<component-render>`. */
