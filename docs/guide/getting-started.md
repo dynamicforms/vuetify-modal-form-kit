@@ -7,7 +7,7 @@ npm install @dynamicforms/vuetify-modal-form-kit
 ```
 
 The library declares [`@dynamicforms/vue-forms`](:vue-forms:) `^0.17.1`,
-[`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) `^0.9.2`, Vue `^3.5.2` and Vuetify `^3.9` among its peer
+[`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) `^0.9.2`, Vue `^3.5.32` and Vuetify `^3.9` among its peer
 dependencies; install them alongside it if they are not already in your project.
 
 The package is ESM only and `engines.node` is `>=22.12`, which is the release where Node supports `require()` of

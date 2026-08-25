@@ -16,6 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   element and the teleported content renders empty. Key a `<Teleport>` on this emit to force it to remount and
   re-resolve alongside the anchor.
 
+### Changed
+
+- The peer dependency moves to `vue` `^3.5.32`: keying a `<Teleport defer>` on the new `breakpoint` emit needs
+  [vuejs/core#14642](https://github.com/vuejs/core/pull/14642), which fixed a deferred `Teleport` losing its
+  content when it updates - here, remounts on a new key - before its deferred mount runs.
+
 ## [0.7.6] - 2026-08-25
 
 ### Added

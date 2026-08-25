@@ -18,7 +18,7 @@ export interface FormRenderProps {
  *
  * A type alias, not an interface: `defineEmits<FormRenderEmits>()` requires its argument to satisfy
  * `Record<string, any[]>`, which only a type literal gets checked against structurally - an interface never
- * does, even one shaped identically, and fails that constraint at Vue's declared peer floor (3.5.2).
+ * does, even one shaped identically, and fails that constraint at Vue's declared peer floor (3.5.32).
  */
 export type FormRenderEmits = {
   /**

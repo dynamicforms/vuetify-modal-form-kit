@@ -40,7 +40,7 @@ npm install @dynamicforms/vuetify-modal-form-kit
 **Peer dependencies** (must be installed separately):
 
 ```bash
-npm install vue@^3.5.2 vuetify@^3.9 @dynamicforms/vue-forms@^0.17.1 @dynamicforms/vuetify-inputs@^0.9.2 \
+npm install vue@^3.5.32 vuetify@^3.9 @dynamicforms/vue-forms@^0.17.1 @dynamicforms/vuetify-inputs@^0.9.2 \
   lodash-es vue-markdown-render @mdi/font
 ```
 
@@ -403,7 +403,7 @@ class MyBuilder extends FormLayout.VuetifyInputsComponentBuilder {}
 | Dependency | Version |
 |---|---|
 | Node | >=22.12 |
-| Vue | ^3.5.2 |
+| Vue | ^3.5.32 |
 | Vuetify | ^3.9 |
 | @dynamicforms/vue-forms | ^0.17.1 |
 | @dynamicforms/vuetify-inputs | ^0.9.2 |
