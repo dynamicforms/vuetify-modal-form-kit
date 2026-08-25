@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.7] - 2026-08-25
+
+### Added
+
+- `<FormRender>` emits `breakpoint` with the currently resolved breakpoint, once immediately and again on every
+  change. A resolved layout can rearrange which row or column holds a `teleportAnchor()` cell between breakpoints,
+  which makes Vue recreate that cell's `<div :id>` instead of patching it in place; a `<Teleport :to>` only
+  re-resolves its target when the `to` string itself changes, so it otherwise keeps pointing at the removed
+  element and the teleported content renders empty. Key a `<Teleport>` on this emit to force it to remount and
+  re-resolve alongside the anchor.
+
+### Changed
+
+- The peer dependency moves to `vue` `^3.5.32`: keying a `<Teleport defer>` on the new `breakpoint` emit needs
+  [vuejs/core#14642](https://github.com/vuejs/core/pull/14642), which fixed a deferred `Teleport` losing its
+  content when it updates - here, remounts on a new key - before its deferred mount runs.
+
 ## [0.7.6] - 2026-08-25
 
 ### Added

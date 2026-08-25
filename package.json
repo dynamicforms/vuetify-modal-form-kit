@@ -1,7 +1,7 @@
 {
   "name": "@dynamicforms/vuetify-modal-form-kit",
   "private": false,
-  "version": "0.7.6",
+  "version": "0.7.7",
   "type": "module",
   "description": "Vue 3 + Vuetify 3 library providing a promise-based programmatic dialog API with a sequential dialog queue, a TypeScript fluent form layout builder (FormBuilder), and built-in keyboard shortcuts for dialog (Enter/Esc).",
   "author": "Jure Erznožnik",
@@ -59,7 +59,7 @@
     "@dynamicforms/vuetify-inputs": "^0.10.1",
     "@mdi/font": "^7.4.47",
     "lodash-es": "^4.17.21",
-    "vue": "^3.5.2",
+    "vue": "^3.5.32",
     "vue-markdown-render": "^2.2.1",
     "vuetify": "^3.9"
   },

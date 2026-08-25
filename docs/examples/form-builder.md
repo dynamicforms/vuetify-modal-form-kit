@@ -137,8 +137,8 @@ field itself.
 
 Only one breakpoint's layout ever renders at a time, so the same `idRef` can be passed to more than one
 `teleportAnchor()` call: `teleportAnchor` writes a fresh id into an empty ref and reuses whatever is already
-there otherwise. Redeclaring a field across breakpoints and passing it the same ref each time keeps it anchored
-to the one `<Teleport>` in the template, instead of orphaning it the moment the breakpoint changes:
+there otherwise. Redeclaring a field across breakpoints and passing it the same ref each time keeps its id, and
+so the `<Teleport :to>` that targets it, the same across the switch:
 
 ```typescript
 formBuilder.row({ }, (row) => row
@@ -147,6 +147,28 @@ formBuilder.row({ }, (row) => row
 formBuilder.breakpoint('sm', (form) => form.row({ }, (row) => row
   .col({ cols: 12 }, (col) => col.component((cmpt) => cmpt.teleportAnchor(emailAnchor.id)))));
 ```
+
+That keeps the *id* stable, but not necessarily the DOM element carrying it: switching breakpoints often moves a
+field to a different row or column, and Vue then discards the old `<div :id>` and creates a new one at the new
+position rather than patching the old one in place. A `<Teleport :to>` only re-resolves its target when the `to`
+string itself changes, so a `to` that stayed the same string keeps pointing at the element that just got removed
+and the teleported content renders empty - even though the id it names is, again, present elsewhere in the DOM.
+
+Key the `<Teleport>` on `<FormRender>`'s [`breakpoint` emit](/api/form-render#emits) to force it to remount and
+re-resolve its target whenever this happens:
+
+```typescript
+const breakpoint = ref();
+```
+
+```html
+<form-render :layout="formBuilder" :components="components" @breakpoint="breakpoint = $event" />
+<Teleport :key="breakpoint" :to="emailAnchor.target.value" defer>
+  <v-text-field v-model="email" label="Email" type="email" />
+</Teleport>
+```
+
+`breakpoint` is declared once, alongside the rest of the template's reactive state.
 
 Passing the same ref to two *different* fields, rather than the same field at two breakpoints, leaves both
 anchors carrying the same id in a layout that can render them both at once. `<FormRender>` warns when that

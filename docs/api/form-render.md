@@ -31,7 +31,15 @@ form.simple(2).generic('df-input', { label: 'First name' }).generic('df-input', 
 The renderer adds itself to the map it passes down, under the `FormBuilderName` symbol, which is how a nested
 layout is rendered as a form of its own. A key of that name in your own map is replaced.
 
-`<form-render>` has no slots and emits nothing.
+`<form-render>` has no slots.
+
+## Emits
+
+`FormRenderEmits` is exported under that name, for a component that wraps `<form-render>` and forwards its emits.
+
+| Event | Payload | Description |
+|---|---|---|
+| `breakpoint` | `BreakpointNames` | The currently resolved breakpoint, once immediately and again on every change. See [Breakpoints](#breakpoints) below for why a teleport-anchored field needs to listen to this. |
 
 ## Breakpoints
 
@@ -39,6 +47,13 @@ The layout is resolved against the current Vuetify breakpoint and re-resolved wh
 overrides through `getOptionsForBreakpoint()`, and the row- and column-level ones through the `toJSON(breakpoint)`
 that follows. A nested layout resolves its own breakpoints, at any depth - see
 [what a breakpoint inherits](/examples/form-builder-responsive#what-a-breakpoint-inherits).
+
+A resolved layout can rearrange which row or column holds a [`teleportAnchor()`](./form-builder#component-builder)
+cell between breakpoints, which forces Vue to destroy and recreate that cell's `<div :id>` rather than patch it in
+place. A `<Teleport :to>` only re-resolves its target when the `to` string itself changes, so it otherwise keeps
+pointing at the element that was just removed and the teleported content renders empty. Key the `<Teleport>` on
+the `breakpoint` emit to force it to remount and re-resolve alongside the anchor - see
+[the same field across breakpoints](/examples/form-builder#the-same-field-across-breakpoints).
 
 ## Duplicate ids
 

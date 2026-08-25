@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { vi } from 'vitest';
-import { defineComponent, markRaw } from 'vue';
+import { defineComponent, markRaw, nextTick, ref, Ref } from 'vue';
 import { createVuetify } from 'vuetify';
 
 import { FormBuilder, FormJSONResponsive, useTeleportAnchor } from '../core/form-layout';
@@ -116,6 +116,19 @@ describe('FormRender', () => {
     it('renders a column breakpoint from JSON the way it renders it from the builder', () => {
       setViewportWidth(1400);
       expectSameHtml(responsiveForm());
+    });
+
+    it('emits the resolved breakpoint once on mount and again on every change', async () => {
+      setViewportWidth(1400);
+
+      const wrapper = render(responsiveForm());
+      expect(wrapper.emitted('breakpoint')?.[0]).toEqual(['lg']);
+
+      setViewportWidth(400);
+      await nextTick();
+      expect(wrapper.emitted('breakpoint')?.[1]).toEqual(['xs']);
+
+      wrapper.unmount();
     });
 
     it('renders a row breakpoint from JSON the way it renders it from the builder', () => {
@@ -329,7 +342,9 @@ describe('FormRender', () => {
   describe('teleport-anchored content', () => {
     // Teleport resolves its target through the real document, so the host has to be attached to it - a detached
     // mount (the default) leaves querySelector unable to find an anchor <form-render> renders perfectly well.
-    function renderWithTeleport(toBinding: string) {
+    // `keyed` binds the Teleport's own :key to the breakpoint <form-render> emits, forcing it to remount and
+    // re-resolve its target when a breakpoint switch moves the anchor to a fresh DOM element.
+    function renderWithTeleport(toBinding: string, buildForm?: (anchorId: Ref<string>) => FormBuilder, keyed = false) {
       // teleportAnchor() calls Vue's useId(), which needs an active component instance - building the form has
       // to happen inside Host's own setup(), the same way a consumer builds it inside their own <script setup>
       const anchor = useTeleportAnchor();
@@ -337,16 +352,27 @@ describe('FormRender', () => {
       const Host = defineComponent({
         components: { FormRender },
         setup() {
-          const form = new FormBuilder();
-          form.row({}, (row) => row.col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.teleportAnchor(anchor.id))));
-          return { form, anchor, target: anchor.target };
+          const form = buildForm
+            ? buildForm(anchor.id)
+            : new FormBuilder().row({}, (row) =>
+                row.col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.teleportAnchor(anchor.id))),
+              );
+          const breakpoint = ref();
+          return { form, anchor, target: anchor.target, breakpoint };
         },
-        template: `
-          <div>
-            <form-render :layout="form" />
-            <Teleport :to="${toBinding}" defer><input data-test="teleported" /></Teleport>
-          </div>
-        `,
+        template: keyed
+          ? `
+            <div>
+              <form-render :layout="form" @breakpoint="breakpoint = $event" />
+              <Teleport :key="breakpoint" :to="${toBinding}" defer><input data-test="teleported" /></Teleport>
+            </div>
+          `
+          : `
+            <div>
+              <form-render :layout="form" />
+              <Teleport :to="${toBinding}" defer><input data-test="teleported" /></Teleport>
+            </div>
+          `,
       });
 
       const wrapper = mount(Host, { attachTo: document.body, global: { stubs, plugins: [createVuetify()] } });
@@ -374,6 +400,59 @@ describe('FormRender', () => {
       expect(input.element.parentElement).toBe(wrapper.find(`#${anchor.id.value}`).element);
 
       wrapper.unmount();
+    });
+
+    describe('across a breakpoint that moves the anchor to a different position', () => {
+      // swapping which column holds the anchor forces Vue to unmount the old <div :id> (now a 'my-input' sits at
+      // its old array index) and mount a fresh one elsewhere, rather than patch the existing element in place
+      function movingAnchorForm(anchorId: Ref<string>) {
+        const form = new FormBuilder();
+        form.row({}, (row) =>
+          row
+            .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.teleportAnchor(anchorId)))
+            .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.generic('my-input', { label: 'Other' }))),
+        );
+        form.breakpoint('sm', (bpForm) =>
+          bpForm.row({}, (row) =>
+            row
+              .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.generic('my-input', { label: 'Other' })))
+              .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.teleportAnchor(anchorId))),
+          ),
+        );
+        return form;
+      }
+
+      afterEach(() => {
+        setViewportWidth(defaultWidth);
+      });
+
+      it('orphans the teleported content once the anchor moves, when the Teleport is not keyed', async () => {
+        setViewportWidth(400);
+        const { wrapper } = renderWithTeleport('anchor.target.value', movingAnchorForm);
+        expect(wrapper.find('[data-test="teleported"]').exists()).toBe(true);
+
+        setViewportWidth(1400);
+        await nextTick();
+
+        expect(document.querySelector('[data-test="teleported"]')).toBeFalsy();
+
+        wrapper.unmount();
+      });
+
+      it('stays attached to the current anchor across the switch when keyed on the breakpoint', async () => {
+        setViewportWidth(400);
+        const { wrapper, anchor } = renderWithTeleport('anchor.target.value', movingAnchorForm, true);
+        expect(wrapper.find('[data-test="teleported"]').exists()).toBe(true);
+
+        setViewportWidth(1400);
+        await nextTick();
+
+        const input = wrapper.find('[data-test="teleported"]');
+        expect(input.exists()).toBe(true);
+        expect(input.element.parentElement).toBe(wrapper.find(`#${anchor.id.value}`).element);
+
+        wrapper.unmount();
+      });
     });
   });
 });

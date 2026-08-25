@@ -40,7 +40,7 @@ npm install @dynamicforms/vuetify-modal-form-kit
 **Peer dependencies** (must be installed separately):
 
 ```bash
-npm install vue@^3.5.2 vuetify@^3.9 @dynamicforms/vue-forms@^0.17.1 @dynamicforms/vuetify-inputs@^0.9.2 \
+npm install vue@^3.5.32 vuetify@^3.9 @dynamicforms/vue-forms@^0.17.1 @dynamicforms/vuetify-inputs@^0.9.2 \
   lodash-es vue-markdown-render @mdi/font
 ```
 
@@ -301,6 +301,7 @@ written directly in the consumer's own template instead of resolved through `<Fo
 ```typescript
 const email = ref('')
 const emailAnchor = useTeleportAnchor()
+const breakpoint = ref()
 
 form.row({}, (row) =>
   row.col({ cols: 6 }, (col) =>
@@ -318,8 +319,20 @@ form.row({}, (row) =>
 `.value` is required: `emailAnchor` is a plain object, not a ref itself, so Vue's template auto-unwrapping - which
 only reaches a ref that is a top-level property of the render context - does not reach into its `target` property.
 A populated `idRef` is reused rather than replaced, so the same field can be redeclared across breakpoints and
-stay anchored to the one `<Teleport>`; `<FormRender>` warns if a resolved layout ever carries the same id on more
-than one component.
+keep the same id; `<FormRender>` warns if a resolved layout ever carries that id on more than one component.
+
+A breakpoint switch can still move the field to a different row or column, which makes Vue discard the anchor's
+`<div :id>` and create a new one rather than patch the old one in place. Since `<Teleport :to>` only re-resolves
+its target when the `to` string itself changes, an unchanged `to` then keeps pointing at the removed element and
+the teleported content renders empty. Key the `<Teleport>` on `<form-render>`'s `breakpoint` emit to force it to
+remount and re-resolve alongside the anchor:
+
+```html
+<form-render :layout="formLayout" :components="components" @breakpoint="breakpoint = $event" />
+<Teleport :key="breakpoint" :to="emailAnchor.target.value" defer>
+  <v-text-field v-model="email" label="Email" />
+</Teleport>
+```
 
 ### Serialisation
 
@@ -390,7 +403,7 @@ class MyBuilder extends FormLayout.VuetifyInputsComponentBuilder {}
 | Dependency | Version |
 |---|---|
 | Node | >=22.12 |
-| Vue | ^3.5.2 |
+| Vue | ^3.5.32 |
 | Vuetify | ^3.9 |
 | @dynamicforms/vue-forms | ^0.17.1 |
 | @dynamicforms/vuetify-inputs | ^0.9.2 |
