@@ -13,8 +13,14 @@ export interface FormRenderProps {
   components?: Record<string | symbol, any>;
 }
 
-/** Emits of `<form-render>`. */
-export interface FormRenderEmits {
+/**
+ * Emits of `<form-render>`.
+ *
+ * A type alias, not an interface: `defineEmits<FormRenderEmits>()` requires its argument to satisfy
+ * `Record<string, any[]>`, which only a type literal gets checked against structurally - an interface never
+ * does, even one shaped identically, and fails that constraint at Vue's declared peer floor (3.5.2).
+ */
+export type FormRenderEmits = {
   /**
    * fires with the currently resolved breakpoint, once immediately and again on every change. A resolved layout
    * can rearrange which row/column holds a `teleportAnchor()` cell, which forces Vue to recreate that cell's
@@ -23,7 +29,7 @@ export interface FormRenderEmits {
    * `<Teleport>` on this value to force it to remount and re-resolve alongside the anchor.
    */
   breakpoint: [breakpoint: BreakpointNames];
-}
+};
 
 /** Props of `<component-render>`. */
 export interface ComponentRenderProps {
