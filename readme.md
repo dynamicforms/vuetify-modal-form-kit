@@ -290,6 +290,36 @@ form.row({}, (row) =>
 A nested layout is part of the serialized form, and `<FormRender>` renders it as a form of its own: it resolves the
 nested layout's breakpoints itself and inherits the outer `:components` map.
 
+### Template-declared content (Teleport)
+
+`teleportAnchor(idRef)` reserves a cell's position without saying what goes in it: it writes a generated id into
+`idRef` and renders an anchor a `<Teleport>` can target, so the field itself - its markup, its `v-model` - is
+written directly in the consumer's own template instead of resolved through `<FormRender :components>`.
+`useTeleportAnchor()` pairs an id ref with its ready-made `'#'`-prefixed target:
+
+```typescript
+const email = ref('')
+const emailAnchor = useTeleportAnchor()
+
+form.row({}, (row) =>
+  row.col({ cols: 6 }, (col) =>
+    col.component((c) => c.teleportAnchor(emailAnchor.id))
+  )
+)
+```
+
+```html
+<Teleport :to="emailAnchor.target.value" defer>
+  <v-text-field v-model="email" label="Email" />
+</Teleport>
+```
+
+`.value` is required: `emailAnchor` is a plain object, not a ref itself, so Vue's template auto-unwrapping - which
+only reaches a ref that is a top-level property of the render context - does not reach into its `target` property.
+A populated `idRef` is reused rather than replaced, so the same field can be redeclared across breakpoints and
+stay anchored to the one `<Teleport>`; `<FormRender>` warns if a resolved layout ever carries the same id on more
+than one component.
+
 ### Serialisation
 
 `toJSON()` serializes a layout, including its breakpoints:
