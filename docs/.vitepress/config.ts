@@ -2,7 +2,7 @@ import vuetify from 'vite-plugin-vuetify';
 import { defineConfig } from 'vitepress';
 import { crosslinksConfig } from 'vitepress-plugin-crosslinks';
 
-import ssrCkeditorStub from './ssr-ckeditor-stub';
+import ssrCkeditorStub from './ssr-ckeditor-stub.ts';
 
 export default defineConfig({
   title: 'DynamicForms Vuetify modal form kit',
