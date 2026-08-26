@@ -63,7 +63,7 @@ Passed as the last argument to `message()` / `yesNo()` / `custom()`.
 | `form` | `Form.Group` | A `@dynamicforms/vue-forms` group rendered as the dialog body, one input per `Field` member - see [`<modal-view>`](./modal-view#what-it-actually-does) for what the generated layout covers. Its `Action` members become the dialog's buttons - see [Actions](#actions) for which of them are drawn. |
 | `actions` | `FormActions` (`Record<string, Form.Action>`) | Explicit actions to show, keyed by name. Merged over the defaults (`close`, or `yes` / `no`), which are stated only where nothing the caller passed is drawn - see [Actions](#actions). One action can be reachable both here and as a member of `form`; the field name is what the dialog then resolves with - see [Which name settles the dialog](#which-name-settles-the-dialog). |
 | `size` | `DialogSize` | One of `DialogSize.SMALL` / `MEDIUM` / `LARGE` / `X_LARGE`. Defaults to `DialogSize.DEFAULT`. |
-| `color` | `string` | Passed straight to the title bar's `v-sheet` `color` prop. |
+| `color` | `string` | Passed straight to the title bar's `v-sheet` `color` prop. Falls back to the global default set through [`setDfModalDefaults`](./df-modal#global-defaults) where unset. |
 | `icon` | `string` | Icon shown next to the title. |
 | `components` | `Record<string \| symbol, any>` | Components the dialog body may name, over the `df-*` ones [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) draws with, which are what `<modal-view>` supplies. A component the application wrote is reachable from `custom()` and from a `FormBuilder` layout without being registered globally; a built-in name given here is replaced for this dialog alone. |
 

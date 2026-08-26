@@ -21,10 +21,10 @@
       -->
       <v-card-title style="padding: 0">
         <v-sheet
-          :color="props.color || undefined"
+          :color="resolvedColor"
           class="d-flex align-center px-4 py-4"
           :class="{ 'position-relative': showsCloseButton }"
-          :elevation="!!props.color ? 4 : 0"
+          :elevation="resolvedColor ? 4 : 0"
         >
           <v-icon v-if="icon" class="me-2" :icon="icon" />
           <slot name="title">
@@ -63,6 +63,7 @@ import { useDisplay } from 'vuetify';
 
 import { DfModalProps, DfModalSlots } from './df-modal.types';
 import DialogSize from './dialog-size';
+import modalDefaults from './modal-defaults';
 import dialogTracker from './top-modal-tracker';
 
 const props = withDefaults(defineProps<DfModalProps>(), {
@@ -79,6 +80,7 @@ const instance = getCurrentInstance();
 const display = useDisplay();
 const breakpoint = useBreakpoint();
 const size = computed(() => props.size);
+const resolvedColor = computed(() => props.color || modalDefaults.titleColor || undefined);
 
 const fullScreen = computed(() => {
   if (size.value === DialogSize.SMALL && !display.smAndUp.value) return true;

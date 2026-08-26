@@ -1,6 +1,7 @@
 import { App } from 'vue';
 
 import * as Components from './dynamicforms-components';
+import { type DfModalDefaults, setDfModalDefaults } from './modal';
 import * as VuetifyComponents from './vuetify-components';
 
 export * from './core';
@@ -10,6 +11,7 @@ export * from './modal';
 export interface DynamicFormsModalFormKitOptions {
   registerComponents: boolean;
   registerVuetifyComponents: boolean;
+  modalDefaults: Partial<DfModalDefaults>;
 }
 
 export const DynamicFormsModalFormKit = {
@@ -29,5 +31,6 @@ export const DynamicFormsModalFormKit = {
         return null;
       });
     }
+    if (options?.modalDefaults) setDfModalDefaults(options.modalDefaults);
   },
 };
