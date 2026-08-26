@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.8] - 2026-08-26
+
+### Added
+
+- `setDfModalDefaults(defaults)` sets reactive fallback values every `<df-modal>` reads for a prop it wasn't
+  itself given - directly, or through the `modal` service, which renders through `<df-modal>` as well. `titleColor`
+  is the first one, applied as the title bar's `color` where a dialog states none of its own.
+  `DynamicFormsModalFormKit.install()` accepts the same shape under a new `modalDefaults` option, as a convenience
+  for setting it once at startup; the setter itself works independently of `install()` having run.
+
 ## [0.7.7] - 2026-08-25
 
 ### Added
