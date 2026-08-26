@@ -28,7 +28,7 @@ forwards its props and slots.
 | `formControl` | `Form.Group` | — | Exposed to the `body` slot as `formControl`; `df-modal` itself doesn't render a form from it. |
 | `dialogId` | `symbol` | — | Used internally by the `modal` service to manage the one-dialog-at-a-time stack. Leave unset for template dialogs. It also states who owns the stack entry: `df-modal` pushes only a template dialog's, and leaves one it was given a `dialogId` for on the stack when it unmounts. A `model-value` going false still removes whichever entry the component holds. |
 | `title` | `Form.RenderableValue` | — | Dialog title. Accepts plain text, Markdown (`MdString`), or a custom component. Falls back to the `title` slot if omitted. |
-| `color` | `string` | — | Title bar background color. |
+| `color` | `string` | — | Title bar background color. Falls back to the global default set through [`setDfModalDefaults`](#global-defaults) where unset. |
 | `icon` | `string` | — | Icon shown next to the title. |
 | `actions` | `Form.Action[]` | `[]` | Drives the [keyboard shortcuts](#keyboard-shortcuts) below. Purely functional - it renders nothing by itself; render the same array through `<df-actions>` in the `actions` slot. |
 
@@ -52,6 +52,27 @@ pushed when `model-value` goes true and removed when it goes false or the compon
 through the [`modal` service](./modal-service) is the service's, and it stays on the stack when the `df-modal`
 drawing it unmounts: the definition and the promise behind it outlive the component, and the next
 [`<modal-view>`](./modal-view) to mount draws it again.
+
+## Global defaults
+
+`setDfModalDefaults` sets fallback values every `<df-modal>` reads for a prop it wasn't itself given - directly, or
+through the [`modal` service](./modal-service)'s `ModalOptions`, which renders through `<df-modal>` as well:
+
+```typescript
+import { setDfModalDefaults } from '@dynamicforms/vuetify-modal-form-kit';
+
+setDfModalDefaults({ titleColor: 'primary' });
+```
+
+| Default | Falls back for | Description |
+|---|---|---|
+| `titleColor` | `color` | Title bar background color applied where a dialog states none of its own. |
+
+It's a reactive singleton, not a one-time setting - calling it again, at any point, changes every currently open
+and future dialog that doesn't state its own `color`. `DynamicFormsModalFormKit.install()` accepts the same shape
+under `modalDefaults` as a convenience for setting it once at startup (see
+[Getting Started](/guide/getting-started)), but `setDfModalDefaults` itself works independently of `install()` -
+a `<df-modal>` imported and used directly, without `app.use(DynamicFormsModalFormKit)`, still reads it.
 
 ## The close button
 

@@ -28,9 +28,15 @@ app.use(vuetify);
 app.use(DynamicFormsModalFormKit, { registerComponents: true, registerVuetifyComponents: false });
 ```
 
-Both options default to `false`. `registerComponents` registers `<modal-view>`, `<df-modal>`,
-`<form-render>` and `<component-render>` globally; `registerVuetifyComponents` registers the handful of
-Vuetify components the library renders, for projects that do not install Vuetify globally.
+`registerComponents` and `registerVuetifyComponents` default to `false`. `registerComponents` registers
+`<modal-view>`, `<df-modal>`, `<form-render>` and `<component-render>` globally; `registerVuetifyComponents`
+registers the handful of Vuetify components the library renders, for projects that do not install Vuetify
+globally. `modalDefaults` sets app-wide fallback values dialogs read where they state none of their own - see
+[`<df-modal>` → Global defaults](/api/df-modal#global-defaults):
+
+```typescript
+app.use(DynamicFormsModalFormKit, { modalDefaults: { titleColor: 'primary' } });
+```
 
 ## Basic Usage
 

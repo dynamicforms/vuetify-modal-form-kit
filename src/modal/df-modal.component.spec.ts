@@ -8,6 +8,7 @@ import * as vuetifyComponents from 'vuetify/components';
 
 import DfModal from './df-modal.component.vue';
 import DialogSize from './dialog-size';
+import { setDfModalDefaults } from './modal-defaults';
 import dialogTracker from './top-modal-tracker';
 
 const stubs = {
@@ -21,7 +22,10 @@ const stubs = {
   VCardTitle: { template: '<div><slot /></div>' },
   VCardText: { template: '<div><slot /></div>' },
   VCardActions: { template: '<div><slot /></div>' },
-  VSheet: { template: '<div><slot /></div>' },
+  VSheet: {
+    props: ['color', 'elevation'],
+    template: '<div :data-color="String(color)" :data-elevation="String(elevation)"><slot /></div>',
+  },
   VIcon: { template: '<i />' },
   VBtn: { template: '<button><slot /></button>' },
   MessagesWidget: { template: '<span />' },
@@ -32,6 +36,7 @@ interface ModalProps {
   dialogId?: symbol;
   actions?: Action[];
   size?: DialogSize;
+  color?: string;
 }
 
 function mountModal(props: ModalProps) {
@@ -488,6 +493,45 @@ describe('DfModal', () => {
 
       press('Enter');
       expect(confirm.spy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('title bar color', () => {
+    afterEach(() => {
+      setDfModalDefaults({ titleColor: undefined });
+    });
+
+    function titleSheet(wrapper: ReturnType<typeof mountModal>) {
+      return wrapper.findComponent(stubs.VSheet);
+    }
+
+    it('carries no color and no elevation where neither the prop nor the global default is set', () => {
+      const wrapper = mountModal({ modelValue: true });
+
+      expect(titleSheet(wrapper).attributes('data-color')).toBe('undefined');
+      expect(titleSheet(wrapper).attributes('data-elevation')).toBe('0');
+
+      wrapper.unmount();
+    });
+
+    it('falls back to the global default where the prop is unset', () => {
+      setDfModalDefaults({ titleColor: 'primary' });
+      const wrapper = mountModal({ modelValue: true });
+
+      expect(titleSheet(wrapper).attributes('data-color')).toBe('primary');
+      expect(titleSheet(wrapper).attributes('data-elevation')).toBe('4');
+
+      wrapper.unmount();
+    });
+
+    it('takes the prop over the global default', () => {
+      setDfModalDefaults({ titleColor: 'primary' });
+      const wrapper = mountModal({ modelValue: true, color: 'secondary' });
+
+      expect(titleSheet(wrapper).attributes('data-color')).toBe('secondary');
+      expect(titleSheet(wrapper).attributes('data-elevation')).toBe('4');
+
+      wrapper.unmount();
     });
   });
 });
