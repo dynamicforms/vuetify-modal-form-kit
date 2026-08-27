@@ -32,7 +32,7 @@ describe('the published artifact', () => {
   });
 
   it('reaches the layout classes through the FormLayout namespace', () => {
-    // they are exported nowhere else, and the readme says so
+    // they are exported nowhere else, and the API reference says so
     for (const name of [
       'Column',
       'Component',
