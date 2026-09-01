@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-09-01
+
+### Changed
+
+- **Breaking:** Bumps the `@dynamicforms/vue-forms` peer range to `^1.0.0` and `@dynamicforms/vuetify-inputs` to
+  `^0.11.0`, both of which now depend on `@dynamicforms/translatable` for reactive string translation. Nothing in
+  this package's own code or public surface changes; an application on an older release of either peer needs to
+  upgrade it alongside this package.
+
 ## [0.7.8] - 2026-08-26
 
 ### Added
