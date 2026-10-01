@@ -113,7 +113,7 @@ An action is reached when all three hold:
 | Read | Reached when |
 |---|---|
 | `effectiveEnabled` | `true` - the action itself is enabled, and so is every container above it. A `Group` set to `enabled = false` therefore takes its actions out of the keyboard's reach without each one being disabled by hand. |
-| `visibility` | `DisplayMode.FULL`. An action at `HIDDEN`, `INVISIBLE` or `SUPPRESS` is not something the user can see, so it is not something Enter or Esc reaches either. |
+| `visibility` | `'full'`. An action at `'hidden'`, `'invisible'` or `'suppress'` is not something the user can see, so it is not something Enter or Esc reaches either. |
 | `busy` | `false`. `busy` is `true` from the call to `execute()` until that run settles, so a second Enter cannot start a second run of a handler that has yet to finish. |
 
 `<df-actions>` disables its button on the same two reads, and draws it `loading` while the action is busy, so a

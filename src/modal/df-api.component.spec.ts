@@ -126,6 +126,26 @@ describe('ModalView', () => {
     wrapper.unmount();
   });
 
+  it('does not warn about a member that is sent nowhere, since it is not validated either', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const wrapper = mountView();
+    const form = new Form.Group({
+      name: new Form.Field({ value: '' }),
+      address: new Form.Group({ city: new Form.Field({ value: '' }) }, { access: 'disabled' }),
+    });
+
+    const promise = modal.message('Details', 'fill this in', { form });
+    await nextTick();
+
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+
+    promise.close('close');
+    await nextTick();
+    await promise;
+    wrapper.unmount();
+  });
+
   it('warns about a form member it has no layout for, and leaves it out of the rendered set', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const wrapper = mountView();
@@ -152,7 +172,7 @@ describe('ModalView', () => {
     const wrapper = mountView();
     const form = new Form.Group({
       name: new Form.Field({ value: '' }),
-      internalId: new Form.Field({ value: '', visibility: Form.DisplayMode.SUPPRESS }),
+      internalId: new Form.Field({ value: '', visibility: 'suppress' }),
     });
 
     const promise = modal.message('Details', 'fill this in', { form });

@@ -69,8 +69,8 @@ function warnUnrendered(form: Form.Group, names: string[]) {
   console.warn(
     `<modal-view> lays out the Field members of the form it is given, one input each. It has no layout for ` +
       `${names.join(', ')}, so ${names.length > 1 ? 'those members are' : 'that member is'} not on screen - while ` +
-      'still validating, and still counted by form.valid. Pass a FormBuilder layout of your own to render ' +
-      'nested groups and lists.',
+      'still validating, and still counted by form.valid while it is sent. Pass a FormBuilder layout of your own ' +
+      'to render nested groups and lists.',
   );
 }
 
@@ -89,7 +89,7 @@ const formLayout = computed(() => {
 
     if (field instanceof Form.Field) {
       // a suppressed field renders nothing, so a row and a column of its own would be an empty gutter gap
-      if (field.visibility === Form.DisplayMode.SUPPRESS) return;
+      if (field.visibility === 'suppress') return;
       // the component is the field's to state, and a field that states none is drawn as a plain input
       builder.byTag(field.extra.component ?? 'df-input', {
         // the field's own label wins over the one read off its name: an element carries its presentation, and
@@ -100,7 +100,8 @@ const formLayout = computed(() => {
       return;
     }
 
-    unrendered.push(fieldName);
+    // a member sent nowhere is not validated either, so leaving it off the screen hides nothing the form answers for
+    if (field.effectiveAccess !== 'disabled') unrendered.push(fieldName);
   });
 
   warnUnrendered(form, unrendered);

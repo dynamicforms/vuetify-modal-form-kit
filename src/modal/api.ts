@@ -121,14 +121,14 @@ class ModalAPI {
 
   // Whether the caller states buttons of its own, and so whether the dialog adds its default ones. Only an action
   // the user can reach counts, which is the read <df-modal>'s keyboard makes: <df-actions> leaves out an action at
-  // SUPPRESS and draws one at HIDDEN as `d-none` and one at INVISIBLE as `visibility: hidden`, so none of the three
-  // takes a click, and the keyboard answers FULL alone. A dialog counting one of them would be on screen with no
-  // way out of it.
+  // 'suppress' and draws one at 'hidden' as `d-none` and one at 'invisible' as `visibility: hidden`, so none of the
+  // three takes a click, and the keyboard answers 'full' alone. A dialog counting one of them would be on screen
+  // with no way out of it.
   // The visibility is the one the action carries as the dialog opens. The default actions are decided once, at
-  // that moment: an action raised to FULL or dropped below it later neither removes the dialog's own buttons nor
+  // that moment: an action raised to 'full' or dropped below it later neither removes the dialog's own buttons nor
   // adds them.
   private hasOwnAction(options?: ModalOptions): boolean {
-    const drawn = (action: Form.Action) => action.visibility === Form.DisplayMode.FULL;
+    const drawn = (action: Form.Action) => action.visibility === 'full';
     if (Object.values(options?.actions ?? {}).some(drawn)) return true;
     return Object.keys(options?.form?.fields ?? []).some((fieldName) => {
       const field = options?.form?.field(fieldName);

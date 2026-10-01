@@ -69,12 +69,13 @@ order. It covers exactly the `Field` members:
 - **The label is the field's own.** `new Field({ value: '', label: 'Email address' })` draws that text; the field
   name read as Title Case - `emailAddress` and `email_address` both give `Email Address` - is what is left when
   the field carries none.
-- **A member at `DisplayMode.SUPPRESS` is skipped.** The input renders nothing at that mode, so a row and a
-  column of its own would be an empty gutter gap. A `HIDDEN` or `INVISIBLE` member keeps its row: the input draws
+- **A member at visibility `'suppress'` is skipped.** The input renders nothing there, so a row and a
+  column of its own would be an empty gutter gap. A `'hidden'` or `'invisible'` member keeps its row: the input draws
   those two itself, as `d-none` and as `invisible`.
 - **An `Action` member goes to the actions slot**, not into the body - see
   [Actions](./modal-service#actions) for which of them `<df-actions>` draws.
-- **A nested `Group` or `List` member is not laid out.** It goes on validating and goes on counting towards
-  `form.valid`, so the form can read invalid over an error nothing on screen shows. The first layout built over
-  such a form warns on the console, naming the members it has no layout for. Pass a `FormBuilder` layout of your
+- **A nested `Group` or `List` member is not laid out.** While it is sent it goes on validating and goes on
+  counting towards `form.valid`, so the form can read invalid over an error nothing on screen shows. The first
+  layout built over such a form warns on the console, naming the members it has no layout for; a member whose
+  `effectiveAccess` is `'disabled'` is sent nowhere and not validated, so it is left out of the warning. Pass a `FormBuilder` layout of your
   own - through [`<df-modal>`](./df-modal) and its `body` slot - to render one.

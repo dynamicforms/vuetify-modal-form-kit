@@ -150,7 +150,7 @@ function renderOptions(action: Form.Action) {
 // false where the action or any container above it is disabled - and that is not already running. `busy` is what
 // keeps a held-down Enter from starting a second run of a handler that has yet to settle.
 function isReachable(action: Form.Action) {
-  return action.effectiveEnabled && action.visibility === Form.DisplayMode.FULL && !action.busy;
+  return action.effectiveEnabled && action.visibility === 'full' && !action.busy;
 }
 
 // execute() is asynchronous and this is a document listener, so nothing wraps it the way Vue wraps a template

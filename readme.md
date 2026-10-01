@@ -38,7 +38,7 @@ npm install @dynamicforms/vuetify-modal-form-kit
 **Peer dependencies** (must be installed separately):
 
 ```bash
-npm install vue@^3.5.32 vuetify@^3.9 @dynamicforms/vue-forms@^0.17.1 @dynamicforms/vuetify-inputs@^0.9.2 \
+npm install vue@^3.5.32 vuetify@^3.9 @dynamicforms/vue-forms@^2.0.2 @dynamicforms/vuetify-inputs@^0.12.1 \
   lodash-es vue-markdown-render @mdi/font
 ```
 

@@ -8,6 +8,41 @@ exists.
 
 <!-- New releases go directly below this comment, above the previous one, as `## Upgrading to vX.Y.Z (from vA.B.x)`. -->
 
+## Upgrading to v0.9.0 (from v0.8.x)
+
+0.9.0 requires `@dynamicforms/vue-forms` 2.0.2 and `@dynamicforms/vuetify-inputs` 0.12.1. Upgrade the three together,
+and work through the [vue-forms](https://docs.velis.si/dynamicforms/vue-forms/guide/migration) and
+[vuetify-inputs](https://docs.velis.si/dynamicforms/vuetify-inputs/guide/migration) migration guides first: what
+changes for a dialog comes from them.
+
+```bash
+npm install @dynamicforms/vue-forms@^2.0.2 @dynamicforms/vuetify-inputs@^0.12.1 @dynamicforms/vuetify-modal-form-kit@^0.9.0
+```
+
+### An action's visibility and access are strings
+
+The dialog reads an action's `visibility` to decide whether the user can reach it, and vue-forms 2.0.2 states it as
+a string. An action passed to a dialog states it the same way, and an action that is not to be clicked states its
+`access` rather than writing `enabled`:
+
+```typescript
+// before
+const later = new Action({ value: { label: 'Later' }, visibility: DisplayMode.HIDDEN });
+save.enabled = false;
+// after
+const later = new Action({ value: { label: 'Later' }, visibility: 'hidden' });
+save.access = 'disabled';
+```
+
+An action counts as the caller's own button, and keeps the dialog from adding its default ones, only at `'full'`, as
+before.
+
+### A nested member that is sent nowhere is not warned about
+
+`<modal-view>` warns about a nested `Group` or `List` member it has no layout for, because such a member goes on
+validating off screen. A member whose `effectiveAccess` is `'disabled'` is not validated in vue-forms 2.0.2, so it is
+left out of the warning.
+
 ## Upgrading to v0.7.3 (from v0.7.2)
 
 Both peer floors move by a patch each, and both of those patches carry behaviour this library used to work around.

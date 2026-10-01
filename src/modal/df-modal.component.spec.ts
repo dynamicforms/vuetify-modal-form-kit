@@ -1,4 +1,4 @@
-import { AbortEventHandlingException, DisplayMode, ExecuteAction, Group } from '@dynamicforms/vue-forms';
+import { AbortEventHandlingException, ExecuteAction, Group } from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
 import { mount } from '@vue/test-utils';
 import { vi } from 'vitest';
@@ -202,7 +202,7 @@ describe('DfModal', () => {
 
     it('carries none where the only reject action is one the keyboard cannot reach', () => {
       const reject = actionWithSpy({ label: 'Cancel', defaultReject: true });
-      reject.action.enabled = false;
+      reject.action.access = 'disabled';
       const wrapper = mountModal({ modelValue: true, actions: [reject.action] });
 
       expect(wrapper.find('button').exists()).toBe(false);
@@ -273,13 +273,13 @@ describe('DfModal', () => {
 
     it('does not reach an action the user could not click', () => {
       const disabled = actionWithSpy({ label: 'Save', defaultConfirm: true });
-      disabled.action.enabled = false;
+      disabled.action.access = 'disabled';
       const hidden = actionWithSpy({ label: 'Cancel', defaultReject: true });
-      hidden.action.visibility = DisplayMode.HIDDEN;
+      hidden.action.visibility = 'hidden';
       // <df-actions> draws an INVISIBLE action with `visibility: hidden`: it holds its space and takes no click,
       // so the keyboard does not reach it either.
       const invisible = actionWithSpy({ label: 'Close', defaultReject: true });
-      invisible.action.visibility = DisplayMode.INVISIBLE;
+      invisible.action.visibility = 'invisible';
 
       const wrapper = mountModal({
         modelValue: true,
@@ -378,7 +378,7 @@ describe('DfModal', () => {
       const inner = actionWithSpy({ label: 'Save', defaultConfirm: true });
       // the action itself is untouched: what makes it unreachable is the section above it
       const section = new Group({ save: inner.action });
-      section.enabled = false;
+      section.access = 'disabled';
       expect(inner.action.enabled).toBe(true);
 
       const wrapper = mountModal({ modelValue: true, dialogId, actions: [inner.action] });

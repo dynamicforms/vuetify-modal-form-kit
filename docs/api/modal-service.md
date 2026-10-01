@@ -104,11 +104,12 @@ await modal.message('Subscribe', 'Enter your email address:', { form });   // re
 Executing an action from your own code settles the dialog exactly as clicking its button does.
 
 The dialog states its own buttons - `close`, or `yes` / `no` - where nothing the caller passed is drawn.
-`<df-actions>` leaves out an action at `DisplayMode.SUPPRESS` and draws every other one, `HIDDEN` as `d-none` and
-`INVISIBLE` as `invisible`, so it is `SUPPRESS` alone that makes an action count for nothing here. A set that is
-entirely suppressed therefore opens with the dialog's own buttons: without them it would be on screen with no
-button and no keyboard route out of it. The read is the one the actions carry as the dialog opens; raising one to
-`FULL` or dropping one to `SUPPRESS` afterwards neither removes the dialog's own buttons nor adds them.
+`<df-actions>` leaves out an action at visibility `'suppress'` and draws one at `'hidden'` as `d-none` and one at
+`'invisible'` as `invisible`, so none of the three takes a click, and the keyboard reaches `'full'` alone. Only an
+action at `'full'` counts here: a set with none opens with the dialog's own buttons, since
+without them it would be on screen with no button and no keyboard route out of it. The read is the one the actions
+carry as the dialog opens; raising one to `'full'` or dropping one below it afterwards neither removes the dialog's
+own buttons nor adds them.
 
 `await action.execute()` answers what the action's own `ExecuteAction` chain returned - handing an action to a
 dialog changes neither what it runs nor what it reports:
