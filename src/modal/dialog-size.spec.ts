@@ -1,75 +1,39 @@
-import DialogSize, { defaultDialogSize } from './dialog-size';
+import { defaultDialogSize, dialogSizes, isDialogSize, resolveDialogSize } from './dialog-size';
 
 describe('DialogSize', () => {
-  it('Check Dialog Size From String', () => {
-    expect(DialogSize.fromString('small')).toBe(DialogSize.SMALL);
-    expect(DialogSize.fromString('sm')).toBe(DialogSize.SMALL);
-    expect(DialogSize.fromString('modal-sm')).toBe(DialogSize.SMALL);
+  it('resolves every size and every shorter name to the size it names', () => {
+    expect(resolveDialogSize('small')).toBe('small');
+    expect(resolveDialogSize('sm')).toBe('small');
+    expect(resolveDialogSize('modal-sm')).toBe('small');
 
-    expect(DialogSize.fromString('medium')).toBe(DialogSize.MEDIUM);
-    expect(DialogSize.fromString('md')).toBe(DialogSize.MEDIUM);
-    expect(DialogSize.fromString('modal-md')).toBe(DialogSize.MEDIUM);
+    expect(resolveDialogSize('medium')).toBe('medium');
+    expect(resolveDialogSize('md')).toBe('medium');
+    expect(resolveDialogSize('modal-md')).toBe('medium');
 
-    expect(DialogSize.fromString('large')).toBe(DialogSize.LARGE);
-    expect(DialogSize.fromString('lg')).toBe(DialogSize.LARGE);
-    expect(DialogSize.fromString('modal-lg')).toBe(DialogSize.LARGE);
+    expect(resolveDialogSize('large')).toBe('large');
+    expect(resolveDialogSize('lg')).toBe('large');
+    expect(resolveDialogSize('modal-lg')).toBe('large');
 
-    expect(DialogSize.fromString('x-large')).toBe(DialogSize.X_LARGE);
-    expect(DialogSize.fromString('xl')).toBe(DialogSize.X_LARGE);
-    expect(DialogSize.fromString('modal-xl')).toBe(DialogSize.X_LARGE);
+    expect(resolveDialogSize('x-large')).toBe('x-large');
+    expect(resolveDialogSize('xl')).toBe('x-large');
+    expect(resolveDialogSize('modal-xl')).toBe('x-large');
 
-    expect(DialogSize.fromString('THIS WILL NEVER BE A SIZE')).toEqual(defaultDialogSize);
+    expect(resolveDialogSize('default')).toBe('default');
+    expect(defaultDialogSize).toBe('default');
   });
-  it('Check Is Defined', () => {
-    expect(DialogSize.isDefined(DialogSize.LARGE)).toBe(true);
-    expect(DialogSize.isDefined(DialogSize.SMALL)).toBe(true);
-    expect(DialogSize.isDefined(DialogSize.MEDIUM)).toBe(true);
-    expect(DialogSize.isDefined(DialogSize.X_LARGE)).toBe(true);
-    expect(DialogSize.isDefined(DialogSize.DEFAULT)).toBe(true);
 
-    expect(DialogSize.isDefined('sm')).toBe(true);
-    expect(DialogSize.isDefined('small')).toBe(true);
-    expect(DialogSize.isDefined('modal-sm')).toBe(true);
-
-    expect(DialogSize.isDefined('md')).toBe(true);
-    expect(DialogSize.isDefined('medium')).toBe(true);
-    expect(DialogSize.isDefined('modal-md')).toBe(true);
-
-    expect(DialogSize.isDefined('lg')).toBe(true);
-    expect(DialogSize.isDefined('large')).toBe(true);
-    expect(DialogSize.isDefined('modal-lg')).toBe(true);
-
-    expect(DialogSize.isDefined('xl')).toBe(true);
-    expect(DialogSize.isDefined('x-large')).toBe(true);
-    expect(DialogSize.isDefined('modal-xl')).toBe(true);
-
-    expect(DialogSize.isDefined(100)).toBe(false);
-    expect(DialogSize.isDefined('THIS WILL NEVER BE A SIZE')).toBe(false);
+  it('refuses what names no size, rather than falling back to the default', () => {
+    expect(() => resolveDialogSize('LARGE' as never)).toThrow("'LARGE' is not a dialog size");
+    expect(() => resolveDialogSize(3 as never)).toThrow("'3' is not a dialog size");
   });
-  it('Check Is Defined Reports Actual Existence', () => {
-    const identifiers = [
-      'small',
-      'sm',
-      'modal-sm',
-      'medium',
-      'md',
-      'modal-md',
-      'large',
-      'lg',
-      'modal-lg',
-      'x-large',
-      'xl',
-      'modal-xl',
-    ];
-    identifiers.forEach((identifier) => expect(DialogSize.isDefined(identifier)).toBe(true));
 
-    // DEFAULT has no string identifier, so no string resolves to it
-    expect(DialogSize.isDefined('default')).toBe(false);
-    expect(DialogSize.isDefined('')).toBe(false);
-    expect(DialogSize.isDefined('modal-xxl')).toBe(false);
-
-    // fromString falls back to defaultDialogSize for an unrecognised string
-    expect(DialogSize.fromString('default')).toBe(defaultDialogSize);
-    expect(DialogSize.fromString('modal-xxl')).toBe(defaultDialogSize);
+  it('answers isDialogSize for the sizes and their shorter names and for nothing else', () => {
+    dialogSizes.forEach((size) => expect(isDialogSize(size)).toBe(true));
+    ['sm', 'modal-sm', 'md', 'modal-md', 'lg', 'modal-lg', 'xl', 'modal-xl'].forEach((name) =>
+      expect(isDialogSize(name)).toBe(true),
+    );
+    expect(isDialogSize('LARGE')).toBe(false);
+    expect(isDialogSize(3)).toBe(false);
+    expect(isDialogSize('toString')).toBe(false);
   });
 });

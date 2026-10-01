@@ -30,7 +30,7 @@ A message dialog, a yes/no confirmation, a validated form dialog, and sized dial
   [`<modal-view>`](/api/modal-view#the-generated-layout).
 - **Custom components** - `modal.custom('Title', componentName, componentProps)` renders any registered component
   as the dialog body instead of a message/form.
-- **Sizing** - `options.size` picks `DialogSize.SMALL` / `MEDIUM` / `LARGE` / `X_LARGE`, each of which goes
+- **Sizing** - `options.size` picks `'small'` / `'medium'` / `'large'` / `'x-large'`, each of which goes
   fullscreen below its own breakpoint. The default sizes itself to its content.
 
 Full method signatures, `ModalOptions`, and `DialogSize` are documented in the

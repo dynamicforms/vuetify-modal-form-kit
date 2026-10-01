@@ -17,7 +17,6 @@ describe('the published artifact', () => {
     expect(Object.keys(m).sort()).toEqual([
       'ComponentRender',
       'DfModal',
-      'DialogSize',
       'DynamicFormsModalFormKit',
       'FormBuilder',
       'FormBuilderBodyProp',
@@ -25,7 +24,10 @@ describe('the published artifact', () => {
       'FormRender',
       'ModalView',
       'defaultDialogSize',
+      'dialogSizes',
+      'isDialogSize',
       'modal',
+      'resolveDialogSize',
       'setDfModalDefaults',
       'useTeleportAnchor',
     ]);
@@ -74,7 +76,7 @@ describe('the published artifact', () => {
 
   it('answers for the dialog stack with no view mounted', () => {
     expect(m.modal.isInstalled()).toBe(false);
-    expect(m.DialogSize.fromString('lg')).toBe(m.DialogSize.LARGE);
-    expect(m.DialogSize.isDefined('nonsense')).toBe(false);
+    expect(m.resolveDialogSize('lg')).toBe('large');
+    expect(m.isDialogSize('nonsense')).toBe(false);
   });
 });

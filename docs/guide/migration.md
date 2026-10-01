@@ -37,6 +37,21 @@ save.access = 'disabled';
 An action counts as the caller's own button, and keeps the dialog from adding its default ones, only at `'full'`, as
 before.
 
+### `DialogSize` is a string
+
+A dialog's size is one of `'small'`, `'medium'`, `'large'`, `'x-large'` and `'default'`, and the shorter names -
+`'lg'`, `'modal-lg'` and the rest - are accepted as before. The enum is gone, so `DialogSize.LARGE` is a compile
+error, and a value that names no size throws where it was drawn at the default size.
+
+```typescript
+// before
+await modal.message('Information', 'Large', { size: DialogSize.LARGE });
+const size = DialogSize.fromString(fromConfig);
+// after
+await modal.message('Information', 'Large', { size: 'large' });
+const size = resolveDialogSize(fromConfig);   // throws for a name that is no size
+```
+
 ### A nested member that is sent nowhere is not warned about
 
 `<modal-view>` warns about a nested `Group` or `List` member it has no layout for, because such a member goes on

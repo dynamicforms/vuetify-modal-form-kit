@@ -24,7 +24,7 @@ with a plain `v-model`, instead of going through `modal.message()` / `modal.yesN
 
 <script setup>
 import { RenderableValue, ExecuteAction } from '@dynamicforms/vue-forms';
-import { Action, ActionDisplayStyle, DfActions } from '@dynamicforms/vuetify-inputs';
+import { Action, DfActions } from '@dynamicforms/vuetify-inputs';
 import { DfModal } from '@dynamicforms/vuetify-modal-form-kit';
 import { ref } from 'vue';
 
@@ -38,7 +38,7 @@ const password = ref('');
 // defaultConfirm/defaultReject wire Enter/Esc (via `:actions` below) and color the action primary/secondary
 // in <df-actions> - see @dynamicforms/vuetify-inputs's Action API.
 const cancelAction = new Action({
-  value: { name: 'cancel', label: 'Cancel', renderAs: ActionDisplayStyle.TEXT, showLabel: true, defaultReject: true },
+  value: { name: 'cancel', label: 'Cancel', renderAs: 'text', showLabel: true, defaultReject: true },
 });
 cancelAction.registerAction(new ExecuteAction((action, supr, ...params) => {
   isOpen.value = false;

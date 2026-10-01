@@ -2,7 +2,7 @@ import * as Form from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
 import { computed, nextTick, ref } from 'vue';
 
-import DialogSize from './dialog-size';
+import { defaultDialogSize, type DialogSize, type DialogSizeName, resolveDialogSize } from './dialog-size';
 import dialogTracker from './top-modal-tracker';
 
 // Any vue-forms Action: <df-actions> draws a button from the action's value, and the subclass
@@ -35,7 +35,7 @@ export interface CloseablePromise<T> extends Promise<T> {
 
 export interface ModalOptions {
   form?: Form.Group;
-  size?: DialogSize;
+  size?: DialogSizeName;
   /**
    * The dialog's buttons, keyed by name, merged over the defaults it would otherwise state.
    *
@@ -225,7 +225,7 @@ class ModalAPI {
         title: this.getRenderableMessage(title),
         message: this.getRenderableMessage(message),
         form: options?.form,
-        size: options?.size ?? DialogSize.DEFAULT,
+        size: resolveDialogSize(options?.size ?? defaultDialogSize),
         actions,
         // the wrapper, not the bare resolver: settling without it leaves the dialog on the stack forever
         resolve: (value: string) => resolvePromise(value),

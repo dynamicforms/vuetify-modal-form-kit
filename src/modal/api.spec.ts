@@ -4,7 +4,6 @@ import { vi } from 'vitest';
 import { nextTick } from 'vue';
 
 import modal, { currentModal, mountedViews } from './api';
-import DialogSize from './dialog-size';
 
 // the promise is resolved from a nextTick callback, so one flush is not enough to see it settle
 async function settled<T>(promise: Promise<T>): Promise<T> {
@@ -29,7 +28,7 @@ describe('modal service', () => {
     const current = currentModal.value!;
     expect(current.title).toBeInstanceOf(Form.RenderableValue);
     expect(current.message).toBeInstanceOf(Form.RenderableValue);
-    expect(current.size).toBe(DialogSize.DEFAULT);
+    expect(current.size).toBe('default');
     expect(Object.keys(current.actions!)).toEqual(['close']);
     expect(modal.isTop(promise)).toBe(true);
 
@@ -55,10 +54,10 @@ describe('modal service', () => {
     const submit = new Action({ value: { label: 'Send', defaultConfirm: true } });
     const form = new Form.Group({ email: new Form.Field({ value: '' }), submit });
 
-    const promise = modal.message('Subscribe', 'Enter your email address:', { form, size: DialogSize.LARGE });
+    const promise = modal.message('Subscribe', 'Enter your email address:', { form, size: 'large' });
 
     const current = currentModal.value!;
-    expect(current.size).toBe(DialogSize.LARGE);
+    expect(current.size).toBe('large');
     expect(Object.keys(current.actions!)).toEqual(['submit']);
     expect(current.form).toBe(form);
 

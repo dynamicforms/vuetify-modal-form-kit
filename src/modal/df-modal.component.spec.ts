@@ -7,7 +7,7 @@ import { createVuetify } from 'vuetify';
 import * as vuetifyComponents from 'vuetify/components';
 
 import DfModal from './df-modal.component.vue';
-import DialogSize from './dialog-size';
+import type { DialogSize, DialogSizeName } from './dialog-size';
 import { setDfModalDefaults } from './modal-defaults';
 import dialogTracker from './top-modal-tracker';
 
@@ -35,7 +35,7 @@ interface ModalProps {
   modelValue: boolean;
   dialogId?: symbol;
   actions?: Action[];
-  size?: DialogSize;
+  size?: DialogSizeName;
   color?: string;
 }
 
@@ -150,7 +150,7 @@ describe('DfModal', () => {
     });
 
     // useDisplay() reads window.innerWidth when the plugin is created, so the viewport is set before the mount
-    function mountAtViewport(width: number, size?: DialogSize) {
+    function mountAtViewport(width: number, size?: DialogSizeName) {
       window.innerWidth = width;
       return mountModal({ modelValue: true, size });
     }
@@ -161,28 +161,37 @@ describe('DfModal', () => {
     }
 
     it.each([
-      [DialogSize.SMALL, 800, '400'],
-      [DialogSize.MEDIUM, 1000, '600'],
-      [DialogSize.LARGE, 1400, '800'],
-      [DialogSize.X_LARGE, 2000, '1140'],
-    ])('takes its width from the size where the viewport carries it', (size, viewportWidth, width) => {
-      const wrapper = mountAtViewport(viewportWidth, size);
-      expect(dialog(wrapper)).toEqual({ width, fullscreen: 'false' });
-      wrapper.unmount();
-    });
+      ['small', 800, '400'],
+      ['medium', 1000, '600'],
+      ['large', 1400, '800'],
+      ['x-large', 2000, '1140'],
+    ] as [DialogSize, number, string][])(
+      'takes its width from the size where the viewport carries it',
+      (size, viewportWidth, width) => {
+        const wrapper = mountAtViewport(viewportWidth, size);
+        expect(dialog(wrapper)).toEqual({ width, fullscreen: 'false' });
+        wrapper.unmount();
+      },
+    );
 
     it.each([
-      [DialogSize.SMALL, 500],
-      [DialogSize.MEDIUM, 800],
-      [DialogSize.LARGE, 1000],
-      [DialogSize.X_LARGE, 1400],
-    ])('goes fullscreen below the breakpoint its size names', (size, viewportWidth) => {
+      ['small', 500],
+      ['medium', 800],
+      ['large', 1000],
+      ['x-large', 1400],
+    ] as [DialogSize, number][])('goes fullscreen below the breakpoint its size names', (size, viewportWidth) => {
       const wrapper = mountAtViewport(viewportWidth, size);
       expect(dialog(wrapper)).toEqual({ width: 'unset', fullscreen: 'true' });
       wrapper.unmount();
     });
 
-    it('leaves the width to the content at DialogSize.DEFAULT, whatever the viewport', () => {
+    it('takes a shorter name for a size', () => {
+      const wrapper = mountAtViewport(1400, 'modal-lg');
+      expect(dialog(wrapper)).toEqual({ width: '800', fullscreen: 'false' });
+      wrapper.unmount();
+    });
+
+    it("leaves the width to the content at 'default', whatever the viewport", () => {
       const wide = mountAtViewport(2000);
       expect(dialog(wide)).toEqual({ width: 'unset', fullscreen: 'false' });
       wide.unmount();

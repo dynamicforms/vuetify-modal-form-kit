@@ -1,40 +1,50 @@
-enum DialogSize {
-  SMALL = 1,
-  MEDIUM = 2,
-  LARGE = 3,
-  X_LARGE = 4,
-  DEFAULT = 0,
+/**
+ * How wide a dialog is. Each of the four explicit sizes switches to fullscreen below its own breakpoint; `'default'`
+ * sizes the dialog to its content and never does.
+ */
+export type DialogSize = 'small' | 'medium' | 'large' | 'x-large' | 'default';
+
+/**
+ * A size as the dialog options and `df-modal`'s `size` prop take it: a `DialogSize`, which is what an editor offers,
+ * or one of its shorter names - `'sm'`, `'modal-sm'`, `'md'`, `'modal-md'`, `'lg'`, `'modal-lg'`, `'xl'`,
+ * `'modal-xl'` - which `resolveDialogSize` accepts as well. `(string & {})` keeps the shorter names assignable without
+ * collapsing the union into `string`, so the editor still lists the five sizes.
+ */
+
+export type DialogSizeName = DialogSize | (string & {});
+
+/** every size */
+export const dialogSizes: readonly DialogSize[] = Object.freeze(['small', 'medium', 'large', 'x-large', 'default']);
+
+/** What a dialog's size is where nothing states one. */
+export const defaultDialogSize: DialogSize = 'default';
+
+const sizeOfName: Readonly<Record<string, DialogSize>> = Object.freeze({
+  small: 'small',
+  sm: 'small',
+  'modal-sm': 'small',
+  medium: 'medium',
+  md: 'medium',
+  'modal-md': 'medium',
+  large: 'large',
+  lg: 'large',
+  'modal-lg': 'large',
+  'x-large': 'x-large',
+  xl: 'x-large',
+  'modal-xl': 'x-large',
+  default: 'default',
+});
+
+/** Answers whether `value` names a size: a `DialogSize` or one of its shorter names. */
+export function isDialogSize(value: unknown): value is DialogSizeName {
+  return typeof value === 'string' && Object.hasOwn(sizeOfName, value);
 }
 
-export const defaultDialogSize: DialogSize = DialogSize.DEFAULT;
-
-// eslint-disable-next-line @typescript-eslint/no-namespace,no-redeclare
-namespace DialogSize {
-  const largeIdentifiers: string[] = ['large', 'lg', 'modal-lg'];
-  const mediumIdentifiers: string[] = ['medium', 'md', 'modal-md'];
-  const smallIdentifiers: string[] = ['small', 'sm', 'modal-sm'];
-  const xLargeIdentifiers: string[] = ['x-large', 'xl', 'modal-xl'];
-
-  // Resolves a string identifier, or undefined when the string names no size. There is no string
-  // identifier for DEFAULT: it is the fallback fromString applies, not a size anyone can name.
-  function lookup(size: string): DialogSize | undefined {
-    if (largeIdentifiers.includes(size)) return DialogSize.LARGE;
-    if (mediumIdentifiers.includes(size)) return DialogSize.MEDIUM;
-    if (smallIdentifiers.includes(size)) return DialogSize.SMALL;
-    if (xLargeIdentifiers.includes(size)) return DialogSize.X_LARGE;
-    return undefined;
-  }
-
-  export function fromString(size?: string): DialogSize {
-    if (size === undefined) return defaultDialogSize;
-    return lookup(size) ?? defaultDialogSize;
-  }
-
-  export function isDefined(size: number | string) {
-    if (typeof size === 'number') return Object.values(DialogSize).includes(size);
-    return lookup(size) !== undefined;
-  }
+/**
+ * The size `name` names. A shorter name resolves to its size, and anything that names none throws an `Error` naming
+ * it: a size nobody defined is refused rather than drawn as the default.
+ */
+export function resolveDialogSize(name: DialogSizeName): DialogSize {
+  if (!isDialogSize(name)) throw new Error(`'${String(name)}' is not a dialog size: ${dialogSizes.join(', ')}`);
+  return sizeOfName[name];
 }
-
-Object.freeze(DialogSize);
-export default DialogSize;

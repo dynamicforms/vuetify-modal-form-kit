@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking:** requires `@dynamicforms/vue-forms` 2.0.2 and `@dynamicforms/vuetify-inputs` 0.12.1
   (`peerDependencies` `^2.0.2` and `^0.12.1`). An element's `visibility` is a string - `'full'`, `'invisible'`,
   `'hidden'`, `'suppress'` - and `access` replaces writes of `enabled`; see the vue-forms migration guide.
+- **Breaking:** `DialogSize` is the string type `'small' | 'medium' | 'large' | 'x-large' | 'default'` rather than an
+  enum. `ModalOptions.size` and `df-modal`'s `size` take a size or one of its shorter names (`'lg'`, `'modal-lg'` ...),
+  and a value that names no size throws where it fell back to the default. `DialogSize.fromString` and `.isDefined` are
+  replaced by `resolveDialogSize()` and `isDialogSize()`, and `dialogSizes` lists the sizes.
 - `<modal-view>` no longer warns about a nested `Group` or `List` member whose `effectiveAccess` is `'disabled'`: it
   is sent nowhere and not validated, so leaving it off the screen hides nothing the form answers for.
 

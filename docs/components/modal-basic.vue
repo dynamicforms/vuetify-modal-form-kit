@@ -57,10 +57,10 @@
                 </v-card-text>
                 <v-card-actions class="px-0">
                   <v-btn-group variant="outlined">
-                    <v-btn color="primary" @click="showSizedDialog(DialogSize.SMALL)">S</v-btn>
-                    <v-btn color="primary" @click="showSizedDialog(DialogSize.MEDIUM)">M</v-btn>
-                    <v-btn color="primary" @click="showSizedDialog(DialogSize.LARGE)">L</v-btn>
-                    <v-btn color="primary" @click="showSizedDialog(DialogSize.X_LARGE)">XL</v-btn>
+                    <v-btn color="primary" @click="showSizedDialog('small')">S</v-btn>
+                    <v-btn color="primary" @click="showSizedDialog('medium')">M</v-btn>
+                    <v-btn color="primary" @click="showSizedDialog('large')">L</v-btn>
+                    <v-btn color="primary" @click="showSizedDialog('x-large')">XL</v-btn>
                   </v-btn-group>
                 </v-card-actions>
               </v-card>
@@ -83,7 +83,7 @@
 import { ref } from 'vue';
 import { Field, Group, MdString, RenderableValue, Validators } from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
-import { DialogSize, modal, ModalView } from '../../src';
+import { modal, ModalView } from '../../src';
 
 // Flag to control whether to show modal API component in this demo
 // In a real app, this would be in your App.vue
@@ -178,7 +178,7 @@ async function showSizedDialog(size) {
   // Show sized dialog
   dialogResult.value = await modal.message(
     'Dialog Size Example',
-    `This dialog is displayed with size: ${DialogSize[size] || 'DEFAULT'}`,
+    `This dialog is displayed with size: ${size}`,
     { form, size },
   );
 }

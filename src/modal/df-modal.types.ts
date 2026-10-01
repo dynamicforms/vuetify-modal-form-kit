@@ -1,10 +1,10 @@
 import * as Form from '@dynamicforms/vue-forms';
 
-import DialogSize from './dialog-size';
+import type { DialogSizeName } from './dialog-size';
 
 export interface DfModalProps {
   modelValue: boolean;
-  size?: DialogSize;
+  size?: DialogSizeName;
   formControl?: Form.Group;
   dialogId?: symbol;
   title?: Form.RenderableValue;

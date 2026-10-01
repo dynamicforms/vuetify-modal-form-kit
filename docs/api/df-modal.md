@@ -24,7 +24,7 @@ forwards its props and slots.
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `modelValue` | `boolean` | `false` | Controls visibility. Use with `v-model`. |
-| `size` | `DialogSize` | `DialogSize.DEFAULT` | One of `DialogSize.SMALL` / `MEDIUM` / `LARGE` / `X_LARGE`. Each of those switches to fullscreen below its own breakpoint; `DEFAULT` sizes itself to its content and never does. |
+| `size` | `DialogSizeName` | `'default'` | `'small'`, `'medium'`, `'large'` or `'x-large'`, or one of their shorter names (see [`DialogSize`](./modal-service#dialogsize)). Each of those switches to fullscreen below its own breakpoint; `'default'` sizes itself to its content and never does. Anything else throws. |
 | `formControl` | `Form.Group` | — | Exposed to the `body` slot as `formControl`; `df-modal` itself doesn't render a form from it. |
 | `dialogId` | `symbol` | — | Used internally by the `modal` service to manage the one-dialog-at-a-time stack. Leave unset for template dialogs. It also states who owns the stack entry: `df-modal` pushes only a template dialog's, and leaves one it was given a `dialogId` for on the stack when it unmounts. A `model-value` going false still removes whichever entry the component holds. |
 | `title` | `Form.RenderableValue` | — | Dialog title. Accepts plain text, Markdown (`MdString`), or a custom component. Falls back to the `title` slot if omitted. |
