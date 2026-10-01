@@ -64,8 +64,6 @@
     "vuetify": "^3.9"
   },
   "devDependencies": {
-    "@dynamicforms/vue-forms": "file:../.local-packages/dynamicforms-vue-forms-2.0.2.tgz",
-    "@dynamicforms/vuetify-inputs": "file:../.local-packages/dynamicforms-vuetify-inputs-0.12.1.tgz",
     "@eslint/js": "^10.0.1",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^26.2.0",
