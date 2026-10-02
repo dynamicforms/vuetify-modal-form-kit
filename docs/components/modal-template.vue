@@ -30,7 +30,7 @@
 
 <script setup>
 import { RenderableValue, ExecuteAction } from '@dynamicforms/vue-forms';
-import { Action, ActionDisplayStyle, DfActions } from '@dynamicforms/vuetify-inputs';
+import { Action, DfActions } from '@dynamicforms/vuetify-inputs';
 import { ref } from 'vue';
 import { DfModal } from '../../src';
 
@@ -51,7 +51,7 @@ function close(result) {
 // defaultConfirm/defaultReject wire the action to Enter/Esc (see <df-modal>'s `actions` prop) and color it
 // primary/secondary in <df-actions>.
 const cancelAction = new Action({
-  value: { name: 'cancel', label: 'Cancel', renderAs: ActionDisplayStyle.TEXT, showLabel: true, defaultReject: true },
+  value: { name: 'cancel', label: 'Cancel', renderAs: 'text', showLabel: true, defaultReject: true },
 });
 cancelAction.registerAction(
   new ExecuteAction((action, supr, ...params) => {

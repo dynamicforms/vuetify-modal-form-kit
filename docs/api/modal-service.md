@@ -62,7 +62,7 @@ Passed as the last argument to `message()` / `yesNo()` / `custom()`.
 |---|---|---|
 | `form` | `Form.Group` | A `@dynamicforms/vue-forms` group rendered as the dialog body, one input per `Field` member - see [`<modal-view>`](./modal-view#what-it-actually-does) for what the generated layout covers. Its `Action` members become the dialog's buttons - see [Actions](#actions) for which of them are drawn. |
 | `actions` | `FormActions` (`Record<string, Form.Action>`) | Explicit actions to show, keyed by name. Merged over the defaults (`close`, or `yes` / `no`), which are stated only where nothing the caller passed is drawn - see [Actions](#actions). One action can be reachable both here and as a member of `form`; the field name is what the dialog then resolves with - see [Which name settles the dialog](#which-name-settles-the-dialog). |
-| `size` | `DialogSize` | One of `DialogSize.SMALL` / `MEDIUM` / `LARGE` / `X_LARGE`. Defaults to `DialogSize.DEFAULT`. |
+| `size` | `DialogSizeName` | `'small'`, `'medium'`, `'large'` or `'x-large'`, or one of their shorter names - see [`DialogSize`](#dialogsize). Defaults to `'default'`. |
 | `color` | `string` | Passed straight to the title bar's `v-sheet` `color` prop. Falls back to the global default set through [`setDfModalDefaults`](./df-modal#global-defaults) where unset. |
 | `icon` | `string` | Icon shown next to the title. |
 | `components` | `Record<string \| symbol, any>` | Components the dialog body may name, over the `df-*` ones [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) draws with, which are what `<modal-view>` supplies. A component the application wrote is reachable from `custom()` and from a `FormBuilder` layout without being registered globally; a built-in name given here is replaced for this dialog alone. |
@@ -104,11 +104,12 @@ await modal.message('Subscribe', 'Enter your email address:', { form });   // re
 Executing an action from your own code settles the dialog exactly as clicking its button does.
 
 The dialog states its own buttons - `close`, or `yes` / `no` - where nothing the caller passed is drawn.
-`<df-actions>` leaves out an action at `DisplayMode.SUPPRESS` and draws every other one, `HIDDEN` as `d-none` and
-`INVISIBLE` as `invisible`, so it is `SUPPRESS` alone that makes an action count for nothing here. A set that is
-entirely suppressed therefore opens with the dialog's own buttons: without them it would be on screen with no
-button and no keyboard route out of it. The read is the one the actions carry as the dialog opens; raising one to
-`FULL` or dropping one to `SUPPRESS` afterwards neither removes the dialog's own buttons nor adds them.
+`<df-actions>` leaves out an action at visibility `'suppress'` and draws one at `'hidden'` as `d-none` and one at
+`'invisible'` as `invisible`, so none of the three takes a click, and the keyboard reaches `'full'` alone. Only an
+action at `'full'` counts here: a set with none opens with the dialog's own buttons, since
+without them it would be on screen with no button and no keyboard route out of it. The read is the one the actions
+carry as the dialog opens; raising one to `'full'` or dropping one below it afterwards neither removes the dialog's
+own buttons nor adds them.
 
 `await action.execute()` answers what the action's own `ExecuteAction` chain returned - handing an action to a
 dialog changes neither what it runs nor what it reports:
@@ -143,24 +144,31 @@ over repeated dialogs.
 
 ## `DialogSize`
 
-`import { DialogSize } from '@dynamicforms/vuetify-modal-form-kit'`
+`import type { DialogSize, DialogSizeName } from '@dynamicforms/vuetify-modal-form-kit'`
 
-Enum with `SMALL`, `MEDIUM`, `LARGE`, `X_LARGE` and `DEFAULT` members, accepted by both `ModalOptions.size` and
-`df-modal`'s [`size` prop](./df-modal#props). Each of the four explicit sizes switches to fullscreen below its own
-breakpoint; `DEFAULT` sizes itself to its content and never does.
+`DialogSize` is `'small' | 'medium' | 'large' | 'x-large' | 'default'`, the size of a dialog. Each of the four
+explicit sizes switches to fullscreen below its own breakpoint; `'default'` sizes the dialog to its content and never
+does. `defaultDialogSize` is `'default'`, and `dialogSizes` lists the five.
 
-`defaultDialogSize` is exported alongside it as the value `DEFAULT` stands for. `DialogSize.fromString('lg')`
-turns a `'large'` / `'lg'` / `'modal-lg'`-style string into the enum, falling back to `defaultDialogSize` for a
-string it does not recognise (and for `undefined`).
+`ModalOptions.size` and `df-modal`'s [`size` prop](./df-modal#props) take a `DialogSizeName`: a size, or one of its
+shorter names.
 
-`DialogSize.isDefined(size)` reports whether the value actually names a size: a number must be one of the enum's
-values, and a string must be one of the recognised identifiers. `DEFAULT` has no string identifier, so
-`isDefined('default')` is `false` even though `fromString('default')` returns `DEFAULT` through its fallback.
+| Size | Shorter names |
+|---|---|
+| `'small'` | `'sm'`, `'modal-sm'` |
+| `'medium'` | `'md'`, `'modal-md'` |
+| `'large'` | `'lg'`, `'modal-lg'` |
+| `'x-large'` | `'xl'`, `'modal-xl'` |
+| `'default'` | none |
+
+An editor offers the five sizes, and the shorter names are accepted as well. `resolveDialogSize(name)` turns a name
+into the size it names, and throws an `Error` naming anything that names none - a size nobody defined is refused
+rather than drawn as the default. `isDialogSize(value)` answers the same question without the throw.
 
 ```typescript
-import { modal, DialogSize } from '@dynamicforms/vuetify-modal-form-kit';
+import { modal } from '@dynamicforms/vuetify-modal-form-kit';
 
-await modal.message('Information', 'This is a large dialog', { size: DialogSize.LARGE });
+await modal.message('Information', 'This is a large dialog', { size: 'large' });
 ```
 
 ## Examples

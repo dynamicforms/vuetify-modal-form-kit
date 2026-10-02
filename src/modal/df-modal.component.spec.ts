@@ -1,4 +1,4 @@
-import { AbortEventHandlingException, DisplayMode, ExecuteAction, Group } from '@dynamicforms/vue-forms';
+import { AbortEventHandlingException, ExecuteAction, Group } from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
 import { mount } from '@vue/test-utils';
 import { vi } from 'vitest';
@@ -7,7 +7,7 @@ import { createVuetify } from 'vuetify';
 import * as vuetifyComponents from 'vuetify/components';
 
 import DfModal from './df-modal.component.vue';
-import DialogSize from './dialog-size';
+import type { DialogSize, DialogSizeName } from './dialog-size';
 import { setDfModalDefaults } from './modal-defaults';
 import dialogTracker from './top-modal-tracker';
 
@@ -35,7 +35,7 @@ interface ModalProps {
   modelValue: boolean;
   dialogId?: symbol;
   actions?: Action[];
-  size?: DialogSize;
+  size?: DialogSizeName;
   color?: string;
 }
 
@@ -150,7 +150,7 @@ describe('DfModal', () => {
     });
 
     // useDisplay() reads window.innerWidth when the plugin is created, so the viewport is set before the mount
-    function mountAtViewport(width: number, size?: DialogSize) {
+    function mountAtViewport(width: number, size?: DialogSizeName) {
       window.innerWidth = width;
       return mountModal({ modelValue: true, size });
     }
@@ -161,28 +161,37 @@ describe('DfModal', () => {
     }
 
     it.each([
-      [DialogSize.SMALL, 800, '400'],
-      [DialogSize.MEDIUM, 1000, '600'],
-      [DialogSize.LARGE, 1400, '800'],
-      [DialogSize.X_LARGE, 2000, '1140'],
-    ])('takes its width from the size where the viewport carries it', (size, viewportWidth, width) => {
-      const wrapper = mountAtViewport(viewportWidth, size);
-      expect(dialog(wrapper)).toEqual({ width, fullscreen: 'false' });
-      wrapper.unmount();
-    });
+      ['small', 800, '400'],
+      ['medium', 1000, '600'],
+      ['large', 1400, '800'],
+      ['x-large', 2000, '1140'],
+    ] as [DialogSize, number, string][])(
+      'takes its width from the size where the viewport carries it',
+      (size, viewportWidth, width) => {
+        const wrapper = mountAtViewport(viewportWidth, size);
+        expect(dialog(wrapper)).toEqual({ width, fullscreen: 'false' });
+        wrapper.unmount();
+      },
+    );
 
     it.each([
-      [DialogSize.SMALL, 500],
-      [DialogSize.MEDIUM, 800],
-      [DialogSize.LARGE, 1000],
-      [DialogSize.X_LARGE, 1400],
-    ])('goes fullscreen below the breakpoint its size names', (size, viewportWidth) => {
+      ['small', 500],
+      ['medium', 800],
+      ['large', 1000],
+      ['x-large', 1400],
+    ] as [DialogSize, number][])('goes fullscreen below the breakpoint its size names', (size, viewportWidth) => {
       const wrapper = mountAtViewport(viewportWidth, size);
       expect(dialog(wrapper)).toEqual({ width: 'unset', fullscreen: 'true' });
       wrapper.unmount();
     });
 
-    it('leaves the width to the content at DialogSize.DEFAULT, whatever the viewport', () => {
+    it('takes a shorter name for a size', () => {
+      const wrapper = mountAtViewport(1400, 'modal-lg');
+      expect(dialog(wrapper)).toEqual({ width: '800', fullscreen: 'false' });
+      wrapper.unmount();
+    });
+
+    it("leaves the width to the content at 'default', whatever the viewport", () => {
       const wide = mountAtViewport(2000);
       expect(dialog(wide)).toEqual({ width: 'unset', fullscreen: 'false' });
       wide.unmount();
@@ -202,7 +211,7 @@ describe('DfModal', () => {
 
     it('carries none where the only reject action is one the keyboard cannot reach', () => {
       const reject = actionWithSpy({ label: 'Cancel', defaultReject: true });
-      reject.action.enabled = false;
+      reject.action.access = 'disabled';
       const wrapper = mountModal({ modelValue: true, actions: [reject.action] });
 
       expect(wrapper.find('button').exists()).toBe(false);
@@ -273,13 +282,13 @@ describe('DfModal', () => {
 
     it('does not reach an action the user could not click', () => {
       const disabled = actionWithSpy({ label: 'Save', defaultConfirm: true });
-      disabled.action.enabled = false;
+      disabled.action.access = 'disabled';
       const hidden = actionWithSpy({ label: 'Cancel', defaultReject: true });
-      hidden.action.visibility = DisplayMode.HIDDEN;
+      hidden.action.visibility = 'hidden';
       // <df-actions> draws an INVISIBLE action with `visibility: hidden`: it holds its space and takes no click,
       // so the keyboard does not reach it either.
       const invisible = actionWithSpy({ label: 'Close', defaultReject: true });
-      invisible.action.visibility = DisplayMode.INVISIBLE;
+      invisible.action.visibility = 'invisible';
 
       const wrapper = mountModal({
         modelValue: true,
@@ -378,7 +387,7 @@ describe('DfModal', () => {
       const inner = actionWithSpy({ label: 'Save', defaultConfirm: true });
       // the action itself is untouched: what makes it unreachable is the section above it
       const section = new Group({ save: inner.action });
-      section.enabled = false;
+      section.access = 'disabled';
       expect(inner.action.enabled).toBe(true);
 
       const wrapper = mountModal({ modelValue: true, dialogId, actions: [inner.action] });

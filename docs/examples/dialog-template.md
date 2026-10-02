@@ -24,7 +24,7 @@ with a plain `v-model`, instead of going through `modal.message()` / `modal.yesN
 
 <script setup>
 import { RenderableValue, ExecuteAction } from '@dynamicforms/vue-forms';
-import { Action, ActionDisplayStyle, DfActions } from '@dynamicforms/vuetify-inputs';
+import { Action, DfActions } from '@dynamicforms/vuetify-inputs';
 import { DfModal } from '@dynamicforms/vuetify-modal-form-kit';
 import { ref } from 'vue';
 
@@ -38,7 +38,7 @@ const password = ref('');
 // defaultConfirm/defaultReject wire Enter/Esc (via `:actions` below) and color the action primary/secondary
 // in <df-actions> - see @dynamicforms/vuetify-inputs's Action API.
 const cancelAction = new Action({
-  value: { name: 'cancel', label: 'Cancel', renderAs: ActionDisplayStyle.TEXT, showLabel: true, defaultReject: true },
+  value: { name: 'cancel', label: 'Cancel', renderAs: 'text', showLabel: true, defaultReject: true },
 });
 cancelAction.registerAction(new ExecuteAction((action, supr, ...params) => {
   isOpen.value = false;
@@ -95,7 +95,7 @@ handles it internally, as long as you pass the same `Action[]` you render throug
 prop, with one action flagged `defaultConfirm` and (optionally) one `defaultReject`. Try it in the demo above:
 focus a field and press Enter to log in, or Esc to cancel.
 
-The keyboard reaches an action that is rendered at `DisplayMode.FULL`, whose `effectiveEnabled` is `true` - so a
+The keyboard reaches an action that is rendered at visibility `'full'`, whose `effectiveEnabled` is `true` - so a
 disabled section takes its actions out of reach - and that is not already running, which is what `busy` says. An
 overlay open above the dialog answers first: the Escape that closes a `<df-select>` menu or a `<df-date-time>`
 picker inside the dialog is the menu's, and the dialog is rejected by the next one. See

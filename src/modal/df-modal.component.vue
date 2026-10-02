@@ -62,13 +62,13 @@ import { computed, getCurrentInstance, onMounted, onUnmounted, watch } from 'vue
 import { useDisplay } from 'vuetify';
 
 import { DfModalProps, DfModalSlots } from './df-modal.types';
-import DialogSize from './dialog-size';
+import { defaultDialogSize, resolveDialogSize } from './dialog-size';
 import modalDefaults from './modal-defaults';
 import dialogTracker from './top-modal-tracker';
 
 const props = withDefaults(defineProps<DfModalProps>(), {
   modelValue: false,
-  size: DialogSize.DEFAULT,
+  size: defaultDialogSize,
   dialogId: undefined,
   formControl: undefined,
   title: undefined,
@@ -79,26 +79,26 @@ const props = withDefaults(defineProps<DfModalProps>(), {
 const instance = getCurrentInstance();
 const display = useDisplay();
 const breakpoint = useBreakpoint();
-const size = computed(() => props.size);
+const size = computed(() => resolveDialogSize(props.size));
 const resolvedColor = computed(() => props.color || modalDefaults.titleColor || undefined);
 
 const fullScreen = computed(() => {
-  if (size.value === DialogSize.SMALL && !display.smAndUp.value) return true;
-  if (size.value === DialogSize.MEDIUM && !display.mdAndUp.value) return true;
-  if (size.value === DialogSize.LARGE && !display.lgAndUp.value) return true;
-  return size.value === DialogSize.X_LARGE && !display.xlAndUp.value;
+  if (size.value === 'small' && !display.smAndUp.value) return true;
+  if (size.value === 'medium' && !display.mdAndUp.value) return true;
+  if (size.value === 'large' && !display.lgAndUp.value) return true;
+  return size.value === 'x-large' && !display.xlAndUp.value;
 });
 
 const width = computed<'unset' | number>(() => {
   if (fullScreen.value) return 'unset';
   switch (size.value) {
-    case DialogSize.SMALL:
+    case 'small':
       return 400;
-    case DialogSize.MEDIUM:
+    case 'medium':
       return 600;
-    case DialogSize.LARGE:
+    case 'large':
       return 800;
-    case DialogSize.X_LARGE:
+    case 'x-large':
       return 1140;
     default:
       return 'unset';
@@ -150,7 +150,7 @@ function renderOptions(action: Form.Action) {
 // false where the action or any container above it is disabled - and that is not already running. `busy` is what
 // keeps a held-down Enter from starting a second run of a handler that has yet to settle.
 function isReachable(action: Form.Action) {
-  return action.effectiveEnabled && action.visibility === Form.DisplayMode.FULL && !action.busy;
+  return action.effectiveEnabled && action.visibility === 'full' && !action.busy;
 }
 
 // execute() is asynchronous and this is a document listener, so nothing wraps it the way Vue wraps a template

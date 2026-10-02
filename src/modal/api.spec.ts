@@ -4,7 +4,6 @@ import { vi } from 'vitest';
 import { nextTick } from 'vue';
 
 import modal, { currentModal, mountedViews } from './api';
-import DialogSize from './dialog-size';
 
 // the promise is resolved from a nextTick callback, so one flush is not enough to see it settle
 async function settled<T>(promise: Promise<T>): Promise<T> {
@@ -29,7 +28,7 @@ describe('modal service', () => {
     const current = currentModal.value!;
     expect(current.title).toBeInstanceOf(Form.RenderableValue);
     expect(current.message).toBeInstanceOf(Form.RenderableValue);
-    expect(current.size).toBe(DialogSize.DEFAULT);
+    expect(current.size).toBe('default');
     expect(Object.keys(current.actions!)).toEqual(['close']);
     expect(modal.isTop(promise)).toBe(true);
 
@@ -55,10 +54,10 @@ describe('modal service', () => {
     const submit = new Action({ value: { label: 'Send', defaultConfirm: true } });
     const form = new Form.Group({ email: new Form.Field({ value: '' }), submit });
 
-    const promise = modal.message('Subscribe', 'Enter your email address:', { form, size: DialogSize.LARGE });
+    const promise = modal.message('Subscribe', 'Enter your email address:', { form, size: 'large' });
 
     const current = currentModal.value!;
-    expect(current.size).toBe(DialogSize.LARGE);
+    expect(current.size).toBe('large');
     expect(Object.keys(current.actions!)).toEqual(['submit']);
     expect(current.form).toBe(form);
 
@@ -69,7 +68,7 @@ describe('modal service', () => {
   it('states a default action where the only one the form declares cannot be reached', async () => {
     const submit = new Action({
       value: { label: 'Send', defaultConfirm: true },
-      visibility: Form.DisplayMode.SUPPRESS,
+      visibility: 'suppress',
     });
     const form = new Form.Group({ submit });
 
@@ -82,7 +81,7 @@ describe('modal service', () => {
     expect(await settled(suppressed)).toBe('close');
 
     // the same form with the action drawn: the caller states the way out, and the dialog adds none
-    submit.visibility = Form.DisplayMode.FULL;
+    submit.visibility = 'full';
     const drawn = modal.message('Subscribe', 'Enter your email address:', { form });
     expect(Object.keys(currentModal.value!.actions!)).toEqual(['submit']);
 
@@ -91,7 +90,7 @@ describe('modal service', () => {
   });
 
   it('states its yes / no where every action the caller passed is suppressed', async () => {
-    const later = new Action({ value: { label: 'Later' }, visibility: Form.DisplayMode.SUPPRESS });
+    const later = new Action({ value: { label: 'Later' }, visibility: 'suppress' });
 
     const promise = modal.yesNo('Delete item', 'This cannot be undone. Continue?', { actions: { later } });
     expect(Object.keys(currentModal.value!.actions!)).toEqual(['yes', 'no', 'later']);
@@ -101,9 +100,9 @@ describe('modal service', () => {
   });
 
   it('states a default action for one drawn where no click or keystroke reaches it', async () => {
-    // <df-actions> draws a HIDDEN action as `d-none` and an INVISIBLE one as `visibility: hidden`, and the
-    // keyboard answers FULL alone: a dialog counting either would be on screen with no way out of it
-    for (const visibility of [Form.DisplayMode.HIDDEN, Form.DisplayMode.INVISIBLE]) {
+    // <df-actions> draws a 'hidden' action as `d-none` and an 'invisible' one as `visibility: hidden`, and the
+    // keyboard answers 'full' alone: a dialog counting either would be on screen with no way out of it
+    for (const visibility of ['hidden', 'invisible'] as const) {
       const later = new Action({ value: { label: 'Later' }, visibility });
 
       const promise = modal.yesNo('Delete item', 'This cannot be undone. Continue?', { actions: { later } });
