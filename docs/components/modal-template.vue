@@ -29,7 +29,8 @@
 </template>
 
 <script setup>
-import { RenderableValue, ExecuteAction } from '@dynamicforms/vue-forms';
+import { ExecuteAction } from '@dynamicforms/vue-forms';
+import { RenderableValue } from '@dynamicforms/vuetify-inputs';
 import { Action, DfActions } from '@dynamicforms/vuetify-inputs';
 import { ref } from 'vue';
 import { DfModal } from '../../src';

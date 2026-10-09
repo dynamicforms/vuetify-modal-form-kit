@@ -8,6 +8,29 @@ exists.
 
 <!-- New releases go directly below this comment, above the previous one, as `## Upgrading to vX.Y.Z (from vA.B.x)`. -->
 
+## Upgrading to v0.10.0 (from v0.9.x)
+
+0.10.0 requires `@dynamicforms/vue-forms` 3.0.0 and `@dynamicforms/vuetify-inputs` 0.13.0. Upgrade the three
+together, and work through the [vue-forms](https://docs.velis.si/dynamicforms/vue-forms/guide/migration) and
+[vuetify-inputs](https://docs.velis.si/dynamicforms/vuetify-inputs/guide/migration) migration guides first.
+
+```bash
+npm install @dynamicforms/vue-forms@^3.0.0 @dynamicforms/vuetify-inputs@^0.13.0 @dynamicforms/vuetify-modal-form-kit@^0.10.0
+```
+
+### Dialog content is imported from vuetify-inputs
+
+`RenderableValue`, `MdString` and `SimpleComponentDef`, which `title` and `message` take, are imported from
+`@dynamicforms/vuetify-inputs`:
+
+```typescript
+// before
+import { MdString, RenderableValue } from '@dynamicforms/vue-forms';
+
+// after
+import { MdString, RenderableValue } from '@dynamicforms/vuetify-inputs';
+```
+
 ## Upgrading to v0.9.0 (from v0.8.x)
 
 0.9.0 requires `@dynamicforms/vue-forms` 2.0.2 and `@dynamicforms/vuetify-inputs` 0.12.1. Upgrade the three together,

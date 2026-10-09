@@ -56,7 +56,7 @@
 
 <script setup lang="ts">
 import * as Form from '@dynamicforms/vue-forms';
-import { MessagesWidget } from '@dynamicforms/vue-forms';
+import { MessagesWidget } from '@dynamicforms/vuetify-inputs';
 import { getRenderOptionsForBreakpoint, useBreakpoint } from '@dynamicforms/vuetify-inputs';
 import { computed, getCurrentInstance, onMounted, onUnmounted, watch } from 'vue';
 import { useDisplay } from 'vuetify';

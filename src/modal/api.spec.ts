@@ -1,5 +1,5 @@
 import * as Form from '@dynamicforms/vue-forms';
-import { Action, ActionRenderOptions } from '@dynamicforms/vuetify-inputs';
+import { Action, ActionRenderOptions, RenderableValue } from '@dynamicforms/vuetify-inputs';
 import { vi } from 'vitest';
 import { nextTick } from 'vue';
 
@@ -26,8 +26,8 @@ describe('modal service', () => {
     const promise = modal.message('Done', 'Your changes have been saved.');
 
     const current = currentModal.value!;
-    expect(current.title).toBeInstanceOf(Form.RenderableValue);
-    expect(current.message).toBeInstanceOf(Form.RenderableValue);
+    expect(current.title).toBeInstanceOf(RenderableValue);
+    expect(current.message).toBeInstanceOf(RenderableValue);
     expect(current.size).toBe('default');
     expect(Object.keys(current.actions!)).toEqual(['close']);
     expect(modal.isTop(promise)).toBe(true);
@@ -185,7 +185,7 @@ describe('modal service', () => {
     const promise = modal.custom('Settings', 'MySettingsPanel', { userId: 42 });
 
     const message = currentModal.value!.message;
-    expect(message.getTextType).toBe('component');
+    expect(message.kind).toBe('component');
     expect(message.componentName).toBe('MySettingsPanel');
     expect(message.componentBindings).toEqual({ userId: 42 });
 

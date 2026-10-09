@@ -81,7 +81,8 @@
 
 <script setup>
 import { ref } from 'vue';
-import { Field, Group, MdString, RenderableValue, Validators } from '@dynamicforms/vue-forms';
+import { Field, Group, Validators } from '@dynamicforms/vue-forms';
+import { MdString, RenderableValue } from '@dynamicforms/vuetify-inputs';
 import { Action } from '@dynamicforms/vuetify-inputs';
 import { modal, ModalView } from '../../src';
 
