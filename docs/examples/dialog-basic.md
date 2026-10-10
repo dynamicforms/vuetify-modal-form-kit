@@ -28,6 +28,9 @@ A message dialog, a yes/no confirmation, a validated form dialog, and sized dial
   - a `<df-input>` where it names none - carrying the field's own label, and a nested `Group` or `List` member is
   not laid out at all - see
   [`<modal-view>`](/api/modal-view#the-generated-layout).
+- **Error messages** - the form dialog's email field carries a pattern validator with the code `invalid_email`.
+  The documentation app installs vuetify-inputs with an `errorText` that renders that code from a markdown message,
+  so its error shows as markdown in the dialog - see [Translating errors](/guide/getting-started#translating-errors).
 - **Custom components** - `modal.custom('Title', componentName, componentProps)` renders any registered component
   as the dialog body instead of a message/form.
 - **Sizing** - `options.size` picks `'small'` / `'medium'` / `'large'` / `'x-large'`, each of which goes

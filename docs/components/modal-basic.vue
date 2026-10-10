@@ -117,7 +117,10 @@ async function showConfirmation() {
 // Form dialog
 async function showFormDialog() {
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  const emailFormat = new Validators.Pattern(emailPattern);
+  const emailFormat = new Validators.Pattern(emailPattern, {
+    code: 'invalid_email',
+    detail: 'Please enter a valid email address',
+  });
 
   // Marking an action defaultConfirm/defaultReject also drives its color (primary/secondary) and wires it
   // to the Enter/Esc keyboard shortcuts - see <df-modal>'s `actions` prop.

@@ -11,6 +11,8 @@ import { DynamicFormsModalFormKit } from '../../../src';
 import VueMarkdown from 'vue-markdown-render'; // or your preferred markdown component
 import '@dynamicforms/vuetify-inputs/styles.css';
 
+import { errorText } from './error-text';
+
 export default {
   extends: DefaultTheme,
   enhanceApp({ app }) {
@@ -24,7 +26,7 @@ export default {
 
     app.use(vuetify);
     app.use(DynamicFormsModalFormKit);
-    app.use(DynamicFormsInputs, { registerComponents: true });
+    app.use(DynamicFormsInputs, { registerComponents: true, errorText });
     app.component('VueMarkdown', VueMarkdown); // make sure it's not vue-markdown
   },
   Layout: () => {
