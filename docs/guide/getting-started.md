@@ -94,7 +94,7 @@ form.simple(2)
 ## Translating errors
 
 An error is data: a `code`, `params` and an English `detail`. The application converts it into what the user sees,
-as described in vue-forms' [Error messages and translation](:vue-forms:/guide/getting-started.html#error-messages-and-translation),
+as described in vue-forms' [Error messages and translation](:vue-forms:/api/validators.html#error-messages-and-translation),
 which also lists every code vue-forms raises with its params.
 
 The inputs of `@dynamicforms/vuetify-inputs` render each error as the content the `errorText` setting returns for
