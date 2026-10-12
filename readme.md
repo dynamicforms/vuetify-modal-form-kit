@@ -38,9 +38,12 @@ npm install @dynamicforms/vuetify-modal-form-kit
 **Peer dependencies** (must be installed separately):
 
 ```bash
-npm install vue@^3.5.32 vuetify@^3.9 @dynamicforms/vue-forms@^2.0.2 @dynamicforms/vuetify-inputs@^0.12.1 \
-  lodash-es vue-markdown-render @mdi/font
+npm install vue@^3.5.32 vuetify@^3.9 @dynamicforms/vue-forms@^3.0.0-alpha.1 @dynamicforms/vuetify-inputs@^0.13.0 \
+  lodash-es @mdi/font
 ```
+
+`@dynamicforms/vuetify-inputs` has peer dependencies of its own, among them `@dynamicforms/translatable` `^0.3.0`;
+npm 7 and later installs them with it.
 
 The package is ESM only, and `engines.node` is `>=22.12` - the release where Node supports `require()` of an ES
 module, which is how a CommonJS consumer reaches it. That path runs through a bundler: the peers it loads import
