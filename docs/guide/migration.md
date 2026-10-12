@@ -20,8 +20,8 @@ npm install @dynamicforms/vue-forms@^3.0.0-alpha.1 @dynamicforms/vuetify-inputs@
 
 ### Dialog content is imported from vuetify-inputs
 
-`RenderableValue`, `MdString` and `SimpleComponentDef`, which `title` and `message` take, are imported from
-`@dynamicforms/vuetify-inputs`:
+`RenderableValue`, `MdString`, `HtmlString` and `SimpleComponentDef`, which `title` and `message` take, are imported
+from `@dynamicforms/vuetify-inputs`:
 
 ```typescript
 // before
@@ -29,6 +29,19 @@ import { MdString, RenderableValue } from '@dynamicforms/vue-forms';
 
 // after
 import { MdString, RenderableValue } from '@dynamicforms/vuetify-inputs';
+```
+
+### HTML content is an `HtmlString`
+
+`SimpleComponentDef` has no `componentVHtml`, and an `innerHTML` in its `componentProps` is dropped. A dialog's HTML
+title or message is an `HtmlString`, rendered as the inner HTML of a `div` and not sanitized:
+
+```typescript
+// before
+modal.message('Terms', new RenderableValue({ componentName: 'div', componentVHtml: html }));
+
+// after
+modal.message('Terms', new HtmlString(html));
 ```
 
 ## Upgrading to v0.9.0 (from v0.8.x)

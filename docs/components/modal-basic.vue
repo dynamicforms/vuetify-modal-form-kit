@@ -148,7 +148,7 @@ async function showFormDialog() {
   // Show dialog with form
   dialogResult.value = await modal.message(
     'User Information',
-    new RenderableValue({ componentName: 'div', componentVHtml: '' }),
+    new RenderableValue({ componentName: 'div' }),
     { form },
   );
 

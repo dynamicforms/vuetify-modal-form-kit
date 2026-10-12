@@ -51,8 +51,9 @@ back when the dialog settles. `.payload` is for what the action computes rather 
 | `isTop` | `isTop(promise)` | `true` while the dialog behind that promise is the one on top of the stack. |
 | `isInstalled` | `isInstalled()` | `true` once a `<modal-view>` is mounted. Without one, no dialog renders and no action can resolve one, so `.close(value)` is the only way to settle its promise. |
 
-`title` and `message` accept a plain string, `MdString` (Markdown), a `SimpleComponentDef`, or a `RenderableValue`
-wrapping any of those (e.g. to attach an extra CSS class). All four are exported by `@dynamicforms/vuetify-inputs`.
+`title` and `message` accept a plain string, `MdString` (Markdown), `HtmlString` (HTML, not sanitized), a
+`SimpleComponentDef`, or a `RenderableValue` wrapping any of those (e.g. to attach an extra CSS class). All five are
+exported by `@dynamicforms/vuetify-inputs`.
 
 ## `ModalOptions`
 

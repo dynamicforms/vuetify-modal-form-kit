@@ -103,7 +103,8 @@ plugin is installed, and converts every error the application shows: those of vu
 application's own validators, of its server and of vuetify-inputs itself
 ([error codes](:vuetify-inputs:/examples/localisation.html#error-codes)).
 
-`errorText` returns plain text, an `MdString`, which renders as markdown, or a `SimpleComponentDef`. A catalogue that
+`errorText` returns plain text, an `MdString`, which renders as markdown, an `HtmlString`, which renders as HTML, or a
+`SimpleComponentDef`. A catalogue that
 holds a markdown variant of a message under the code with `Md` appended lets the application render its errors as
 markdown without changing a validator:
 
