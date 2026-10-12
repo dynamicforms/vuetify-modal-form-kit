@@ -15,7 +15,7 @@ together, and work through the [vue-forms](https://docs.velis.si/dynamicforms/vu
 [vuetify-inputs](https://docs.velis.si/dynamicforms/vuetify-inputs/guide/migration) migration guides first.
 
 ```bash
-npm install @dynamicforms/vue-forms@^3.0.0 @dynamicforms/vuetify-inputs@^0.13.0 @dynamicforms/vuetify-modal-form-kit@^0.10.0
+npm install @dynamicforms/vue-forms@^3.0.0-alpha.1 @dynamicforms/vuetify-inputs@^0.13.0 @dynamicforms/vuetify-modal-form-kit@^0.10.0
 ```
 
 ### Dialog content is imported from vuetify-inputs

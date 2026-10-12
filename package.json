@@ -55,7 +55,7 @@
     "node": ">=22.12"
   },
   "peerDependencies": {
-    "@dynamicforms/vue-forms": "^3.0.0",
+    "@dynamicforms/vue-forms": "^3.0.0-alpha.1",
     "@dynamicforms/vuetify-inputs": "^0.13.0",
     "@mdi/font": "^7.4.47",
     "lodash-es": "^4.17.21",
