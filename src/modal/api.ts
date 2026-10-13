@@ -6,8 +6,8 @@ import { dialogAction } from './dialog-actions';
 import { defaultDialogSize, type DialogSize, type DialogSizeName, resolveDialogSize } from './dialog-size';
 import dialogTracker from './top-modal-tracker';
 
-// Any vue-forms Action: <df-actions> draws a button from the action's value, and the subclass
-// @dynamicforms/vuetify-inputs exports is what an action needs to render responsively, not to be drawn at all.
+// Any vue-forms Action: <df-actions> draws a button from the action's value. The subclass @dynamicforms/vuetify-inputs
+// exports adds per-breakpoint render options.
 export type FormActions = Record<string, Form.Action>;
 
 export interface CloseablePromise<T> extends Promise<T> {
@@ -234,12 +234,12 @@ const modalDefinitions = {} as Record<symbol, ModalData>;
 export const mountedViews = ref<symbol[]>([]);
 // counted, not a flag: one <modal-view> unmounting must not report the modal system as gone while another is
 // still mounted
-export const installedCount = computed(() => mountedViews.value.length);
+const installedCount = computed(() => mountedViews.value.length);
 export const installed = computed(() => installedCount.value > 0);
 
 class ModalAPI {
   isTop(promise: CloseablePromise<any>) {
-    return dialogTracker.isTop(promise.dialogId).value;
+    return dialogTracker.currentRef.value === promise.dialogId;
   }
 
   isInstalled() {
@@ -272,7 +272,7 @@ class ModalAPI {
   }
 
   custom(
-    title: RenderContent,
+    title: RenderContent | RenderableValue,
     component: string | Component,
     componentProps: Record<any, any>,
     options?: CustomOptions,
@@ -393,6 +393,7 @@ class ModalAPI {
 
     const promise = new Promise<string>((resolve) => {
       resolvePromise = (value: string, payload?: unknown) => {
+        if (isSettled) return;
         isSettled = true;
         dialogTracker.remove(id);
         delete modalDefinitions[id];

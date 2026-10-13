@@ -68,7 +68,7 @@
     </v-card>
 
     <!-- an application mounts <modal-view> once, in App.vue -->
-    <modal-view v-if="showModalApi" />
+    <modal-view />
   </div>
 </template>
 
@@ -78,9 +78,6 @@ import { Action, MdString, RenderableValue, type SimpleComponentDef } from '@dyn
 import { ref, watch } from 'vue';
 
 import { type DialogSize, dialogSizes, modal, ModalView } from '../../src';
-
-// whether this demo mounts <modal-view>; an application mounts it once, in App.vue
-const showModalApi = true;
 
 // the result of the last dialog, shown below the demo
 const dialogResult = ref<string | null>(null);

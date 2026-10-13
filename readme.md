@@ -38,12 +38,15 @@ stylesheets, which Node cannot load.
 
 ```typescript
 import { createApp } from 'vue'
+import { DynamicFormsInputs } from '@dynamicforms/vuetify-inputs'
 import { DynamicFormsModalFormKit } from '@dynamicforms/vuetify-modal-form-kit'
 // this library has no stylesheet; the inputs it renders use the vuetify-inputs one
 import '@dynamicforms/vuetify-inputs/styles.css'
 
 const app = createApp(App)
 app.use(vuetify)
+// registers the df-* components a layout names, such as dfInput()'s df-input
+app.use(DynamicFormsInputs, { registerComponents: true })
 app.use(DynamicFormsModalFormKit, { registerComponents: true })
 app.mount('#app')
 ```

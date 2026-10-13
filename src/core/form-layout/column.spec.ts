@@ -134,6 +134,18 @@ describe('Column', () => {
     expect(new Column({ offset: 'auto', order: 'auto' } as any).toJSON().props).toEqual({});
   });
 
+  it('drops an offset or order Vuetify declares no class for', () => {
+    expect(new Column({ offset: 11, order: 12 }).toJSON().props).toEqual({ offset: 11, order: 12 });
+    expect(new Column({ offset: 12, order: 13 }).toJSON().props).toEqual({});
+    expect(new Column({ offset: 1.5, order: -1 }).toJSON().props).toEqual({});
+  });
+
+  it('drops an xs variant, which v-col does not have', () => {
+    expect(new Column({ 'offset-xs': 2, 'order-xs': 1, 'offset-sm': 2 } as any).toJSON().props).toEqual({
+      'offset-sm': 2,
+    });
+  });
+
   it('carries alignSelf, class and style into a breakpoint that states none of them', () => {
     const column = Column.fromJSON({
       props: { alignSelf: 'center', class: 'col-class', style: { color: 'red' } },

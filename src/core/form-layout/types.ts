@@ -10,7 +10,8 @@ export type { DfInputComponentTag };
 export const FormBuilderName = Symbol('FormBuilder');
 export const FormBuilderBodyProp = Symbol('FormBuilderBodyProp');
 
-type BaseBkpt = BreakpointNames | 'base';
+// v-row and v-col have no xs variant of a per-breakpoint prop
+type BaseBkpt = Exclude<BreakpointNames, 'xs'> | 'base';
 
 export interface FormJSON {
   rows: RowJSON[];
@@ -54,7 +55,7 @@ export interface RowJSON {
 export type RowJSONBreakpoint = Omit<RowJSON, 'columns'> & { columns?: ColumnJSON[] };
 export type RowJSONResponsive = BreakpointsJSON<RowJSON, RowJSONBreakpoint>;
 
-// column declaractions
+// column declarations
 
 // no `cols-<bp>` variant: v-col takes per-breakpoint widths as the props sm/md/lg/xl/xxl, so a `cols-md` key would
 // only ever land as an inert DOM attribute. Per-breakpoint widths go through Column.breakpoint().
@@ -62,7 +63,8 @@ interface ColsProps {
   cols?: number | 'auto' | boolean;
 }
 // v-col renders each of these into the class `offset-<value>` / `order-<value>`, so what they take is what
-// Vuetify's stylesheet declares a class for: a number, and for `order` the two named positions besides
+// Vuetify's stylesheet declares a class for: 0 through 11 for `offset`, 0 through 12 and the two named positions
+// for `order`
 type OffsetProps = { [K in BaseBkpt as K extends 'base' ? 'offset' : `offset-${K}`]?: number };
 type OrderProps = { [K in BaseBkpt as K extends 'base' ? 'order' : `order-${K}`]?: number | 'first' | 'last' };
 

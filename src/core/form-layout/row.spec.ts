@@ -186,6 +186,12 @@ describe('Row', () => {
     expect(row.toJSON().props).toEqual({});
   });
 
+  it('drops an xs variant, which v-row does not have', () => {
+    const row = new Row({ 'align-xs': 'center', 'justify-xs': 'end', 'align-sm': 'center' } as any);
+
+    expect(row.toJSON().props).toEqual({ 'align-sm': 'center' });
+  });
+
   it('keeps the class and style values RowProps declares', () => {
     expect(new Row({ class: 'row-class' }).toJSON().props).toEqual({ class: 'row-class' });
     expect(new Row({ class: ['first', 'second'] }).toJSON().props).toEqual({ class: ['first', 'second'] });

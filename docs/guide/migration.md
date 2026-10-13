@@ -82,6 +82,26 @@ The icons are `mdi-close` for `close` and `no` and `mdi-check` for `yes`, and `y
 `success` / `error` color. `setDfModalDefaults({ actions })` replaces any of the three - see
 [Default actions](/api/modal-service#default-actions).
 
+### Row and column props take what `v-row` and `v-col` have
+
+`v-row` and `v-col` have no `xs` variant of a per-breakpoint prop. `align-xs`, `align-content-xs`, `justify-xs`,
+`offset-xs` and `order-xs` are not in the types and are dropped from the props; the unsuffixed prop applies at `xs`:
+
+```typescript
+// before
+row.col({ cols: 6, 'offset-xs': 2 }, ...);
+// after
+row.col({ cols: 6, offset: 2 }, ...);
+```
+
+`offset` takes an integer 0 to 11 and `order` an integer 0 to 12, `'first'` or `'last'`, the values Vuetify's
+stylesheet has a class for. Another number is dropped.
+
+### The keyboard reaches what the button does
+
+Enter and Escape run an action only while its `executable` is `true`. A `SubmitAction` on an invalid form, or one
+whose validation is running, is not run by Enter; `<df-actions>` disables its button.
+
 ## Upgrading to v0.9.0 (from v0.8.x)
 
 0.9.0 requires `@dynamicforms/vue-forms` 2.0.2 and `@dynamicforms/vuetify-inputs` 0.12.1. Upgrade the three together,

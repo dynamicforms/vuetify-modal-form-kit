@@ -1,8 +1,8 @@
-import { computed, ref, Ref } from 'vue';
+import { computed, ComputedRef, ref, Ref } from 'vue';
 
 export interface TeleportAnchor {
   id: Ref<string>;
-  target: Ref<string>;
+  target: ComputedRef<string>;
 }
 
 /**
