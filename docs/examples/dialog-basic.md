@@ -35,14 +35,14 @@ A message dialog, a yes/no confirmation, a validated form dialog, and sized dial
   as the dialog body instead of a message/form.
 - **Sizing** - `options.size` picks `'small'` / `'medium'` / `'large'` / `'x-large'`, each of which goes
   fullscreen below its own breakpoint. The default sizes itself to its content.
-- **Changing an open dialog** - the sized dialogs' body holds an input for the title and selects for the icon and
-  the size. The demo writes what they hold to the dialog's `props.title`, `props.icon` and `props.size`, which
-  changes the open dialog - see
+- **Changing an open dialog** - the sized dialogs' body holds an input for the title and selects for the icon, the
+  title color and the size. The demo writes what they hold to the dialog's `props.title`, `props.icon`,
+  `props.color` and `props.size`, which changes the open dialog - see
   [Changing an open dialog](/api/modal-service#changing-an-open-dialog).
 
 ## Changing an open dialog
 
-The sized dialogs write the title, the icon and the size their inputs hold to the dialog's `props`, the
+The sized dialogs write the title, the icon, the title color and the size their inputs hold to the dialog's `props`, the
 [`DialogProps`](/api/modal-service#changing-an-open-dialog) of the promise `modal.message()` returns:
 
 <<< ../components/modal-basic.vue#dialog-props{ts}

@@ -46,7 +46,7 @@
                 <v-card-title class="text-subtitle-1 px-0">Dialog Sizes</v-card-title>
                 <v-card-text class="px-0">
                   Dialogs with different sizes (small, medium, large, x-large); the inputs in the dialog change its
-                  title, icon and size.
+                  title, icon, title color and size.
                 </v-card-text>
                 <v-card-actions class="px-0">
                   <v-btn-group variant="outlined">
@@ -152,13 +152,15 @@ async function showFormDialog() {
 }
 
 // #region dialog-props
-// Dialog with different sizes: the inputs in the dialog body change the title, the icon and the size of the open
-// dialog through its props
+// Dialog with different sizes: the inputs in the dialog body change the title, the icon, the title color and the
+// size of the open dialog through its props
 async function showSizedDialog(size: DialogSize) {
   const titleField = new Field({ value: 'Dialog Size Example', label: 'Dialog title' });
   const iconField = new Field({ value: 'mdi-resize', label: 'Icon' });
+  const colorField = new Field({ value: 'primary', label: 'Title color' });
   const sizeField = new Field({ value: size, label: 'Dialog size' });
   const icons = ['mdi-resize', 'mdi-star', 'mdi-heart', 'mdi-rocket', 'mdi-palette'];
+  const colors = ['primary', 'secondary', 'success', 'info', 'warning', 'error'];
 
   const column = (cols: Record<string, number>, input: SimpleComponentDef): SimpleComponentDef => ({
     componentName: 'v-col',
@@ -183,7 +185,18 @@ async function showSizedDialog(size: DialogSize) {
           },
         ),
         column(
-          { cols: 12 },
+          { cols: 12, sm: 6 },
+          {
+            componentName: 'df-select',
+            componentProps: {
+              control: colorField,
+              choices: colors.map((color) => ({ id: color, text: color })),
+              allowNull: false,
+            },
+          },
+        ),
+        column(
+          { cols: 12, sm: 6 },
           {
             componentName: 'df-select',
             componentProps: {
@@ -195,14 +208,15 @@ async function showSizedDialog(size: DialogSize) {
         ),
       ],
     },
-    { icon: iconField.value, size },
+    { icon: iconField.value, color: colorField.value, size },
   );
 
   const stop = watch(
-    () => [titleField.value, iconField.value, sizeField.value] as const,
-    ([title, icon, dialogSize]) => {
+    () => [titleField.value, iconField.value, colorField.value, sizeField.value] as const,
+    ([title, icon, color, dialogSize]) => {
       dialog.props.title = title;
       dialog.props.icon = icon;
+      dialog.props.color = color;
       dialog.props.size = dialogSize;
     },
   );
