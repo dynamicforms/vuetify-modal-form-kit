@@ -1,20 +1,18 @@
 # @dynamicforms/vuetify-modal-form-kit
 
-A Vue 3 + Vuetify 3 library built around four design goals:
+A Vue 3 + Vuetify 3 library for dialogs and form layouts:
 
-1. **Programmatic & template-based dialog API** — open dialogs from code with a promise-based API
-   (`await modal.message()`, `await modal.yesNo()`, `await modal.custom()`) and get the result back directly, without
-   events or callbacks. Dialogs can also be declared directly in Vue templates using `<DfModal>`.
-2. **One dialog on screen at a time** — the library maintains an internal stack; opening a second dialog suspends the
-   first (hidden, not closed) until the second is closed, at which point it reappears. Mount `<ModalView />` once to
-   draw it.
-3. **Programmatic form builder** — define responsive Vuetify grid layouts (rows → columns → components) entirely in
-   TypeScript using a fluent `FormBuilder` API, without writing any template markup.
-4. **Keyboard shortcuts** — `<Enter>` confirms and `<Esc>` cancels the active dialog. A keystroke an overlay above
-   the dialog answers - a select menu, a date picker - is that overlay's alone.
+1. **Dialogs from code or from a template** — `await modal.message()`, `await modal.yesNo()` and
+   `await modal.custom()` open a dialog and resolve with the name of the action that closed it. `<DfModal>` declares
+   a dialog in a template.
+2. **One dialog on screen** — dialogs are kept on a stack. Opening a second dialog hides the first without closing
+   it; the first is shown again when the second closes. `<ModalView />` draws the stack and is mounted once.
+3. **Form layouts in code** — `FormBuilder` defines responsive Vuetify grid layouts (rows → columns → components) in
+   TypeScript.
+4. **Keyboard shortcuts** — `<Enter>` confirms and `<Esc>` cancels the active dialog. While an overlay above the
+   dialog is open, such as a select menu or a date picker, the key goes to that overlay.
 
-The dialog manager and form builder are designed to work together: a `FormBuilder` layout can be passed directly into a
-dialog for inline validation and submission.
+A `FormBuilder` layout renders in the body of a `<DfModal>`, so a dialog can hold a form laid out in code.
 
 ---
 
@@ -23,9 +21,8 @@ dialog for inline validation and submission.
 Full documentation, the API reference and runnable examples are available at
 **https://docs.velis.si/dynamicforms/vuetify-modal-form-kit/**.
 
-Upgrading from 0.6.x? The
-[migration guide](https://docs.velis.si/dynamicforms/vuetify-modal-form-kit/guide/migration) lists every breaking
-change with before/after code.
+The [migration guide](https://docs.velis.si/dynamicforms/vuetify-modal-form-kit/guide/migration) lists every
+breaking change with before/after code.
 
 ---
 
@@ -35,14 +32,14 @@ change with before/after code.
 npm install @dynamicforms/vuetify-modal-form-kit
 ```
 
-The package is ESM only, and `engines.node` is `>=22.12` - the release where Node supports `require()` of an ES
-module, which is how a CommonJS consumer reaches it. That path runs through a bundler: the peers it loads import
-their own stylesheets, which plain node has no loader for.
+The package is ESM only. `engines.node` is `>=22.12`, the first Node release that supports `require()` of an ES
+module, which a CommonJS consumer uses. A CommonJS consumer still needs a bundler: the peers import their own
+stylesheets, which Node cannot load.
 
 ```typescript
 import { createApp } from 'vue'
 import { DynamicFormsModalFormKit } from '@dynamicforms/vuetify-modal-form-kit'
-// this library ships no stylesheet of its own; the inputs it renders bring theirs
+// this library has no stylesheet; the inputs it renders use the vuetify-inputs one
 import '@dynamicforms/vuetify-inputs/styles.css'
 
 const app = createApp(App)
@@ -55,7 +52,7 @@ app.mount('#app')
 
 ## Quick start
 
-Add `<ModalView />` somewhere in your root template to enable the modal system, then call dialogs from anywhere:
+Mount `<ModalView />` once in the root template. Dialogs can then be opened from any code:
 
 ```typescript
 import { modal } from '@dynamicforms/vuetify-modal-form-kit'
@@ -86,8 +83,8 @@ form.simple(2)
 <FormRender :layout="form" />
 ```
 
-See the [Getting Started guide](https://docs.velis.si/dynamicforms/vuetify-modal-form-kit/guide/getting-started) for
-full setup instructions and plugin options.
+The [Getting Started guide](https://docs.velis.si/dynamicforms/vuetify-modal-form-kit/guide/getting-started) covers
+the setup and the plugin options.
 
 ---
 

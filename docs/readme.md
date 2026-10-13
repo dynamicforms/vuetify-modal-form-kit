@@ -4,40 +4,33 @@ This directory contains the VitePress documentation for `@dynamicforms/vuetify-m
 
 ## Development
 
-To start the documentation site in development mode:
-
 ```bash
-# From the root directory
-npm run docs:dev
-
-# Or from the docs directory
+# from the repository root or from docs/
 npm run docs:dev
 ```
 
-The site will be available at `http://localhost:5173/`
+The development server listens on `http://localhost:5173/`.
 
 ## Structure
 
-- `.vitepress/` - VitePress configuration
-  - `theme/` - Custom theme configuration
-  - `config.ts` - VitePress configuration
-- `guide/` - User guide documentation
-- `examples/` - Interactive examples
-- `components/` - Vue components used in the documentation
+- `.vitepress/config.ts` - VitePress configuration
+- `.vitepress/theme/` - theme: installs Vuetify, this library and vuetify-inputs with the demos' `errorText`
+- `guide/` - guide pages
+- `api/` - API reference
+- `examples/` - example pages
+- `components/` - the demo components the example pages embed
 
 ## Building
-
-To build the documentation site for production:
 
 ```bash
 # From the root directory
 npm run docs:build
 ```
 
-The built site will be in the `docs/.vitepress/dist` directory.
+The build is written to `docs/.vitepress/dist`.
 
-## Adding New Examples
+## Adding an example
 
-1. Create a new Vue component in `docs/components/`
-2. Create a new markdown page in `examples/`
-3. Import and use the component in your markdown page
+1. Add the demo component to `docs/components/`. `npm run lint` lints and type-checks it.
+2. Add a page to `examples/` that imports the component in `<script setup>` and renders it.
+3. Add the page to the `/examples/` sidebar in `.vitepress/config.ts`.

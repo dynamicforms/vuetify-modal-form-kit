@@ -36,7 +36,7 @@ import { ref } from 'vue';
 
 import { DfModal } from '../../src';
 
-// The title prop expects a RenderableValue - it supports plain text as well as Markdown, just like modal.message()
+// the title prop is a RenderableValue: plain text, Markdown, HTML or a component, as in modal.message()
 const title = new RenderableValue('Log in');
 
 const isOpen = ref(false);
@@ -49,9 +49,8 @@ function close(result: string) {
   isOpen.value = false;
 }
 
-// Cancel is rendered as a text link, Log in as a tonal button - the same visual rules df-actions applies everywhere
-// defaultConfirm/defaultReject wire the action to Enter/Esc (see <df-modal>'s `actions` prop) and color it
-// primary/secondary in <df-actions>.
+// <df-actions> renders Cancel as a text link and Log in as a tonal button. defaultConfirm / defaultReject bind the
+// action to Enter / Esc (see <df-modal>'s `actions` prop) and color it primary / secondary in <df-actions>.
 const cancelAction = new Action({
   value: { name: 'cancel', label: 'Cancel', renderAs: 'text', showLabel: true, defaultReject: true },
 });

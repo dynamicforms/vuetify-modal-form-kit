@@ -1,9 +1,8 @@
 # Template Dialog (`<df-modal>`)
 
-The [Modal Dialog](./dialog-basic) example opens dialogs *from code* via the `modal` service. Sometimes it's more
-natural to declare a dialog directly in a component's template instead - for example when the dialog's content and
-lifecycle clearly belong to that one component. For this, use the `<df-modal>` component directly, controlling it
-with a plain `v-model`, instead of going through `modal.message()` / `modal.yesNo()` / `modal.custom()`.
+The [Modal Dialog](./dialog-basic) example opens dialogs from code through the `modal` service. A dialog whose
+content and lifecycle belong to one component can instead be declared in that component's template with
+`<df-modal>`, opened and closed through `v-model`.
 
 <modal-template/>
 
@@ -61,17 +60,15 @@ const actions = [cancelAction, loginAction];
 </script>
 ```
 
-Note that `:actions="actions"` is passed to `<df-modal>` itself (for the keyboard handling below), in addition to
-being rendered inside the `#actions` slot via `<df-actions>` - the two are independent, `<df-modal>` doesn't
-render anything from the prop on its own.
+`:actions="actions"` on `<df-modal>` drives only the [keyboard shortcuts](#keyboard-shortcuts); `<df-modal>` renders
+nothing from it. The buttons are rendered by `<df-actions>` in the `#actions` slot.
 
 ## Keep actions consistent - always render them through `<df-actions>`
 
-The `actions` slot is a plain slot - `<df-modal>` will happily render whatever you put in it, including raw
-Vuetify components:
+`<df-modal>` renders whatever the `actions` slot holds, including Vuetify buttons:
 
 ```vue
-<!-- Don't do this - it renders, but looks and behaves differently from every other dialog in the app -->
+<!-- renders, but its buttons differ from those of the dialogs the modal service opens -->
 <template #actions>
   <v-spacer/>
   <v-btn variant="text" :disabled="submitting" @click="close">Cancel</v-btn>
@@ -79,28 +76,22 @@ Vuetify components:
 </template>
 ```
 
-Hand-rolled `v-btn`s bypass the shared `Action` + `<df-actions>` rendering that every dialog opened through
-`modal.*` uses internally - button spacing, variant (`tonal` vs `text`), order and alignment all end up defined
-ad-hoc, per dialog, instead of coming from one place. The result is dialogs that don't visually match each other,
-even though they're all built with the same library.
-
-Instead, model actions the same way the rest of the library does: create them with `new Action()`, attach
-behaviour with `registerAction`/`ExecuteAction`, and render them with `<df-actions>`, exactly as shown in the
-example above. See the [`<df-modal>` API Reference](/api/df-modal) for the full slot table, and
-[`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) for the complete `Action` / `df-actions` API.
+Dialogs the `modal` service opens render their buttons from `Action`s with `<df-actions>`, which sets their spacing,
+variant (`tonal` or `text`), order and alignment. `v-btn`s in the slot set these per dialog. To render buttons the
+same way, create actions with `new Action()`, attach behaviour with `registerAction` / `ExecuteAction`, and render
+them with `<df-actions>`, as in the example above. The [`<df-modal>` API Reference](/api/df-modal) lists the slots,
+and [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) documents `Action` and `<df-actions>`.
 
 ## Keyboard shortcuts
 
-Enter-to-confirm / Esc-to-cancel works here too, the same as with dialogs opened through `modal.*` - `<df-modal>`
-handles it internally, as long as you pass the same `Action[]` you render through `<df-actions>` to its `actions`
-prop, with one action flagged `defaultConfirm` and (optionally) one `defaultReject`. Try it in the demo above:
-focus a field and press Enter to log in, or Esc to cancel.
+`<df-modal>` executes the action flagged `defaultConfirm` on Enter and the one flagged `defaultReject` on Esc, as
+dialogs the `modal` service opens do. It reads them from its `actions` prop, so the prop gets the same `Action[]` that
+`<df-actions>` renders. In the demo above, Enter in a field logs in and Esc cancels.
 
-The keyboard reaches an action that is rendered at visibility `'full'`, whose `effectiveEnabled` is `true` - so a
-disabled section takes its actions out of reach - and that is not already running, which is what `busy` says. An
-overlay open above the dialog answers first: the Escape that closes a `<df-select>` menu or a `<df-date-time>`
-picker inside the dialog is the menu's, and the dialog is rejected by the next one. See
-[`<df-modal>`](/api/df-modal#keyboard-shortcuts) for the full rules.
+A key executes an action whose visibility is `'full'`, whose `effectiveEnabled` is `true` (false where the action or
+a container above it is disabled) and whose `busy` is `false`. While an overlay above the dialog is open, the key goes
+to the overlay: Esc first closes an open `<df-select>` menu or `<df-date-time>` picker, and a second Esc rejects the
+dialog. [`<df-modal>`](/api/df-modal#keyboard-shortcuts) lists the rules.
 
 <script setup>
 import ModalTemplate from '../components/modal-template.vue';

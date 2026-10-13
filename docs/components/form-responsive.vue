@@ -26,11 +26,10 @@ import { VTextField, VTextarea, VSelect, VCheckbox, VBtn, VRadioGroup, VRadio, V
 
 import { FormBuilder, FormRender, FormBuilderBodyProp } from '../../src';
 
-// Default layout (md and up)
-// Personal Information Section
 const formBuilder = new FormBuilder();
 
-// Default layout (lg and up) - full version with up to 4 fields in a row
+// Base layout, up to 4 fields in a row. The xs override below replaces it at xs, and every larger breakpoint
+// inherits from an override, so this layout is not rendered.
 formBuilder
   .row({}, (row) =>
     row.col({ cols: 12, offset: 0 }, (col) =>
@@ -43,7 +42,7 @@ formBuilder
       col.component((cmpt) => cmpt.generic('h4', { [FormBuilderBodyProp]: 'Personal Information', class: 'mt-0' })),
     ),
   )
-  // Row with 4 fields
+  // 4 fields in a row
   .row({}, (row) =>
     row
       .col({ cols: 3, offset: 0 }, (col) =>
@@ -175,7 +174,7 @@ formBuilder
     ),
   );
 
-// Medium screens (md) - similar to lg but with some adaptations
+// md and up (lg and xl state no layout of their own)
 formBuilder.breakpoint(
   'md',
   (form) =>
@@ -187,7 +186,7 @@ formBuilder.breakpoint(
           ),
         ),
       )
-      // Personal Information - here we use a different row layout
+      // Personal Information - a different row layout
       .row({}, (row) =>
         row.col({ cols: 12, offset: 0 }, (col) =>
           col.component((cmpt) => cmpt.generic('h4', { [FormBuilderBodyProp]: 'Personal Information', class: 'ma-0' })),
@@ -255,7 +254,8 @@ formBuilder.breakpoint(
           ),
         ),
       )
-      // Address - showing an example of breakpoint at the column level
+      // Address - two columns with a column-level breakpoint. The column inherits its sm width at md, so where
+      // this form applies both columns are 12 wide.
       .row({}, (row) =>
         row.col({ cols: 12, offset: 0 }, (col) =>
           col.component((cmpt) => cmpt.generic('h4', { [FormBuilderBodyProp]: 'Address', class: 'mt-0' })),
@@ -268,7 +268,7 @@ formBuilder.breakpoint(
               .breakpoint('sm', (col) => {
                 col.props.cols = 12;
                 return col;
-              }) // Column adapts for sm
+              }) // 12 wide from sm upwards
               .component((cmpt) => cmpt.generic('VTextField', { label: 'Street', placeholder: 'Enter street name' })),
           )
           .col({ cols: 4, offset: 0 }, (col) =>
@@ -276,7 +276,7 @@ formBuilder.breakpoint(
               .breakpoint('sm', (col) => {
                 col.props.cols = 12;
                 return col;
-              }) // Column adapts for sm
+              }) // 12 wide from sm upwards
               .component((cmpt) => cmpt.generic('VTextField', { label: 'House Number', placeholder: 'Enter number' })),
           ),
       )
@@ -292,10 +292,10 @@ formBuilder.breakpoint(
             col.component((cmpt) => cmpt.generic('VTextField', { label: 'Country', placeholder: 'USA' })),
           ),
       ),
-  // Other parts of the form remain the same as in lg variant...
+  // The rows stated here replace all rows of the base layout, so the form at md ends with the Address section
 );
 
-// Small screens (sm) - only the most necessary fields in one column, with some exceptions
+// sm - mostly one field per row
 formBuilder.breakpoint('sm', (form) =>
   form
     .row({}, (row) =>
@@ -388,7 +388,7 @@ formBuilder.breakpoint('sm', (form) =>
     ),
 );
 
-// Mobile screens (xs) - minimal and simplified form
+// xs - the fewest fields
 formBuilder.breakpoint('xs', (form) =>
   form
     .row({}, (row) =>
@@ -396,7 +396,7 @@ formBuilder.breakpoint('xs', (form) =>
         col.component((cmpt) => cmpt.generic('h4', { [FormBuilderBodyProp]: 'Registration', class: 'ma-0' })),
       ),
     )
-    // Only the most important fields
+    // Name, email, phone and address
     .row({}, (row) =>
       row.col({ cols: 12, offset: 0 }, (col) =>
         col.component((cmpt) =>
@@ -439,7 +439,7 @@ formBuilder.breakpoint('xs', (form) =>
     ),
 );
 
-// Register components
+// The components the layout names
 const components = {
   VTextField,
   VTextarea,
@@ -451,11 +451,10 @@ const components = {
   VSwitch,
 };
 
-// Get current breakpoint
+// The current breakpoint, shown above the form
 const display = useDisplay();
 const currentBreakpoint = computed(() => display.name.value);
 
-// Set up form layout
 const formLayout = formBuilder;
 </script>
 

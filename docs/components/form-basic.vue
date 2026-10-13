@@ -9,10 +9,9 @@
           through a teleport anchor.
         </v-alert>
         <form-render :layout="formLayout" :components="components" @breakpoint="breakpoint = $event" />
-        <!-- .value is required here: emailAnchor/contactMethodAnchor are plain objects, not refs themselves, so
-             Vue's template auto-unwrapping does not reach into their .target property. Both Teleports are keyed
-             on the resolved breakpoint so a switch that moves a field to a different row/column - and so recreates
-             its anchor - forces them to remount and re-resolve rather than keep pointing at the removed anchor. -->
+        <!-- .value: the anchors are plain objects, and Vue unwraps only top-level refs. The Teleports are keyed on
+             the breakpoint, so they remount and find the new anchor when a breakpoint moves a field to another
+             row or column. -->
         <Teleport :key="breakpoint" :to="emailAnchor.target.value" defer>
           <v-text-field v-model="email" label="Email" type="email" />
         </Teleport>
@@ -30,10 +29,7 @@ import { VTextField, VTextarea, VSelect, VCheckbox, VBtn, VRadioGroup, VRadio } 
 
 import { FormBuilder, FormRender, FormBuilderBodyProp, useTeleportAnchor } from '../../src';
 
-// Import Vuetify components for direct use
-
-// Reactive state and teleport anchors for the Contact Information fields, declared here rather than in the
-// components map: the builder only reserves their position in the layout.
+// State and teleport anchors of the Contact Information fields; the layout holds only their anchors
 const email = ref('');
 const contactMethod = ref('');
 const emailAnchor = useTeleportAnchor();
@@ -45,7 +41,6 @@ const contactMethodItems = [
   { title: 'Mail', value: 'mail' },
 ];
 
-// Create form layout using FormBuilder
 const formBuilder = new FormBuilder();
 
 // Personal Information Section
@@ -58,8 +53,7 @@ formBuilder
   .simple()
   .generic('h3', { [FormBuilderBodyProp]: 'Contact Information', class: 'mt-0' });
 
-// Contact Information Section - the two fields below are teleported in from the template instead of being
-// resolved through the components map
+// Contact Information Section - the two fields are teleported in from the template
 formBuilder.row({}, (row) =>
   row
     .col({ cols: 6, offset: 0 }, (col) => col.component((cmpt) => cmpt.teleportAnchor(emailAnchor.id)))
@@ -71,8 +65,7 @@ formBuilder
   .generic('h3', { [FormBuilderBodyProp]: 'Additional Information', class: 'mt-0' })
   .generic('VTextarea', { label: 'Comments', rows: 3, modelValue: '' });
 /*
-  Code left to demonstrate the "long and clunky" way of declaring the layout vs the simple() method above
-  Both code fragments result in the same layout being built.
+  The same layout, declared with row() / col(), with the Contact Information fields in the components map:
 
 formBuilder
   .row({ }, (row) => row
@@ -116,7 +109,7 @@ formBuilder
       .component((cmpt) => cmpt
         .generic('VTextarea', { label: 'Comments', rows: 3, modelValue: '' }))));
 */
-// Register the components used by the form
+// The components the layout names
 const components = {
   VTextField,
   VTextarea,
@@ -127,6 +120,5 @@ const components = {
   VRadio,
 };
 
-// Provide the layout to the template
 const formLayout = formBuilder;
 </script>

@@ -1,22 +1,19 @@
 # Examples
 
-This section contains a collection of practical examples demonstrating the usage of various components from the 
-`@dynamicforms/vuetify-modal-form-kit` library. Each example includes a working demo component and its corresponding
-code.
+Each example page holds a runnable demo of `@dynamicforms/vuetify-modal-form-kit` and the code it describes.
 
 ## [Modal](./dialog-basic)
 
-Modal support - opening dialogs programmatically via the `modal` service.
+Dialogs opened from code through the `modal` service, and an open dialog changed through its `props`.
 
 ## [Modal - Template Dialog](./dialog-template)
 
-Declaring a `<df-modal>` directly in an SFC template, and keeping its actions visually consistent with the rest of
-the app.
+A `<df-modal>` declared in a template, with its actions rendered by `<df-actions>`.
 
 ## [FormBuilder](./form-builder)
 
-The demo showcases how to programmatically build a form and then render it using form-render component.
+A layout built with `FormBuilder` and rendered by `<form-render>`.
 
 ## [FormBuilder - responsive](./form-builder-responsive)
 
-Another form builder demo, this time showing how to build a responsive layout.
+A `FormBuilder` layout that changes with the breakpoint.
