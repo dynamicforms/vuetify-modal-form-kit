@@ -41,6 +41,7 @@ export default defineConfig({
     },
     rollupOptions: {
       external: [
+        '@dynamicforms/translatable',
         '@dynamicforms/vue-forms',
         '@dynamicforms/vuetify-inputs',
         'lodash-es',

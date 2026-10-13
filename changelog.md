@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The promise the `modal` service returns carries `props`: the open dialog's `title`, `message`, `size`, `form`,
   `actions`, `color`, `icon` and `components`, reactive and writable. A write changes the dialog on screen.
 - `useDialog()` returns the dialog a component in its body is rendered in.
+- `defaultDialogActions`, the factories of the `close`, `yes` and `no` actions of `modal.message()` and
+  `modal.yesNo()`, and `setDfModalDefaults({ actions })`, which replaces them.
+- The `translate` and `translateNamespace` options of the plugin and `translateStrings()` translate the labels of the
+  default actions; the keys are `Close`, `Yes` and `No`, under `df_modal` by default.
 - `custom()` takes a component as well as a name, and resolves a name against `options.components` before the
   globally registered components; so does a `SimpleComponentDef` at the top of `message`. `CustomOptions.model`
   binds refs to the component's props both ways.
@@ -22,11 +26,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Breaking:** requires `@dynamicforms/vue-forms` 3.0 and `@dynamicforms/vuetify-inputs` 0.13.0. `title` and
-  `message` take the `RenderableValue`, `MdString`, `HtmlString` and `SimpleComponentDef` of
-  `@dynamicforms/vuetify-inputs`, and the dialog renders them with its `MessagesWidget`.
+- **Breaking:** requires `@dynamicforms/vue-forms` 3.0, `@dynamicforms/vuetify-inputs` 0.14.0 and
+  `@dynamicforms/translatable` 0.3. `title` and `message` take the `RenderableValue`, `MdString`, `HtmlString` and
+  `SimpleComponentDef` of `@dynamicforms/vuetify-inputs`, and the dialog renders them with its `MessagesWidget`.
   HTML content is an `HtmlString`: `SimpleComponentDef` has no `componentVHtml`, and an `innerHTML` in its
   `componentProps` is dropped.
+- **Breaking:** the default actions of `modal.message()` and `modal.yesNo()` are this library's: their labels are
+  its translations of `Close`, `Yes` and `No`, not vuetify-inputs', and their icons are `mdi-close` (`close`, `no`)
+  and `mdi-check` (`yes`), where they were `ion-close-outline`, `ion-thumbs-up-outline` and
+  `ion-thumbs-down-outline`. `yes` is drawn in the `success` color and `no` in the `error` color.
 - `vue-markdown-render` is no longer a peer dependency; vuetify-inputs renders the markdown.
 - A size that names none - in `ModalOptions.size`, `df-modal`'s `size` prop, `props.size` or
   `resolveDialogSize()` - is `'default'`, with a console warning, where it threw an `Error`.

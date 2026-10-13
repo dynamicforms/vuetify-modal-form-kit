@@ -2,6 +2,7 @@ import * as Form from '@dynamicforms/vue-forms';
 import { Action, type RenderContent, RenderableValue, type SimpleComponentDef } from '@dynamicforms/vuetify-inputs';
 import { type Component, computed, inject, type InjectionKey, nextTick, type Ref, ref, shallowReactive } from 'vue';
 
+import { dialogAction } from './dialog-actions';
 import { defaultDialogSize, type DialogSize, type DialogSizeName, resolveDialogSize } from './dialog-size';
 import dialogTracker from './top-modal-tracker';
 
@@ -252,8 +253,8 @@ class ModalAPI {
   ): CloseablePromise<string> {
     const hasAction = this.hasOwnAction(options);
 
-    const yes = Action.yesAction({ value: { defaultConfirm: true } });
-    const no = Action.noAction({ value: { defaultReject: true } });
+    const yes = dialogAction('yes');
+    const no = dialogAction('no');
 
     return this.messageInternal(title, message, hasAction ? {} : { yes, no }, options);
   }
@@ -265,7 +266,7 @@ class ModalAPI {
   ): CloseablePromise<string> {
     const hasAction = this.hasOwnAction(options);
 
-    const close = Action.closeAction({ value: { defaultConfirm: true, defaultReject: true } });
+    const close = dialogAction('close');
 
     return this.messageInternal(title, message, hasAction ? {} : { close }, options);
   }

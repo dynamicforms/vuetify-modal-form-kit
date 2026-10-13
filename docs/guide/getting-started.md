@@ -35,6 +35,9 @@ uses where it states none of its own - see
 app.use(DynamicFormsModalFormKit, { modalDefaults: { titleColor: 'primary' } });
 ```
 
+`translate` and `translateNamespace` translate the library's strings - see
+[Translating the library's strings](#translating-the-library-s-strings).
+
 ## Basic Usage
 
 ### Modal dialogs
@@ -87,6 +90,35 @@ form.simple(2)
   <FormRender :layout="form" />
 </template>
 ```
+
+## Translating the library's strings
+
+The library has three strings, the labels of the [default actions](/api/modal-service#default-actions) of
+`modal.message()` and `modal.yesNo()`:
+
+| Key | English default |
+|---|---|
+| `Close` | `Close` |
+| `Yes` | `Yes` |
+| `No` | `No` |
+
+They are translated with `@dynamicforms/translatable`, as the strings of `@dynamicforms/vuetify-inputs` are. The
+`translate` option of the plugin is a function shaped like vue-i18n's `t`; the keys are looked up under
+`translateNamespace`, `df_modal` by default (`df_modal.Close`), and without a namespace where it is `''`. A key the
+function does not translate keeps its English default. The labels are read while the buttons render, so they follow
+a locale switch:
+
+```typescript
+const { t } = i18n.global;
+app.use(DynamicFormsModalFormKit, { translate: t });
+```
+
+```json
+{ "df_modal": { "Close": "Zapri", "Yes": "Da", "No": "Ne" } }
+```
+
+Each app states its own `translate`. `translateStrings(t, namespace?)` sets the function for the whole process,
+used where the app states none.
 
 ## Translating errors
 
