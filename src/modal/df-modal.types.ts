@@ -20,5 +20,6 @@ export interface DfModalProps {
 export type DfModalSlots = {
   title: () => any;
   body: (props: { formControl: Form.Group }) => Form.Group;
+  errors: (props: { errors: Form.ValidationError[]; formControl: Form.Group | undefined }) => any;
   actions: () => any;
 };

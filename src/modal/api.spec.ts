@@ -502,4 +502,32 @@ describe('modal service', () => {
       expect(register).not.toHaveBeenCalled();
     });
   });
+
+  it('stays open while a submit is refused or fails, and settles with its result', async () => {
+    const name = new Form.Field({ value: '', validators: [new Form.Validators.Required()] });
+    const save = new Action({ value: { label: 'Save' } });
+    const form = new Form.Group({ name, save });
+    let fail = true;
+    save.registerAction(
+      new Form.SubmitAction(form, async (value: any) => {
+        if (fail) throw new Error('server');
+        return { id: 1, ...value };
+      }),
+    );
+    const dialog = modal.message('Edit', '', { form });
+
+    expect(await save.execute(null)).toBeInstanceOf(Form.SubmitRefusedException);
+    await nextTick();
+    expect(currentModal.value?.dialogId).toBe(dialog.dialogId);
+
+    name.value = 'Ann';
+    expect(await save.execute(null)).toBeInstanceOf(Form.SubmitFailedException);
+    await nextTick();
+    expect(currentModal.value?.dialogId).toBe(dialog.dialogId);
+
+    fail = false;
+    await save.execute(null);
+    expect(await settled(dialog)).toBe('save');
+    expect((dialog.payload as Form.SubmitResult).received).toEqual({ id: 1, name: 'Ann' });
+  });
 });

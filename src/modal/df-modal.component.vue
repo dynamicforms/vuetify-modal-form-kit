@@ -44,6 +44,9 @@
       </v-card-title>
       <v-card-text>
         <slot name="body" :form-control="formControl" />
+        <slot name="errors" :errors="formErrors" :form-control="formControl">
+          <df-input-hint v-if="formErrors.length" class="df-modal-errors mt-2" :errors="formErrors" />
+        </slot>
       </v-card-text>
       <v-card-actions>
         <div style="flex: 1">
@@ -56,7 +59,7 @@
 
 <script setup lang="ts">
 import * as Form from '@dynamicforms/vue-forms';
-import { MessagesWidget } from '@dynamicforms/vuetify-inputs';
+import { DfInputHint, MessagesWidget, useShownErrors } from '@dynamicforms/vuetify-inputs';
 import { getRenderOptionsForBreakpoint, useBreakpoint } from '@dynamicforms/vuetify-inputs';
 import { computed, getCurrentInstance, onMounted, onUnmounted, watch } from 'vue';
 import { useDisplay } from 'vuetify';
@@ -80,6 +83,9 @@ const instance = getCurrentInstance();
 const display = useDisplay();
 const breakpoint = useBreakpoint();
 const size = computed(() => resolveDialogSize(props.size));
+// The errors of the form itself, not of its members - a group validator's, or what a submit handler wrote to the
+// group - that the inputs' rule shows now: a server error always, any other once the form is touched
+const formErrors = useShownErrors(() => props.formControl);
 const resolvedColor = computed(() => props.color || modalDefaults.titleColor || undefined);
 
 const fullScreen = computed(() => {

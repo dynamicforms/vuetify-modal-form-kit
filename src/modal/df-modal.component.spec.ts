@@ -1,4 +1,4 @@
-import { AbortEventHandlingException, ExecuteAction, Group } from '@dynamicforms/vue-forms';
+import { AbortEventHandlingException, ExecuteAction, Field, Group, ValidationError } from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
 import { mount } from '@vue/test-utils';
 import { vi } from 'vitest';
@@ -542,5 +542,61 @@ describe('DfModal', () => {
 
       wrapper.unmount();
     });
+  });
+});
+
+describe('the errors of the form', () => {
+  const errorStubs = {
+    ...stubs,
+    DfInputHint: { props: ['errors'], template: '<div class="hint">{{ errors.map((e) => e.detail).join(";") }}</div>' },
+  };
+
+  it("draws the form's own errors, not its members', and follows them", async () => {
+    const name = new Field({ value: '' });
+    const form = new Group({ name });
+    name.errors = [new ValidationError('taken', {}, 'Name is taken', 'server')];
+    const wrapper = mount(DfModal, {
+      props: { modelValue: true, formControl: form },
+      global: { stubs: errorStubs, plugins: [createVuetify()] },
+    });
+    expect(wrapper.find('.hint').exists()).toBe(false);
+
+    form.errors = [new ValidationError('conflict', {}, 'Saved by someone else', 'server')];
+    await nextTick();
+    expect(wrapper.find('.hint').text()).toBe('Saved by someone else');
+
+    form.errors = [];
+    await nextTick();
+    expect(wrapper.find('.hint').exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  it('draws an error of the application once the form is touched, as the inputs do', async () => {
+    const form = new Group({ name: new Field({ value: '' }) });
+    form.errors = [new ValidationError('mismatch', {}, 'The passwords differ')];
+    const wrapper = mount(DfModal, {
+      props: { modelValue: true, formControl: form },
+      global: { stubs: errorStubs, plugins: [createVuetify()] },
+    });
+    expect(wrapper.find('.hint').exists()).toBe(false);
+
+    form.touched = true;
+    await nextTick();
+    expect(wrapper.find('.hint').text()).toBe('The passwords differ');
+    wrapper.unmount();
+  });
+
+  it('draws the errors slot in their place', () => {
+    const form = new Group({ name: new Field({ value: '' }) });
+    form.errors = [new ValidationError('conflict', {}, 'Saved by someone else', 'server')];
+    const wrapper = mount(DfModal, {
+      props: { modelValue: true, formControl: form },
+      slots: { errors: '<template #errors="{ errors }"><p class="own">{{ errors.length }}</p></template>' },
+      global: { stubs: errorStubs, plugins: [createVuetify()] },
+    });
+
+    expect(wrapper.find('.own').text()).toBe('1');
+    expect(wrapper.find('.hint').exists()).toBe(false);
+    wrapper.unmount();
   });
 });

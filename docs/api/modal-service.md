@@ -81,6 +81,38 @@ if ((await dialog) === 'save') {
 A dialog given a `form` edits that `Form.Group`, so what the user entered is read from the group after the dialog
 settles. `.payload` holds what the action computed.
 
+### Saving from a dialog
+
+A `SubmitAction` of `@dynamicforms/vue-forms` on the dialog's action sends the form and keeps the dialog open until
+the handler succeeds:
+
+```typescript
+const save = new Action({ value: { label: 'Save', defaultConfirm: true } });
+const form = new Form.Group({ name: new Form.Field({ value: '' }), save });
+save.registerAction(new Form.SubmitAction(form, async (value) => {
+  try {
+    return await api.save(value);
+  } catch (error) {
+    // the field errors go to the fields, the rest to the group
+    form.fields.name.errors = [new Form.ValidationError('taken', {}, 'Name is taken', 'server')];
+    form.errors = [new Form.ValidationError('conflict', {}, 'Saved by someone else', 'server')];
+    throw error;
+  }
+}));
+
+const dialog = modal.message('Edit', '', { form });
+if ((await dialog) === 'save') {
+  const record = (dialog.payload as Form.SubmitResult).received;   // what the handler returned
+}
+```
+
+- While the form is invalid, `execute()` resolves with a `SubmitRefusedException` and the dialog stays open.
+- While the handler runs, the action is `busy`, its button shows `loading`, and the form is `'readonly'`.
+- A handler that throws ends the submit with a `SubmitFailedException`; the dialog stays open and shows the errors
+  the handler wrote. The errors of the group itself are drawn below the body (see
+  [`df-modal` slots](./df-modal#slots)).
+- A handler that returns settles the dialog with the action's name, and `.payload` is the `SubmitResult`.
+
 ### Changing an open dialog
 
 `.props` holds the dialog's properties. Each one is reactive, and a write changes the dialog on screen:
