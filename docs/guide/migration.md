@@ -10,12 +10,12 @@ exists.
 
 ## Upgrading to v0.10.0 (from v0.9.x)
 
-0.10.0 requires `@dynamicforms/vue-forms` 3.0.0, `@dynamicforms/vuetify-inputs` 0.14.0 and
+0.10.0 requires `@dynamicforms/vue-forms` 3.0.0, `@dynamicforms/vuetify-inputs` 0.14.1 and
 `@dynamicforms/translatable` 0.3. Upgrade them together, and work through the [vue-forms](https://docs.velis.si/dynamicforms/vue-forms/guide/migration) and
 [vuetify-inputs](https://docs.velis.si/dynamicforms/vuetify-inputs/guide/migration) migration guides first.
 
 ```bash
-npm install @dynamicforms/vue-forms@^3.0.0-alpha.1 @dynamicforms/vuetify-inputs@^0.14.0 @dynamicforms/translatable@^0.3.0 \
+npm install @dynamicforms/vue-forms@^3.0.0-alpha.1 @dynamicforms/vuetify-inputs@^0.14.1 @dynamicforms/translatable@^0.3.0 \
   @dynamicforms/vuetify-modal-form-kit@^0.10.0
 ```
 
@@ -65,7 +65,7 @@ size = isDialogSize(name) ? resolveDialogSize(name) : 'medium';
 
 ### The default actions are translated by this library
 
-vuetify-inputs 0.14.0 has no ready-made actions. The `close`, `yes` and `no` actions of `modal.message()` and
+vuetify-inputs 0.14 has no ready-made actions. The `close`, `yes` and `no` actions of `modal.message()` and
 `modal.yesNo()` are this library's, labelled with its translations of `Close`, `Yes` and `No`. An application that
 translated these keys for vuetify-inputs gives the translation function to this library as well:
 
