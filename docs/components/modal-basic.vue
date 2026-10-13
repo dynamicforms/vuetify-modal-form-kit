@@ -67,7 +67,7 @@
       </v-card-text>
     </v-card>
 
-    <!-- Modal API component (normally you would include this in your main App.vue) -->
+    <!-- an application mounts <modal-view> once, in App.vue -->
     <modal-view v-if="showModalApi" />
   </div>
 </template>
@@ -79,11 +79,10 @@ import { ref, watch } from 'vue';
 
 import { type DialogSize, dialogSizes, modal, ModalView } from '../../src';
 
-// Flag to control whether to show modal API component in this demo
-// In a real app, this would be in your App.vue
+// whether this demo mounts <modal-view>; an application mounts it once, in App.vue
 const showModalApi = true;
 
-// To store and display the result of dialogs
+// the result of the last dialog, shown below the demo
 const dialogResult = ref<string | null>(null);
 
 // Simple message dialog
@@ -113,54 +112,54 @@ async function showFormDialog() {
     detail: 'Please enter a valid email address',
   });
 
-  // Marking an action defaultConfirm/defaultReject also drives its color (primary/secondary) and wires it
-  // to the Enter/Esc keyboard shortcuts - see <df-modal>'s `actions` prop.
+  // defaultConfirm / defaultReject color the action primary / secondary and bind it to Enter / Esc - see
+  // <df-modal>'s `actions` prop
   const submitAction = new Action({ value: { label: 'Submit', icon: 'mdi-check', defaultConfirm: true } });
   const cancelAction = new Action({ value: { label: 'Cancel', icon: 'mdi-close', defaultReject: true } });
 
-  // Create a form with validation
+  // a form with validation
   const form = new Group({
-    // the field carries its own label, and the dialog draws it
+    // the dialog draws the field's own label
     name: new Field({
       value: '',
       label: 'Full name',
       validators: [new Validators.Required()],
     }),
-    // this one carries none, so the dialog labels it from the field name: 'Email'
+    // no label: the dialog labels it from the field name, 'Email'
     email: new Field({
       value: '',
       validators: [new Validators.Required(), emailFormat],
     }),
-    // Add action buttons
+    // the dialog's buttons
     submit: submitAction,
     cancel: cancelAction,
   });
 
-  // Show dialog with form
+  // the form is the dialog body
   dialogResult.value = await modal.message('User Information', new RenderableValue({ componentName: 'div' }), { form });
 
-  // If form was submitted successfully, display the entered values
+  // on submit, show the entered values
   if (dialogResult.value === 'submit') {
     const userData = {
       name: form.fields.name.value,
       email: form.fields.email.value,
     };
 
-    // Show the results in another dialog
+    // in another dialog
     modal.message('Form Submitted', `You entered:\nName: ${userData.name}\nEmail: ${userData.email}`);
   }
 }
 
 // #region dialog-props
-// Dialog with different sizes: the inputs in the dialog body change the title, the icon, the title color and the
-// size of the open dialog through its props
+// Dialog sizes: the inputs in the dialog body write the title, the icon, the title color and the size to the open
+// dialog's props
 async function showSizedDialog(size: DialogSize) {
   const titleField = new Field({ value: 'Dialog Size Example', label: 'Dialog title' });
   const iconField = new Field({ value: 'mdi-resize', label: 'Icon' });
   const colorField = new Field({ value: 'none', label: 'Title color' });
   const sizeField = new Field({ value: size, label: 'Dialog size' });
   const icons = ['mdi-resize', 'mdi-star', 'mdi-heart', 'mdi-rocket', 'mdi-palette'];
-  // 'none' states no color, which leaves the title bar at its default
+  // 'none' sets no color: the title bar keeps its default
   const colors = ['none', 'primary', 'secondary', 'success', 'info', 'warning', 'error'];
   const colorOf = (name: string) => (name === 'none' ? undefined : name);
 

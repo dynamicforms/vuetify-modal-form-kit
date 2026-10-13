@@ -1,36 +1,28 @@
 # FormBuilder Component
 
-The FormBuilder component provides a programmatic API for creating responsive form layouts that integrate seamlessly
-with Vuetify. It allows you to define form layouts in code instead of templates, making it ideal for both backend-driven
-layouts and programmatically generated forms.
+A `FormBuilder` layout can differ per Vuetify breakpoint, on the form, a row or a column.
 
 ## Responsive Layout
 
-The FormBuilder component supports responsive layouts with different configurations for various screen sizes:
+The demo states a layout for `xs`, `sm` and `md`; `lg` and `xl` use the `md` one:
 
 <form-responsive/>
 
 ## Features
 
-- Programmatic API for defining form layouts
-- Full support for responsive designs with breakpoint-specific layouts
-  - responsive designs supported at any level (form, row or column)
-- Integration with [`@dynamicforms/vue-forms`](:vue-forms:) for state management and validation
-- Default editors supported from [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:)
-- Nesting capabilities for complex form structures
-- Integration with all Vuetify input components
-- Template-declared content for individual cells via Vue's `<Teleport>`, for fields whose markup and `v-model`
-  are more natural to write directly in the consumer's own template - see
+- Breakpoint overrides on the form, a row or a column
+- A nested layout resolves its own breakpoints
+- Teleport-anchored cells keep their id across breakpoints - see
   [Template-declared content (Teleport)](/examples/form-builder#template-declared-content-teleport)
 
 ## Responsive Designs
 
-Define different layouts for different screen sizes:
+Overrides on each level:
 
 ```typescript
 const formBuilder = new FormBuilder();
 
-// Default layout (applies to all breakpoints unless overridden)
+// Base layout: used at every breakpoint that neither states nor inherits an override
 formBuilder
   .row({ }, (row) => row
     .col({ cols: 6 }, (col) => col
@@ -40,20 +32,20 @@ formBuilder
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'Email' }))));
 
-// Form-level breakpoint (entire form changes for small screens)
+// Form-level breakpoint: the whole form from sm upwards
 formBuilder.breakpoint('sm', (form) => form
   .row({ }, (row) => row
     .col({ cols: 12 }, (col) => col
       .component((cmpt) => cmpt
-        .generic('VTextField', { label: 'Name', dense: true }))))
+        .generic('VTextField', { label: 'Name', density: 'compact' }))))
   .row({ }, (row) => row
     .col({ cols: 12 }, (col) => col
       .component((cmpt) => cmpt
-        .generic('VTextField', { label: 'Email', dense: true })))));
+        .generic('VTextField', { label: 'Email', density: 'compact' })))));
 
-// Row-level breakpoint (just this row changes behavior)
+// Row-level breakpoint: this row only
 formBuilder.row({ }, (row) => row
-  // Default layout for this row - 3 equal columns
+  // Base layout of this row: 3 equal columns
   .col({ cols: 4 }, (col) => col
     .component((cmpt) => cmpt
       .generic('VTextField', { label: 'City' })))
@@ -63,7 +55,7 @@ formBuilder.row({ }, (row) => row
   .col({ cols: 4 }, (col) => col
     .component((cmpt) => cmpt
       .generic('VTextField', { label: 'Zip' })))
-  // Row-level breakpoint - changes to 2 columns for medium screens
+  // 2 columns from md upwards
   .breakpoint('md', (row) => row
     .col({ cols: 6 }, (col) => col
       .component((cmpt) => cmpt
@@ -72,13 +64,13 @@ formBuilder.row({ }, (row) => row
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'State/Zip' })))));
 
-// Column-level breakpoint (just this column changes behavior)
+// Column-level breakpoint: this column only
 formBuilder.row({ }, (row) => row
   .col({ cols: 3 }, (col) => col
     .component((cmpt) => cmpt
       .generic('VTextField', { label: 'First field' })))
   .col({ cols: 9 }, (col) => col
-    // Default is 9 columns wide, but changes at different breakpoints
+    // 9 columns wide; 12 from sm and 6 from md upwards
     .breakpoint('md', (col) => { col.props.cols = 6; return col; })
     .breakpoint('sm', (col) => { col.props.cols = 12; return col; })
     .component((cmpt) => cmpt
@@ -87,18 +79,18 @@ formBuilder.row({ }, (row) => row
 
 ## What a breakpoint inherits
 
-Breakpoints are mobile-first: what you write without one is the smallest size, and each breakpoint changes what it
-states and inherits the rest from the nearest smaller one that stated it. That holds per element - a form, a row and
-a column each cascade on their own.
+Breakpoints are mobile-first: the base layout applies from the smallest size up, and each breakpoint inherits what
+it does not state from the nearest smaller breakpoint that states it. A form, a row and a column each inherit
+separately.
 
 A breakpoint states only what changes:
 
-- **Props are merged key by key.** `.breakpoint('sm', (col) => { col.props.cols = 12; return col; })` leaves the
-  `offset` and the classes the column was given in place.
-- **Content carries over.** A column keeps its components, and a row keeps its columns, unless the breakpoint adds
-  content of its own - in which case what it adds replaces the lot, as the row-level example above does.
+- **Props are merged by key.** `.breakpoint('sm', (col) => { col.props.cols = 12; return col; })` keeps the
+  column's `offset` and classes.
+- **Content is inherited.** A column keeps its components and a row its columns, unless the breakpoint adds
+  content; then the added content replaces all of it, as in the row-level example above.
 
-To state that there is nothing at a breakpoint, assign an empty list. It is a statement, not an omission:
+An empty list states that a breakpoint has no content, which differs from stating nothing:
 
 ```typescript
 formBuilder.row({ }, (row) => row
@@ -108,13 +100,13 @@ formBuilder.row({ }, (row) => row
   .breakpoint('md', (bpRow) => { bpRow.columns = []; return bpRow; }));
 ```
 
-`toJSON()` keeps the difference: a breakpoint that states nothing about its content serializes without the
-`rows` / `columns` / `components` key, an empty list serializes as one, and reading the JSON back with
-`FormBuilder.fromJSON()` gives a layout that renders the same at every breakpoint.
+`toJSON()` keeps the difference: a breakpoint without content serializes without the `rows` / `columns` /
+`components` key, an empty list serializes as an empty list, and `FormBuilder.fromJSON()` reads it back into a
+layout that renders the same at every breakpoint.
 
-The rules come from `ResponsiveRenderOptions` in [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:), which this
-layout is built on - [its documentation](:vuetify-inputs:/examples/responsive-render-options.html) covers them in
-full, including how the merge treats values it cannot merge.
+The rules are those of `ResponsiveRenderOptions` in [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:);
+[its documentation](:vuetify-inputs:/examples/responsive-render-options.html) describes them in full, including
+values that cannot be merged.
 
 <script setup>
 import FormResponsive from '../components/form-responsive.vue';

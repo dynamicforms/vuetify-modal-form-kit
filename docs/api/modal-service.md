@@ -4,11 +4,10 @@ outline: [2, 3]
 
 # `modal` service
 
-The programmatic entry point for opening dialogs from code, without declaring anything in a template. Requires a
-single [`<modal-view />`](./modal-view) mounted in your app root. A dialog opened before `<modal-view>` mounts is
-picked up as soon as it does, and so is one whose `<modal-view>` unmounted under it; one opened while none is
-mounted at all logs a console warning, is never displayed, and can only be settled through the returned promise's
-own `.close(value)`.
+`modal` opens dialogs from code. The dialogs are drawn by one [`<modal-view />`](./modal-view) mounted in the app
+root. A dialog opened before `<modal-view>` mounts, or left on the stack when it unmounts, is drawn when a
+`<modal-view>` mounts. A dialog opened while no `<modal-view>` is mounted by the end of the tick logs a console
+warning; until one mounts it is not displayed, and only the promise's `.close(value)` settles it.
 
 ```typescript
 import { modal } from '@dynamicforms/vuetify-modal-form-kit';
@@ -22,35 +21,34 @@ const result = await modal.message('Done', 'Your changes have been saved.');
 |---|---|---|
 | `message` | `message(title, message, options?)` | Shows a message dialog. Gets a single `close` action unless `options.actions` or `options.form` states an action that is [drawn](#actions). |
 | `yesNo` | `yesNo(title, message, options?)` | Shows a confirmation dialog with `yes` / `no` actions unless `options.actions` or `options.form` states an action that is [drawn](#actions). |
-| `custom` | `custom(title, componentName, componentProps, options?)` | Shorthand for `message()` that renders a registered component (`componentName`) with `componentProps` as the body. |
+| `custom` | `custom(title, componentName, componentProps, options?)` | `message()` with a globally registered component (`componentName`) and its `componentProps` as the body. |
 | `isTop` | `isTop(promise)` | `true` while the dialog behind that promise is the one on top of the stack. |
 | `isInstalled` | `isInstalled()` | `true` once a `<modal-view>` is mounted. Without one, no dialog renders and no action can resolve one, so `.close(value)` is the only way to settle its promise. |
 
-`title` and `message` accept a plain string, `MdString` (Markdown), `HtmlString` (HTML, not sanitized), a
-`SimpleComponentDef`, or a `RenderableValue` wrapping any of those (e.g. to attach an extra CSS class). All five are
-exported by `@dynamicforms/vuetify-inputs`. `message()`, `yesNo()` and `custom()` return a
-[`CloseablePromise`](#closeablepromise), through which the open dialog is read and changed.
+`title` and `message` take a string, an `MdString` (Markdown), an `HtmlString` (HTML, not sanitized), a
+`SimpleComponentDef`, or a `RenderableValue` holding one of these (e.g. to add a CSS class); all five are exported by
+`@dynamicforms/vuetify-inputs`. A component a `SimpleComponentDef` names, or `custom()`'s `componentName`, must be
+registered globally. `message()`, `yesNo()` and `custom()` return a [`CloseablePromise`](#closeablepromise).
 
 ## `CloseablePromise`
 
 `import type { CloseablePromise, DialogProps } from '@dynamicforms/vuetify-modal-form-kit'`
 
-A `CloseablePromise<string>` is a `Promise` that resolves to the key the action that closed the dialog is registered
-under: its field name when it is part of `options.form`, otherwise its key in `options.actions` (e.g. `'close'`,
-`'yes'`, `'no'`). An `Action`'s own `name` value is informational and plays no part in this, so keep the two in sync
-if you set both. The promise also carries:
+A `CloseablePromise<string>` resolves to the name of the action that settled the dialog: its field name when it is a
+member of `options.form`, otherwise its key in `options.actions` (e.g. `'close'`, `'yes'`, `'no'`). The `name` in an
+`Action`'s value is not used for this. The promise also has:
 
 | Member | Description |
 |---|---|
-| `.close(value)` | Closes the dialog from outside, resolving the promise with `value`. |
+| `.close(value)` | Closes the dialog and resolves the promise with `value`. |
 | `.dialogId` | `symbol` identifying this dialog in the internal stack. |
-| `.payload` | What the executor of the action that settled the dialog returned, once it has - `undefined` before that, and for a dialog closed from outside or settled by an action that produced nothing. |
-| `.props` | `DialogProps`: the dialog's properties, to read and change while it is open - see [Changing an open dialog](#changing-an-open-dialog). |
+| `.payload` | What the executor of the settling action returned. `undefined` before the dialog settles, after `.close(value)`, and where the executor returned `null` or `undefined`. |
+| `.props` | `DialogProps`: the dialog's properties, readable and writable while it is open - see [Changing an open dialog](#changing-an-open-dialog). |
 
 ### Getting data out of a dialog
 
-The promise resolves with a key, which stays a `string` a `switch` reads. Anything the action produced besides
-that key is on `.payload`, so it is read off the promise after awaiting it rather than off the awaited value:
+The promise resolves with the action's name, a `string`. What the action's executor returned is on `.payload`,
+read off the promise after awaiting it:
 
 ```typescript
 const save = new Action({ value: { label: 'Save', defaultConfirm: true } });
@@ -62,12 +60,12 @@ if ((await dialog) === 'save') {
 }
 ```
 
-The other route out is the form itself: a dialog handed a `Form.Group` edits that group, and the caller reads it
-back when the dialog settles. `.payload` is for what the action computes rather than what the user typed.
+A dialog given a `form` edits that `Form.Group`, so what the user entered is read from the group after the dialog
+settles. `.payload` holds what the action computed.
 
 ### Changing an open dialog
 
-`.props` holds the dialog's properties. Each one is reactive, and writing one changes the dialog on screen:
+`.props` holds the dialog's properties. Each one is reactive, and a write changes the dialog on screen:
 
 | Property | Read as | Written as |
 |---|---|---|
@@ -78,10 +76,9 @@ back when the dialog settles. `.payload` is for what the action computes rather 
 | `color`, `icon` | `string \| undefined` | the same |
 | `components` | `Record<string \| symbol, any> \| undefined` | the same |
 
-`actions` holds the dialog's default actions (`close`, or `yes` / `no`) merged under `options.actions`. Writing it
-replaces that set, and the default actions are not added to it again. The dialog draws `actions` together with the
-`Action` members of `form` whose name `actions` does not hold, as it does when it opens, and settles with the
-actions of the new set.
+`actions` holds the dialog's default actions (`close`, or `yes` / `no`) merged under `options.actions`. A write
+replaces the set; the default actions are not added again. The dialog draws `actions` and the `Action` members of
+`form` whose names `actions` does not hold, and is settled by the actions of the new set.
 
 ```typescript
 const dialog = modal.message('Import', 'Reading the file');
@@ -92,9 +89,9 @@ dialog.props.size = 'large';
 
 ### `useDialog()`
 
-A component in the dialog body - one `custom()` names, or one a layout of `form` renders - reaches its dialog
-through `useDialog()`, called in `setup()`. It returns the promise of the dialog the component is rendered in, with
-its `props` and `close()`, and `undefined` outside the body of a dialog `<modal-view>` draws:
+`useDialog()`, called in `setup()` of a component in the dialog body - the component `custom()` names, or one the
+layout of `form` renders - returns the promise of that dialog, with its `props` and `close()`. Outside the body of a
+dialog `<modal-view>` draws it returns `undefined`:
 
 ```typescript
 import { useDialog } from '@dynamicforms/vuetify-modal-form-kit';
@@ -111,19 +108,17 @@ Passed as the last argument to `message()` / `yesNo()` / `custom()`.
 
 | Option | Type | Description |
 |---|---|---|
-| `form` | `Form.Group` | A `@dynamicforms/vue-forms` group rendered as the dialog body, one input per `Field` member - see [`<modal-view>`](./modal-view#what-it-actually-does) for what the generated layout covers. Its `Action` members become the dialog's buttons - see [Actions](#actions) for which of them are drawn. |
-| `actions` | `FormActions` (`Record<string, Form.Action>`) | Explicit actions to show, keyed by name. Merged over the defaults (`close`, or `yes` / `no`), which are stated only where nothing the caller passed is drawn - see [Actions](#actions). One action can be reachable both here and as a member of `form`; the field name is what the dialog then resolves with - see [Which name settles the dialog](#which-name-settles-the-dialog). |
+| `form` | `Form.Group` | A `@dynamicforms/vue-forms` group drawn in the dialog body, one input per `Field` member - see [the generated layout](./modal-view#the-generated-layout). Its `Action` members are the dialog's buttons - see [Actions](#actions). |
+| `actions` | `FormActions` (`Record<string, Form.Action>`) | The dialog's actions, keyed by name, merged over the default ones (`close`, or `yes` / `no`). The default ones are added only where none of the caller's actions is drawn - see [Actions](#actions). An action given here and as a member of `form` settles the dialog with its field name - see [Which name settles the dialog](#which-name-settles-the-dialog). |
 | `size` | `DialogSizeName` | `'small'`, `'medium'`, `'large'` or `'x-large'`, or one of their shorter names - see [`DialogSize`](#dialogsize). Defaults to `'default'`. |
-| `color` | `string` | Passed straight to the title bar's `v-sheet` `color` prop. Falls back to the global default set through [`setDfModalDefaults`](./df-modal#global-defaults) where unset. |
-| `icon` | `string` | Icon shown next to the title. |
-| `components` | `Record<string \| symbol, any>` | Components the dialog body may name, over the `df-*` ones [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) draws with, which are what `<modal-view>` supplies. A component the application wrote is reachable from `custom()` and from a `FormBuilder` layout without being registered globally; a built-in name given here is replaced for this dialog alone. |
+| `color` | `string` | The `color` of the title bar's `v-sheet`. Where unset, the default set with [`setDfModalDefaults`](./df-modal#global-defaults). |
+| `icon` | `string` | Icon shown before the title. |
+| `components` | `Record<string \| symbol, any>` | Components the [generated layout](./modal-view#the-generated-layout) of `form` resolves names against, before the `df-*` components of [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:). A component given here needs no global registration; a `df-*` name given here replaces that component in this dialog. `custom()` and a `SimpleComponentDef` in `title` or `message` do not use this map. |
 
 ### Which name settles the dialog
 
-An action carries the name it is reached by, and it can have two at once: the field name it has inside
-`options.form`, and the key it is written under in `options.actions`. That happens when the same instance is
-passed both ways, which is how a form member is also stated as one of the dialog's buttons. The field name is
-the one the dialog resolves with:
+An action passed both as a member of `options.form` and under a key of `options.actions` has two names. The dialog
+resolves with the field name:
 
 ```typescript
 const submit = new Action({ value: { label: 'Send', defaultConfirm: true } });
@@ -133,14 +128,13 @@ await modal.message('Subscribe', 'your address', { form, actions: { send: submit
 // resolves with 'submit', never with 'send'
 ```
 
-Where the key is the name you want back, name the form member to match it.
+To get the key back, give the form member the same name.
 
 ## Actions
 
-A dialog's buttons are drawn by `<df-actions>` from [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:).
-`options.actions` and the `Action` members of `options.form` are `@dynamicforms/vue-forms`' `Action`, and the
-subclass vuetify-inputs exports is one too: the subclass is what carries the breakpoint-resolved render options -
-a text link, a confirm / reject colour - not what an action needs in order to be a dialog button:
+A dialog's buttons are drawn by `<df-actions>` of [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:). An action is
+a `@dynamicforms/vue-forms` `Action` or the vuetify-inputs subclass of it; the subclass adds breakpoint-resolved
+render options, such as a text link or a confirm / reject colour:
 
 ```typescript
 import { AbortEventHandlingException, ExecuteAction, Field, Group } from '@dynamicforms/vue-forms';
@@ -152,18 +146,15 @@ const form = new Group({ email: new Field({ value: '', label: 'Email address' })
 await modal.message('Subscribe', 'Enter your email address:', { form });   // resolves with 'submit'
 ```
 
-Executing an action from your own code settles the dialog exactly as clicking its button does.
+`action.execute()` called from code settles the dialog as a click on its button does.
 
-The dialog states its own buttons - `close`, or `yes` / `no` - where nothing the caller passed is drawn.
-`<df-actions>` leaves out an action at visibility `'suppress'` and draws one at `'hidden'` as `d-none` and one at
-`'invisible'` as `invisible`, so none of the three takes a click, and the keyboard reaches `'full'` alone. Only an
-action at `'full'` counts here: a set with none opens with the dialog's own buttons, since
-without them it would be on screen with no button and no keyboard route out of it. The read is the one the actions
-carry as the dialog opens; raising one to `'full'` or dropping one below it afterwards neither removes the dialog's
-own buttons nor adds them.
+The dialog adds its default actions - `close`, or `yes` / `no` - when none of the caller's actions has visibility
+`'full'`. `<df-actions>` does not draw an action at `'suppress'` and hides one at `'hidden'` (`d-none`) or
+`'invisible'` (`invisible`), and the keyboard reaches only `'full'`, so without the default actions such a dialog
+could not be closed. The visibility is read when the dialog opens: changing it later does not add or remove the
+default actions.
 
-`await action.execute()` answers what the action's own `ExecuteAction` chain returned - handing an action to a
-dialog changes neither what it runs nor what it reports:
+`await action.execute()` returns what the action's `ExecuteAction` chain returned; a dialog does not change it:
 
 ```typescript
 submit.registerAction(new ExecuteAction(async () => ({ id: 42 })));
@@ -173,9 +164,9 @@ await submit.execute();   // { id: 42 }
 await promise;            // 'submit'
 ```
 
-An `AbortEventHandlingException` is an answer rather than a rejection: `execute()` resolves with the exception and
-the dialog stays open, which is how a handler refuses to close it - a validation that has not passed, for one. It
-reads the same way whether the handler that ended the run was synchronous or `async`.
+A handler that throws `AbortEventHandlingException` keeps the dialog open: `execute()` resolves with the exception
+instead of rejecting, for a synchronous and an `async` handler alike. Use it to refuse closing, e.g. while the form
+is invalid:
 
 ```typescript
 submit.registerAction(new ExecuteAction((action, supr, ...params) => {
@@ -188,32 +179,32 @@ const answer = await submit.execute();
 // answer is the AbortEventHandlingException, and the dialog behind `pending` is still on screen
 ```
 
-The resolver a dialog attaches belongs to that dialog: it answers for the element it was registered on and for no
-sibling binding of it, only while its own dialog is the one on screen, and it is dropped again when the dialog
-settles or when a write to `props.actions` or `props.form` leaves the action out of the dialog. An `Action` kept across openings - a module-level one, or a form reused for every call - collects nothing
-over repeated dialogs.
+The dialog registers an `ExecuteAction` on each of its actions that settles the dialog. It settles the dialog only
+for the element it is registered on, not for another binding of the same action, and only while the dialog is on top
+of the stack. It is unregistered when the dialog settles and when a write to `props.actions` or `props.form` removes
+the action from the dialog, so an `Action` reused across dialogs - a module-level one, or a form reused for every
+call - does not accumulate handlers.
 
 ## `DialogSize`
 
 `import type { DialogSize, DialogSizeName } from '@dynamicforms/vuetify-modal-form-kit'`
 
-`DialogSize` is `'small' | 'medium' | 'large' | 'x-large' | 'default'`, the size of a dialog. Each of the four
-explicit sizes switches to fullscreen below its own breakpoint; `'default'` sizes the dialog to its content and never
-does. `defaultDialogSize` is `'default'`, and `dialogSizes` lists the five.
+`DialogSize` is `'small' | 'medium' | 'large' | 'x-large' | 'default'`. `defaultDialogSize` is `'default'`, and
+`dialogSizes` lists the five.
 
 `ModalOptions.size` and `df-modal`'s [`size` prop](./df-modal#props) take a `DialogSizeName`: a size, or one of its
 shorter names.
 
-| Size | Shorter names |
-|---|---|
-| `'small'` | `'sm'`, `'modal-sm'` |
-| `'medium'` | `'md'`, `'modal-md'` |
-| `'large'` | `'lg'`, `'modal-lg'` |
-| `'x-large'` | `'xl'`, `'modal-xl'` |
-| `'default'` | none |
+| Size | Shorter names | Width | Fullscreen below |
+|---|---|---|---|
+| `'small'` | `'sm'`, `'modal-sm'` | 400px | `sm` |
+| `'medium'` | `'md'`, `'modal-md'` | 600px | `md` |
+| `'large'` | `'lg'`, `'modal-lg'` | 800px | `lg` |
+| `'x-large'` | `'xl'`, `'modal-xl'` | 1140px | `xl` |
+| `'default'` | none | the content's | never |
 
-An editor offers the five sizes, and the shorter names are accepted as well. `resolveDialogSize(name)` turns a name
-into the size it names. Anything that names none resolves to `'default'`, with a console warning naming it, once per
+`DialogSizeName` is typed so that an editor lists the five sizes and accepts the shorter names.
+`resolveDialogSize(name)` returns the size a name names. Anything that names none resolves to `'default'`, with a console warning naming it, once per
 name. `isDialogSize(value)` answers whether a value names a size.
 
 ```typescript
@@ -224,5 +215,5 @@ await modal.message('Information', 'This is a large dialog', { size: 'large' });
 
 ## Examples
 
-See [Modal Dialog](/examples/dialog-basic) for worked examples of message dialogs, confirmations, Markdown
-content, form dialogs, custom components, and sizing.
+[Modal Dialog](/examples/dialog-basic) has examples of message dialogs, confirmations, Markdown content, form
+dialogs, custom components, sizes and changing an open dialog.

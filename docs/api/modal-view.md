@@ -1,8 +1,7 @@
 # `<modal-view>`
 
-Not a component you configure or interact with directly - it's a **placeholder**. Mount exactly one
-`<modal-view />` in your app root, and forget about it; every dialog opened through the
-[`modal` service](./modal-service) (`modal.message()` / `modal.yesNo()` / `modal.custom()`) renders there.
+`<modal-view>` draws the dialogs opened through the [`modal` service](./modal-service) (`modal.message()`,
+`modal.yesNo()`, `modal.custom()`). Mount one `<modal-view />` in the app root:
 
 ```vue
 <template>
@@ -19,63 +18,57 @@ import { ModalView } from '@dynamicforms/vuetify-modal-form-kit';
 </script>
 ```
 
-It takes no props and exposes no slots - it reads the currently active (top-of-stack) dialog straight from the
-`modal` service's internal state, so you control what it shows entirely through `modal.*` calls elsewhere in your
-code, not through anything you pass to `<modal-view>` itself.
+It has no props and no slots. It draws the dialog on top of the `modal` service's stack; what it shows is set by
+the `modal.*` calls and by the dialog's [`props`](./modal-service#changing-an-open-dialog).
 
-If you need a dialog whose content/lifecycle belongs to one specific component instead, skip `modal-view`/`modal`
-entirely and use [`<df-modal>`](./df-modal) directly in that component's template - see
-[Template Dialog](/examples/dialog-template).
+A dialog whose content and lifecycle belong to one component is declared with [`<df-modal>`](./df-modal) in that
+component's template instead - see [Template Dialog](/examples/dialog-template).
 
-## What it actually does
+## How it draws a dialog
 
-Internally, `modal-view` is a thin wrapper around [`<df-modal>`](./df-modal): it watches the `modal` service's
-currently active dialog and forwards its data straight into `df-modal`'s props and slots.
+`<modal-view>` renders a [`<df-modal>`](./df-modal) for the dialog on top of the stack and passes it the dialog's
+properties:
 
-| `df-modal` prop/slot | Fed from |
+| `df-modal` prop/slot | Value |
 |---|---|
-| `formControl`, `size`, `dialogId`, `title`, `color`, `icon`, `actions` | The active dialog's data (set by whichever `modal.*` call opened it, see [`ModalOptions`](./modal-service#modaloptions)) |
-| `#body` | A `MessagesWidget` for the `message` text, plus - if a form was passed - a `FormRender` in which every `Field` on `options.form` is rendered as the input it names. See [the generated layout](#the-generated-layout) below for the component, the label, the members it skips and the ones it does not draw. |
-| `#actions` | A `<df-actions>` fed the same actions forwarded to the `actions` prop |
+| `formControl`, `size`, `dialogId`, `title`, `color`, `icon`, `actions` | The dialog's properties: what the `modal.*` call stated (see [`ModalOptions`](./modal-service#modaloptions)) and what was written to its `props` since |
+| `#body` | A `MessagesWidget` for `message`, and, where the dialog has a `form`, a `FormRender` with one input per `Field` member - see [the generated layout](#the-generated-layout) |
+| `#actions` | A `<df-actions>` with the same actions as the `actions` prop |
 
-Because the same `Action[]` reaches both `df-modal`'s `actions` prop and the `<df-actions>` inside `#actions`,
-[keyboard shortcuts](./df-modal#keyboard-shortcuts) (Enter → `defaultConfirm`, Esc → `defaultReject`) work
-automatically for every `modal.*` dialog - `modal.message()` / `modal.yesNo()` set these flags on their default
-actions for you.
+The `actions` prop and `<df-actions>` hold the same `Action` instances, so the
+[keyboard shortcuts](./df-modal#keyboard-shortcuts) (Enter → `defaultConfirm`, Esc → `defaultReject`) work for every
+`modal.*` dialog. `modal.message()` and `modal.yesNo()` set these flags on their default actions.
 
-`df-modal` also manages the one-dialog-at-a-time stack itself, so `modal-view` doesn't need any special-casing for
-nested/queued `modal.*` calls - it always just renders "the current one".
+The `modal` service keeps the stack: it pushes a dialog when it opens and removes it when it settles. `<df-modal>`
+shows a dialog only while it is on top of the stack.
 
-A dialog belongs to the `modal` service, not to the view drawing it: unmounting the `<modal-view>` while a dialog
-is on screen takes the dialog off the screen and leaves it on the stack, holding its unsettled promise. The next
-`<modal-view>` to mount draws it again, actions and all.
+A dialog belongs to the `modal` service, not to the view that draws it. Unmounting `<modal-view>` takes the dialog
+off the screen and leaves it on the stack with its unsettled promise; the next `<modal-view>` that mounts draws it
+again, with its actions.
 
-One stack is drawn by one view. Mounting a second `<modal-view>` warns on the console and renders nothing, so a
-stray one in a layout component costs a warning rather than a dialog on screen twice; it takes the drawing over
-if the view that had it unmounts, which is what makes a route transition with both briefly mounted harmless. The
-stack itself is module state - one per page, shared by every Vue app on it, and under SSR living for the process
-rather than the request - so this library is browser-side and single-app.
+One view draws the stack. A second mounted `<modal-view>` warns on the console and renders nothing; it takes over
+the drawing when the view that has it unmounts, so a route transition with two views mounted for a moment shows
+the dialog once. The stack is module state: one per page, shared by every Vue app on it, and under SSR one per
+process rather than per request. The library is therefore for one app in the browser.
 
 ## The generated layout
 
 `<modal-view>` builds a single-column `FormBuilder` layout over the members of `options.form`, in declaration
-order. It covers exactly the `Field` members:
+order:
 
-- **The component is the field's own.** `new Field({ value: false, component: 'df-checkbox' })` is drawn as a
-  checkbox; a field that names no component is drawn as a `<df-input>`. `component` is a key this library declares
-  on vue-forms' `Extras`, so every element carries it, and it takes `DfInputComponentTag` - the tag of any
-  component [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) draws with. The catalogue is that package's, so a
-  component it gains is drawable here the moment the peer is upgraded.
-- **The label is the field's own.** `new Field({ value: '', label: 'Email address' })` draws that text; the field
-  name read as Title Case - `emailAddress` and `email_address` both give `Email Address` - is what is left when
-  the field carries none.
-- **A member at visibility `'suppress'` is skipped.** The input renders nothing there, so a row and a
-  column of its own would be an empty gutter gap. A `'hidden'` or `'invisible'` member keeps its row: the input draws
-  those two itself, as `d-none` and as `invisible`.
-- **An `Action` member goes to the actions slot**, not into the body - see
-  [Actions](./modal-service#actions) for which of them `<df-actions>` draws.
-- **A nested `Group` or `List` member is not laid out.** While it is sent it goes on validating and goes on
-  counting towards `form.valid`, so the form can read invalid over an error nothing on screen shows. The first
-  layout built over such a form warns on the console, naming the members it has no layout for; a member whose
-  `effectiveAccess` is `'disabled'` is sent nowhere and not validated, so it is left out of the warning. Pass a `FormBuilder` layout of your
-  own - through [`<df-modal>`](./df-modal) and its `body` slot - to render one.
+- **Component.** A `Field` is drawn as the component its `component` names, e.g.
+  `new Field({ value: false, component: 'df-checkbox' })`, and as `<df-input>` where it names none. `component` is
+  a key this library declares on vue-forms' `Extras` and takes `DfInputComponentTag`, the tag of any component of
+  [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:). A name given in `options.components` is resolved from there
+  first.
+- **Label.** A field's own `label` is drawn, e.g. `new Field({ value: '', label: 'Email address' })`. A field without
+  one is labelled with its name in Title Case: `emailAddress` and `email_address` both give `Email Address`.
+- **Visibility.** A member at `'suppress'` gets no row. A member at `'hidden'` or `'invisible'` keeps its row, and
+  the input draws it as `d-none` or `invisible`.
+- **Actions.** An `Action` member is drawn in the actions slot, not in the body - see
+  [Actions](./modal-service#actions).
+- **Nested containers.** A nested `Group` or `List` member is not laid out. While it is sent, it is validated and
+  counts towards `form.valid`, so the form can be invalid over an error that is not on screen. The first layout
+  built over such a form warns on the console and names those members; a member whose `effectiveAccess` is
+  `'disabled'` is not sent and not validated, and is left out of the warning. To render nested containers, pass a
+  `FormBuilder` layout of your own through [`<df-modal>`](./df-modal) and its `body` slot.

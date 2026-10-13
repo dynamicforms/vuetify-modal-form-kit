@@ -1,18 +1,17 @@
 # API Reference
 
-This section documents the complete public API of `@dynamicforms/vuetify-modal-form-kit`. For narrative,
-runnable demos see [Examples](/examples/) instead.
+The public API of `@dynamicforms/vuetify-modal-form-kit`. Runnable demos are in [Examples](/examples/).
 
 ## Modal dialogs
 
 | Topic | Description |
 |---|---|
-| [`<df-modal>`](./df-modal) | The dialog component itself - use it directly when a dialog is declared in a template (SFC), controlled with `v-model`. |
-| [`<modal-view>`](./modal-view) | A placeholder, not something you configure - mount one in your app root and dialogs opened via the `modal` service render into it. |
+| [`<df-modal>`](./df-modal) | The dialog component. Used directly for a dialog declared in a template, opened and closed through `v-model`. |
+| [`<modal-view>`](./modal-view) | Draws the dialogs the `modal` service opens. Mounted once, in the app root; it has no props. |
 | [`modal` service](./modal-service) | Promise-based API for opening dialogs from code (`modal.message`, `modal.yesNo`, `modal.custom`), rendered by `<modal-view>`. The [promise](./modal-service#closeablepromise) it returns closes the dialog, carries what settled it, and reads and changes the open dialog. |
 
-See also: [Modal Dialog](/examples/dialog-basic) (programmatic) and [Template Dialog](/examples/dialog-template)
-(SFC template) for worked examples.
+Examples: [Modal Dialog](/examples/dialog-basic) (from code) and [Template Dialog](/examples/dialog-template)
+(in a template).
 
 ## Form layouts
 
@@ -22,4 +21,4 @@ See also: [Modal Dialog](/examples/dialog-basic) (programmatic) and [Template Di
 | [`<form-render>`](./form-render) | Renders a layout - the builder or its JSON - as a Vuetify grid, resolving the breakpoints it holds. |
 | [`<component-render>`](./component-render) | Renders one component of a layout, resolving its name against the `components` map, the global registrations and the nested-form renderer. Use it to build a renderer of your own. |
 
-See also: [FormBuilder examples](/examples/form-builder).
+Examples: [FormBuilder](/examples/form-builder).

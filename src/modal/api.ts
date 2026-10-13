@@ -54,9 +54,9 @@ export interface ModalOptions {
   color?: string;
   icon?: string;
   /**
-   * Components the dialog body may name, over the ones `<modal-view>` supplies. A layout - the one generated from
-   * `form`, or one a `FormBuilder` in the body states - resolves a component name against this map first, so an
-   * application's own component is reachable from `modal.custom()` without being registered globally.
+   * Components the layout generated from `form` resolves names against, before the `df-*` components `<modal-view>`
+   * supplies. A component given here needs no global registration. `modal.custom()` and a `SimpleComponentDef` in
+   * `title` or `message` do not use this map: they resolve a globally registered component.
    */
   components?: Record<string | symbol, any>;
 }

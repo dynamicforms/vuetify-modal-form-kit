@@ -1,48 +1,46 @@
 # Modal Dialog Component
 
-The Modal Dialog component provides a powerful alternative to standard Vuetify dialogs with additional features
-like dialog stacking, Promise-based API, and integration with DynamicForms.
+Dialogs opened from code through the `modal` service. They are kept on a stack, the call returns a promise, and a
+dialog can hold a `@dynamicforms/vue-forms` form.
 
 ## Basic Usage
 
-A message dialog, a yes/no confirmation, a validated form dialog, and sized dialogs, all driven from code via the
-`modal` service. Requires a single `<modal-view />` mounted in your app root - see
+A message dialog, a yes/no confirmation, a form dialog with validation and sized dialogs, opened through the
+`modal` service. A `<modal-view />` must be mounted once, in the app root - see
 [Installation](/guide/getting-started#modal-dialogs).
 
 <modal-basic/>
 
 ## Features
 
-- **One dialog at a time** - a nested `modal.*` call suspends the dialog that opened it (kept open but hidden) and
-  shows the new one on top; the suspended dialog reappears once the new one closes.
-- **Message dialogs** - `modal.message('Title', 'Text')` shows an info dialog with a single `close` action. The
-  demo's message also shows Markdown content (via `MdString`) with a custom CSS class attached through
-  `RenderableValue`.
+- **One dialog at a time** - a `modal.*` call made while a dialog is open hides that dialog without closing it and
+  shows the new one. The hidden dialog is shown again when the new one closes.
+- **Message dialogs** - `modal.message('Title', 'Text')` shows a dialog with a single `close` action. The demo's
+  message is Markdown (`MdString`) with a CSS class added through `RenderableValue`.
 - **Confirmations** - `modal.yesNo('Title', 'Text')` shows `yes` / `no` actions and resolves to whichever was
   clicked.
-- **Form dialogs** - pass a [`@dynamicforms/vue-forms`](:vue-forms:) `Group` (with validation) as `options.form`;
-  its `Action` fields (e.g. `submit`, `cancel`) become the dialog's buttons - the dialog adds its own `close` only
-  where none of them is drawn - and the returned promise resolves to whichever one was clicked. An action of either
-  class is drawn: the [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) `Action` adds the responsive render
-  options, not the ability to be drawn. Each `Field` is laid out as the component it names in `field.extra.component`
-  - a `<df-input>` where it names none - carrying the field's own label, and a nested `Group` or `List` member is
-  not laid out at all - see
+- **Form dialogs** - a [`@dynamicforms/vue-forms`](:vue-forms:) `Group` passed as `options.form` is the dialog
+  body. Its `Action` members (e.g. `submit`, `cancel`) are the dialog's buttons, and the promise resolves with the
+  name of the one that was clicked; the dialog adds its own `close` only where none of them is drawn. A vue-forms
+  `Action` and the [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) `Action` are both drawn; the latter adds the
+  responsive render options. Each `Field` is drawn as the component in `field.extra.component`, or as a
+  `<df-input>` where it names none, with the field's label. A nested `Group` or `List` member is not drawn - see
   [`<modal-view>`](/api/modal-view#the-generated-layout).
-- **Error messages** - the form dialog's email field carries a pattern validator with the code `invalid_email`.
-  The documentation app installs vuetify-inputs with an `errorText` that renders that code from a markdown message,
-  so its error shows as markdown in the dialog - see [Translating errors](/guide/getting-started#translating-errors).
-- **Custom components** - `modal.custom('Title', componentName, componentProps)` renders any registered component
-  as the dialog body instead of a message/form.
-- **Sizing** - `options.size` picks `'small'` / `'medium'` / `'large'` / `'x-large'`, each of which goes
-  fullscreen below its own breakpoint. The default sizes itself to its content.
+- **Error messages** - the form dialog's email field has a pattern validator with the code `invalid_email`. The
+  documentation app installs vuetify-inputs with an `errorText` that renders that code from a markdown message - see
+  [Translating errors](/guide/getting-started#translating-errors).
+- **Custom components** - `modal.custom('Title', componentName, componentProps)` renders a globally registered
+  component as the dialog body.
+- **Sizing** - `options.size` is `'small'`, `'medium'`, `'large'` or `'x-large'`; each is fullscreen below its own
+  breakpoint. `'default'` sizes the dialog to its content.
 - **Changing an open dialog** - the sized dialogs' body holds an input for the title and selects for the icon, the
-  title color and the size. The demo writes what they hold to the dialog's `props.title`, `props.icon`,
-  `props.color` and `props.size`, which changes the open dialog - see
+  title color and the size. The demo writes their values to the dialog's `props.title`, `props.icon`, `props.color`
+  and `props.size` - see
   [Changing an open dialog](/api/modal-service#changing-an-open-dialog).
 
 ## Changing an open dialog
 
-The sized dialogs write the title, the icon, the title color and the size their inputs hold to the dialog's `props`, the
+The sized dialogs write the values of their inputs to the dialog's `props`, the
 [`DialogProps`](/api/modal-service#changing-an-open-dialog) of the promise `modal.message()` returns:
 
 <<< ../components/modal-basic.vue#dialog-props{ts}
@@ -52,9 +50,8 @@ Full method signatures, `CloseablePromise`, `ModalOptions`, and `DialogSize` are
 
 ## See also
 
-- [Template Dialog](./dialog-template) - declaring a dialog directly in an SFC template with `<df-modal>`, instead
-  of opening it from code.
-- [API Reference](/api/) - full prop/method/option tables for the `modal` service, `<df-modal>`, `<modal-view>` and
+- [Template Dialog](./dialog-template) - a dialog declared in a template with `<df-modal>`.
+- [API Reference](/api/) - the props, methods and options of the `modal` service, `<df-modal>`, `<modal-view>` and
   `DialogSize`.
 
 <script setup>

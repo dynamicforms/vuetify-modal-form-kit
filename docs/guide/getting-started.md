@@ -6,14 +6,14 @@
 npm install @dynamicforms/vuetify-modal-form-kit
 ```
 
-The package is ESM only and `engines.node` is `>=22.12`, which is the release where Node supports `require()` of
-an ES module - the way a CommonJS consumer reaches it. That path runs through a bundler: the peers it loads import
-their own stylesheets, which plain node has no loader for.
+The package is ESM only. `engines.node` is `>=22.12`, the first Node release that supports `require()` of an ES
+module, which a CommonJS consumer uses. A CommonJS consumer still needs a bundler: the peers import their own
+stylesheets, which Node cannot load.
 
 In your `main.ts`:
 ```typescript
 import { DynamicFormsModalFormKit } from '@dynamicforms/vuetify-modal-form-kit';
-// this library ships no stylesheet of its own; the inputs it renders bring theirs
+// this library has no stylesheet; the inputs it renders use the vuetify-inputs one
 import '@dynamicforms/vuetify-inputs/styles.css';
 
 ...
@@ -26,8 +26,9 @@ app.use(DynamicFormsModalFormKit, { registerComponents: true, registerVuetifyCom
 
 `registerComponents` and `registerVuetifyComponents` default to `false`. `registerComponents` registers
 `<modal-view>`, `<df-modal>`, `<form-render>` and `<component-render>` globally; `registerVuetifyComponents`
-registers the handful of Vuetify components the library renders, for projects that do not install Vuetify
-globally. `modalDefaults` sets app-wide fallback values dialogs read where they state none of their own - see
+registers the Vuetify components the library renders (`VBtn`, `VCard*`, `VDialog`, `VIcon`, `VRow`, `VCol`,
+`VSheet`), for projects that do not register Vuetify's components globally. `modalDefaults` sets the values a dialog
+uses where it states none of its own - see
 [`<df-modal>` → Global defaults](/api/df-modal#global-defaults):
 
 ```typescript
@@ -38,7 +39,7 @@ app.use(DynamicFormsModalFormKit, { modalDefaults: { titleColor: 'primary' } });
 
 ### Modal dialogs
 
-Add `<modal-view />` to your root component to enable the modal system:
+Mount `<modal-view />` once, in the root component. It draws the dialogs the `modal` service opens:
 
 ```vue
 <template>
@@ -49,7 +50,7 @@ Add `<modal-view />` to your root component to enable the modal system:
 </template>
 ```
 
-Then call dialogs from anywhere in your application:
+Dialogs can then be opened from any code:
 
 ```typescript
 import { modal } from '@dynamicforms/vuetify-modal-form-kit';
@@ -93,16 +94,14 @@ An error is data: a `code`, `params` and an English `detail`. The application co
 as described in vue-forms' [Error messages and translation](:vue-forms:/api/validators.html#error-messages-and-translation),
 which also lists every code vue-forms raises with its params.
 
-The inputs of `@dynamicforms/vuetify-inputs` render each error as the content the `errorText` setting returns for
-it, and as its `detail` where the setting is not given or returns `undefined`. `errorText` is given once, when the
-plugin is installed, and converts every error the application shows: those of vue-forms' validators, of the
-application's own validators, of its server and of vuetify-inputs itself
-([error codes](:vuetify-inputs:/examples/localisation.html#error-codes)).
+The inputs of `@dynamicforms/vuetify-inputs` render an error as the content the `errorText` setting returns for it,
+or as its `detail` where the setting is not given or returns `undefined`. `errorText` is set once, when the plugin is
+installed, and converts every error: those of vue-forms' validators, of the application's validators, of its server
+and of vuetify-inputs itself ([error codes](:vuetify-inputs:/examples/localisation.html#error-codes)).
 
-`errorText` returns plain text, an `MdString`, which renders as markdown, an `HtmlString`, which renders as HTML, or a
-`SimpleComponentDef`. A catalogue that
-holds a markdown variant of a message under the code with `Md` appended lets the application render its errors as
-markdown without changing a validator:
+`errorText` returns plain text, an `MdString` (rendered as markdown), an `HtmlString` (rendered as HTML) or a
+`SimpleComponentDef`. In the example below the catalogue holds a markdown variant of a message under the code with
+`Md` appended, and `errorText` prefers it:
 
 ```typescript
 import { formatParams } from '@dynamicforms/translatable';
@@ -133,9 +132,8 @@ app.use(DynamicFormsInputs, { errorText });
 }
 ```
 
-- `errorText` runs while the errors are rendered, so the errors on screen follow a locale switch without
-  revalidating.
+- `errorText` runs when the errors render, so a locale switch changes the errors on screen without revalidating.
 - A code without a message renders as its `detail`; a code without an `Md` variant renders as plain text.
 - A message uses the placeholder names of its code's params.
 
-Coming from 0.6.x? The [migration guide](/guide/migration) lists the breaking changes with before/after code.
+The [migration guide](/guide/migration) lists the breaking changes of each release with before/after code.
