@@ -111,6 +111,8 @@ formBuilder.row({ }, (row) => row
 </Teleport>
 ```
 
+`useTeleportAnchors(['email', 'phone'])` returns `{ email, phone }`, an anchor each.
+
 `.value` is required: `emailAnchor` is a plain object, and Vue unwraps only refs that are top-level properties of
 the render context. `:to="emailAnchor.target"` binds the `ComputedRef` object, and `<Teleport>` finds no target.
 

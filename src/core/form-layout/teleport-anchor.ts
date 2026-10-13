@@ -14,3 +14,11 @@ export function useTeleportAnchor(): TeleportAnchor {
   const target = computed(() => `#${id.value}`);
   return { id, target };
 }
+
+/**
+ * One `useTeleportAnchor()` per name, keyed by that name: `useTeleportAnchors(['firstName', 'lastName'])` returns
+ * `{ firstName, lastName }`.
+ */
+export function useTeleportAnchors<const N extends string>(names: readonly N[]): Record<N, TeleportAnchor> {
+  return Object.fromEntries(names.map((name) => [name, useTeleportAnchor()])) as Record<N, TeleportAnchor>;
+}
