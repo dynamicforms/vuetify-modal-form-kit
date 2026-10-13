@@ -1,6 +1,6 @@
 import * as Form from '@dynamicforms/vue-forms';
 import { Action, type RenderContent, RenderableValue, type SimpleComponentDef } from '@dynamicforms/vuetify-inputs';
-import { computed, nextTick, ref } from 'vue';
+import { computed, inject, type InjectionKey, nextTick, ref, shallowReactive } from 'vue';
 
 import { defaultDialogSize, type DialogSize, type DialogSizeName, resolveDialogSize } from './dialog-size';
 import dialogTracker from './top-modal-tracker';
@@ -31,6 +31,8 @@ export interface CloseablePromise<T> extends Promise<T> {
    * distinction matters, `await action.execute()` hands back the chain's answer untouched.
    */
   payload?: unknown;
+  /** The properties of the dialog, to read and change while it is open. See {@link DialogProps}. */
+  props: DialogProps;
 }
 
 export interface ModalOptions {
@@ -59,13 +61,159 @@ export interface ModalOptions {
   components?: Record<string | symbol, any>;
 }
 
-export interface ModalData extends ModalOptions {
-  dialogId: symbol;
+/**
+ * The properties of a dialog the modal service opened. Each one is reactive: a read in a render function, `computed`
+ * or `watch` follows it, and a write changes the dialog on screen.
+ *
+ * `actions` is the set of actions the dialog states: the default ones the dialog was opened with (`close`, or `yes` /
+ * `no`) merged under `ModalOptions.actions`. The dialog draws it together with the `Action` members of `form` whose
+ * name it does not hold. Writing `actions` replaces the set; the default actions are not added to it again.
+ */
+export interface DialogProps {
+  get title(): RenderableValue;
+  set title(value: RenderContent | RenderableValue);
+  get message(): RenderableValue;
+  set message(value: RenderContent | RenderableValue);
+  get size(): DialogSize;
+  /** A value that names no size is `'default'`, as in `ModalOptions.size`. */
+  set size(value: DialogSizeName);
+  form: Form.Group | undefined;
+  actions: FormActions;
+  color: string | undefined;
+  icon: string | undefined;
+  components: Record<string | symbol, any> | undefined;
+}
+
+interface DialogState {
   title: RenderableValue;
   message: RenderableValue;
   size: DialogSize;
+  form: Form.Group | undefined;
+  actions: FormActions;
+  color: string | undefined;
+  icon: string | undefined;
+  components: Record<string | symbol, any> | undefined;
+}
+
+function toRenderable(content: RenderContent | RenderableValue): RenderableValue {
+  return content instanceof RenderableValue ? content : new RenderableValue(content);
+}
+
+// The actions a dialog draws, and every action that settles it with the name it settles it under. A member of the
+// form is drawn unless `actions` holds its name; then the action under that name is drawn, and the member still
+// settles the dialog when it executes. The members come first: an action reachable both ways settles the dialog
+// with its field name.
+function composeActions(actions: FormActions, form: Form.Group | undefined) {
+  const drawn: FormActions = { ...actions };
+  const settling: [Form.Action, string][] = [];
+  Object.keys(form?.fields ?? []).forEach((fieldName) => {
+    const action = form?.field(fieldName);
+    if (!(action instanceof Form.Action)) return;
+    if (drawn[fieldName]) settling.push([action, fieldName]);
+    else drawn[fieldName] = action;
+  });
+  Object.entries(drawn).forEach(([name, action]) => settling.push([action, name]));
+  return { drawn, settling };
+}
+
+export class DialogPropsImpl implements DialogProps {
+  // shallow: a form, an action or a RenderableValue held here is the caller's object, not a proxy of it, so the
+  // identity checks the dialog makes on them hold
+  private readonly state: DialogState;
+
+  // the actions the dialog draws, recomposed whenever `form` or `actions` is written
+  readonly drawn = shallowReactive<{ actions: FormActions }>({ actions: {} });
+
+  constructor(
+    state: DialogState,
+    private readonly onActionsChange: (settling: [Form.Action, string][]) => void,
+  ) {
+    this.state = shallowReactive(state);
+    this.recompose();
+  }
+
+  get title(): RenderableValue {
+    return this.state.title;
+  }
+
+  set title(value: RenderContent | RenderableValue) {
+    this.state.title = toRenderable(value);
+  }
+
+  get message(): RenderableValue {
+    return this.state.message;
+  }
+
+  set message(value: RenderContent | RenderableValue) {
+    this.state.message = toRenderable(value);
+  }
+
+  get size(): DialogSize {
+    return this.state.size;
+  }
+
+  set size(value: DialogSizeName) {
+    this.state.size = resolveDialogSize(value);
+  }
+
+  get form(): Form.Group | undefined {
+    return this.state.form;
+  }
+
+  set form(value: Form.Group | undefined) {
+    this.state.form = value;
+    this.recompose();
+  }
+
+  get actions(): FormActions {
+    return this.state.actions;
+  }
+
+  set actions(value: FormActions) {
+    this.state.actions = value;
+    this.recompose();
+  }
+
+  get color(): string | undefined {
+    return this.state.color;
+  }
+
+  set color(value: string | undefined) {
+    this.state.color = value;
+  }
+
+  get icon(): string | undefined {
+    return this.state.icon;
+  }
+
+  set icon(value: string | undefined) {
+    this.state.icon = value;
+  }
+
+  get components(): Record<string | symbol, any> | undefined {
+    return this.state.components;
+  }
+
+  set components(value: Record<string | symbol, any> | undefined) {
+    this.state.components = value;
+  }
+
+  private recompose() {
+    const { drawn, settling } = composeActions(this.state.actions, this.state.form);
+    this.drawn.actions = drawn;
+    this.onActionsChange(settling);
+  }
+}
+
+export interface ModalData {
+  dialogId: symbol;
+  props: DialogPropsImpl;
+  dialog: CloseablePromise<string>;
   resolve: (value: string) => void;
 }
+
+// Provided by <modal-view> to the body of the dialog it draws; read by useDialog().
+export const dialogKey: InjectionKey<{ readonly value: CloseablePromise<string> | undefined }> = Symbol('dialog');
 
 const modalDefinitions = {} as Record<symbol, ModalData>;
 // The mounted <modal-view> instances, in the order they mounted. One dialog stack is drawn by one view, so the
@@ -136,10 +284,6 @@ class ModalAPI {
     });
   }
 
-  private getRenderableMessage(message: RenderContent | RenderableValue): RenderableValue {
-    return message instanceof RenderableValue ? message : new RenderableValue(message);
-  }
-
   private messageInternal(
     title: RenderContent | RenderableValue,
     message: RenderContent | RenderableValue,
@@ -161,23 +305,18 @@ class ModalAPI {
     }
 
     let resolvePromise: (value: string, payload?: unknown) => void;
+    let isSettled = false;
 
     const id = Symbol('modalstack');
-    const actions: FormActions = { ...defaultActions, ...(options?.actions ?? {}) };
 
     // A registration belongs to the element's declaration, so one chain serves every binding of it and every
     // dialog opened over one. This handler settles the dialog when the element that executed is the binding the
     // dialog holds and the dialog is the one on screen. Both are asked after the chain has run, because that is
     // where settling is decided: an executor may take a while, and the dialog may be closed from the outside
-    // through promise.close() while it does. The handler is dropped again when the dialog settles, so nothing
-    // accumulates over repeated openings.
-    const registered: [Form.Action, Form.ExecuteAction][] = [];
-    const attached = new Set<Form.Action>();
+    // through promise.close() while it does. The handler is dropped when the action stops settling the dialog and
+    // when the dialog settles, so nothing accumulates over repeated openings.
+    const registered = new Map<Form.Action, Form.ExecuteAction>();
     const attachResolver = (target: Form.Action, name: string) => {
-      // one registration per action: an action reachable both as a member of the form and under a key of
-      // options.actions would otherwise settle the dialog twice
-      if (attached.has(target)) return;
-      attached.add(target);
       const handler = new Form.ExecuteAction(async (field, supr, ...params) => {
         const answer = await supr(field, ...params);
         // the guard settles this dialog only for the binding it holds and only while it is the dialog on screen.
@@ -191,27 +330,45 @@ class ModalAPI {
         return answer;
       });
       target.registerAction(handler);
-      registered.push([target, handler]);
+      registered.set(target, handler);
+    };
+    const detachResolvers = (keep: Set<Form.Action>) => {
+      registered.forEach((handler, target) => {
+        if (keep.has(target)) return;
+        target.unregisterAction(handler);
+        registered.delete(target);
+      });
+    };
+    const syncResolvers = (settling: [Form.Action, string][]) => {
+      if (isSettled) return;
+      detachResolvers(new Set(settling.map(([action]) => action)));
+      // one registration per action: an action reachable both as a member of the form and under a key of
+      // `actions` would otherwise settle the dialog twice
+      settling.forEach(([action, name]) => {
+        if (!registered.has(action)) attachResolver(action, name);
+      });
     };
 
-    Object.keys(options?.form?.fields ?? []).forEach((fieldName) => {
-      const action = options?.form?.field(fieldName);
-      if (!(action instanceof Form.Action)) return;
-      if (!actions[fieldName]) {
-        actions[fieldName] = action;
-        return; // the loop below attaches the resolver, with the rest of the rendered set
-      }
-      // a name the caller's own `actions` already holds: the form's action is not in the set below, and still
-      // settles the dialog when it executes
-      attachResolver(action, fieldName);
-    });
-    Object.entries(actions).forEach(([name, action]) => attachResolver(action, name));
+    const props = new DialogPropsImpl(
+      {
+        title: toRenderable(title),
+        message: toRenderable(message),
+        size: resolveDialogSize(options?.size ?? defaultDialogSize),
+        form: options?.form,
+        actions: { ...defaultActions, ...(options?.actions ?? {}) },
+        color: options?.color,
+        icon: options?.icon,
+        components: options?.components,
+      },
+      syncResolvers,
+    );
 
     const promise = new Promise<string>((resolve) => {
       resolvePromise = (value: string, payload?: unknown) => {
+        isSettled = true;
         dialogTracker.remove(id);
         delete modalDefinitions[id];
-        registered.forEach(([target, handler]) => target.unregisterAction(handler));
+        detachResolvers(new Set());
         // read off the promise once it has settled: the dialog resolves with the key, which stays a string.
         // `null` is what a chain with no executor answers, and is no payload.
         promise.payload = payload ?? undefined;
@@ -219,24 +376,20 @@ class ModalAPI {
         // This prevents race conditions when opening a new dialog immediately after closing one
         nextTick(() => resolve(value));
       };
-      dialogTracker.push(id);
-      modalDefinitions[id] = {
-        dialogId: id,
-        title: this.getRenderableMessage(title),
-        message: this.getRenderableMessage(message),
-        form: options?.form,
-        size: resolveDialogSize(options?.size ?? defaultDialogSize),
-        actions,
-        // the wrapper, not the bare resolver: settling without it leaves the dialog on the stack forever
-        resolve: (value: string) => resolvePromise(value),
-        color: options?.color,
-        icon: options?.icon,
-        components: options?.components,
-      };
     }) as CloseablePromise<string>;
 
     promise.close = (value: string) => resolvePromise(value);
     promise.dialogId = id;
+    promise.props = props;
+
+    dialogTracker.push(id);
+    modalDefinitions[id] = {
+      dialogId: id,
+      props,
+      dialog: promise,
+      // the wrapper, not the bare resolver: settling without it leaves the dialog on the stack forever
+      resolve: (value: string) => resolvePromise(value),
+    };
 
     return promise;
   }
@@ -249,3 +402,12 @@ export const currentModal = computed(() => {
   const currentId = dialogTracker.currentRef.value;
   return currentId ? modalDefinitions[currentId] : null;
 });
+
+/**
+ * The dialog whose body the calling component is rendered in: the promise the modal service returned for it, with
+ * its `props` and `close()`. `undefined` outside the body of a dialog `<modal-view>` draws, e.g. in a `<df-modal>`
+ * used directly. Called in `setup()`.
+ */
+export function useDialog(): CloseablePromise<string> | undefined {
+  return inject(dialogKey, undefined)?.value;
+}

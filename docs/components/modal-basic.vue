@@ -44,7 +44,10 @@
             <v-col cols="12" md="6">
               <v-card variant="outlined" class="pa-4 mb-4">
                 <v-card-title class="text-subtitle-1 px-0">Dialog Sizes</v-card-title>
-                <v-card-text class="px-0"> Dialogs with different sizes (small, medium, large, x-large). </v-card-text>
+                <v-card-text class="px-0">
+                  Dialogs with different sizes (small, medium, large, x-large); the inputs in the dialog change its
+                  title, icon, title color and size.
+                </v-card-text>
                 <v-card-actions class="px-0">
                   <v-btn-group variant="outlined">
                     <v-btn color="primary" @click="showSizedDialog('small')">S</v-btn>
@@ -71,10 +74,10 @@
 
 <script setup lang="ts">
 import { Field, Group, Validators } from '@dynamicforms/vue-forms';
-import { Action, MdString, RenderableValue } from '@dynamicforms/vuetify-inputs';
-import { ref } from 'vue';
+import { Action, MdString, RenderableValue, type SimpleComponentDef } from '@dynamicforms/vuetify-inputs';
+import { ref, watch } from 'vue';
 
-import { type DialogSize, modal, ModalView } from '../../src';
+import { type DialogSize, dialogSizes, modal, ModalView } from '../../src';
 
 // Flag to control whether to show modal API component in this demo
 // In a real app, this would be in your App.vue
@@ -148,24 +151,82 @@ async function showFormDialog() {
   }
 }
 
-// Dialog with different sizes
+// #region dialog-props
+// Dialog with different sizes: the inputs in the dialog body change the title, the icon, the title color and the
+// size of the open dialog through its props
 async function showSizedDialog(size: DialogSize) {
-  const okAction = new Action({ value: { label: 'OK', icon: 'mdi-check', defaultConfirm: true } });
+  const titleField = new Field({ value: 'Dialog Size Example', label: 'Dialog title' });
+  const iconField = new Field({ value: 'mdi-resize', label: 'Icon' });
+  const colorField = new Field({ value: 'none', label: 'Title color' });
+  const sizeField = new Field({ value: size, label: 'Dialog size' });
+  const icons = ['mdi-resize', 'mdi-star', 'mdi-heart', 'mdi-rocket', 'mdi-palette'];
+  // 'none' states no color, which leaves the title bar at its default
+  const colors = ['none', 'primary', 'secondary', 'success', 'info', 'warning', 'error'];
+  const colorOf = (name: string) => (name === 'none' ? undefined : name);
 
-  // Create a form with a size field
-  const form = new Group({
-    // Size field controls dialog size
-    size: new Field({ value: size }),
-    // Action button
-    ok: okAction,
+  const column = (cols: Record<string, number>, input: SimpleComponentDef): SimpleComponentDef => ({
+    componentName: 'v-col',
+    componentProps: cols,
+    children: [input],
   });
+  const dialog = modal.message(
+    titleField.value,
+    {
+      componentName: 'v-row',
+      children: [
+        column({ cols: 12, sm: 8 }, { componentName: 'df-input', componentProps: { control: titleField } }),
+        column(
+          { cols: 12, sm: 4 },
+          {
+            componentName: 'df-select',
+            componentProps: {
+              control: iconField,
+              choices: icons.map((icon) => ({ id: icon, text: icon.slice(4), icon })),
+              allowNull: false,
+            },
+          },
+        ),
+        column(
+          { cols: 12, sm: 6 },
+          {
+            componentName: 'df-select',
+            componentProps: {
+              control: colorField,
+              choices: colors.map((color) => ({ id: color, text: color })),
+              allowNull: false,
+            },
+          },
+        ),
+        column(
+          { cols: 12, sm: 6 },
+          {
+            componentName: 'df-select',
+            componentProps: {
+              control: sizeField,
+              choices: dialogSizes.map((name) => ({ id: name, text: name })),
+              allowNull: false,
+            },
+          },
+        ),
+      ],
+    },
+    { icon: iconField.value, color: colorOf(colorField.value), size },
+  );
 
-  // Show sized dialog
-  dialogResult.value = await modal.message('Dialog Size Example', `This dialog is displayed with size: ${size}`, {
-    form,
-    size,
-  });
+  const stop = watch(
+    () => [titleField.value, iconField.value, colorField.value, sizeField.value] as const,
+    ([title, icon, color, dialogSize]) => {
+      dialog.props.title = title;
+      dialog.props.icon = icon;
+      dialog.props.color = colorOf(color);
+      dialog.props.size = dialogSize;
+    },
+  );
+
+  dialogResult.value = await dialog;
+  stop();
 }
+// #endregion dialog-props
 </script>
 
 <style scoped>

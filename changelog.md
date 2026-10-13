@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.10.0] - Unreleased
 
+### Added
+
+- The promise the `modal` service returns carries `props`: the open dialog's `title`, `message`, `size`, `form`,
+  `actions`, `color`, `icon` and `components`, reactive and writable. A write changes the dialog on screen.
+- `useDialog()` returns the dialog a component in its body is rendered in.
+
 ### Changed
 
 - **Breaking:** requires `@dynamicforms/vue-forms` 3.0 and `@dynamicforms/vuetify-inputs` 0.13.0. `title` and
@@ -15,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   HTML content is an `HtmlString`: `SimpleComponentDef` has no `componentVHtml`, and an `innerHTML` in its
   `componentProps` is dropped.
 - `vue-markdown-render` is no longer a peer dependency; vuetify-inputs renders the markdown.
+- A size that names none - in `ModalOptions.size`, `df-modal`'s `size` prop, `props.size` or
+  `resolveDialogSize()` - is `'default'`, with a console warning, where it threw an `Error`.
 
 ## [0.9.0] - 2026-10-01
 

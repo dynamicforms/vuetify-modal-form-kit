@@ -44,6 +44,24 @@ modal.message('Terms', new RenderableValue({ componentName: 'div', componentVHtm
 modal.message('Terms', new HtmlString(html));
 ```
 
+### A size that names none is the default
+
+`ModalOptions.size`, `df-modal`'s `size` prop and `resolveDialogSize()` draw a value that names no size at
+`'default'` and warn on the console, where they threw an `Error`. Code that caught that error to detect an unknown
+size checks the value with `isDialogSize()` instead:
+
+```typescript
+// before
+try {
+  size = resolveDialogSize(name);
+} catch {
+  size = 'medium';
+}
+
+// after
+size = isDialogSize(name) ? resolveDialogSize(name) : 'medium';
+```
+
 ## Upgrading to v0.9.0 (from v0.8.x)
 
 0.9.0 requires `@dynamicforms/vue-forms` 2.0.2 and `@dynamicforms/vuetify-inputs` 0.12.1. Upgrade the three together,

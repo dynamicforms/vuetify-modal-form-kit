@@ -1,7 +1,7 @@
 import * as Form from '@dynamicforms/vue-forms';
 import { Action, ActionRenderOptions, RenderableValue } from '@dynamicforms/vuetify-inputs';
 import { vi } from 'vitest';
-import { nextTick } from 'vue';
+import { computed, nextTick } from 'vue';
 
 import modal, { currentModal, mountedViews } from './api';
 
@@ -26,13 +26,13 @@ describe('modal service', () => {
     const promise = modal.message('Done', 'Your changes have been saved.');
 
     const current = currentModal.value!;
-    expect(current.title).toBeInstanceOf(RenderableValue);
-    expect(current.message).toBeInstanceOf(RenderableValue);
-    expect(current.size).toBe('default');
-    expect(Object.keys(current.actions!)).toEqual(['close']);
+    expect(current.props.title).toBeInstanceOf(RenderableValue);
+    expect(current.props.message).toBeInstanceOf(RenderableValue);
+    expect(current.props.size).toBe('default');
+    expect(Object.keys(current.props.drawn.actions)).toEqual(['close']);
     expect(modal.isTop(promise)).toBe(true);
 
-    current.actions!.close.execute(null);
+    current.props.drawn.actions.close.execute(null);
     expect(await settled(promise)).toBe('close');
     expect(currentModal.value).toBeNull();
   });
@@ -40,7 +40,7 @@ describe('modal service', () => {
   it('opens a yes / no dialog and resolves with the key of the action pressed', async () => {
     const promise = modal.yesNo('Delete item', 'This cannot be undone. Continue?');
 
-    const actions = currentModal.value!.actions!;
+    const actions = currentModal.value!.props.drawn.actions;
     expect(Object.keys(actions)).toEqual(['yes', 'no']);
     // the flags are the action's value, which is where <df-actions> and <df-modal>'s keyboard read them
     expect((<ActionRenderOptions>actions.yes.value).defaultConfirm).toBe(true);
@@ -57,9 +57,9 @@ describe('modal service', () => {
     const promise = modal.message('Subscribe', 'Enter your email address:', { form, size: 'large' });
 
     const current = currentModal.value!;
-    expect(current.size).toBe('large');
-    expect(Object.keys(current.actions!)).toEqual(['submit']);
-    expect(current.form).toBe(form);
+    expect(current.props.size).toBe('large');
+    expect(Object.keys(current.props.drawn.actions)).toEqual(['submit']);
+    expect(current.props.form).toBe(form);
 
     submit.execute(null);
     expect(await settled(promise)).toBe('submit');
@@ -75,15 +75,15 @@ describe('modal service', () => {
     // <df-actions> draws nothing for an action at SUPPRESS, so a dialog counting it would be on screen with no
     // button on it and no keyboard route out
     const suppressed = modal.message('Subscribe', 'Enter your email address:', { form });
-    expect(Object.keys(currentModal.value!.actions!)).toEqual(['close', 'submit']);
+    expect(Object.keys(currentModal.value!.props.drawn.actions)).toEqual(['close', 'submit']);
 
-    currentModal.value!.actions!.close.execute(null);
+    currentModal.value!.props.drawn.actions.close.execute(null);
     expect(await settled(suppressed)).toBe('close');
 
     // the same form with the action drawn: the caller states the way out, and the dialog adds none
     submit.visibility = 'full';
     const drawn = modal.message('Subscribe', 'Enter your email address:', { form });
-    expect(Object.keys(currentModal.value!.actions!)).toEqual(['submit']);
+    expect(Object.keys(currentModal.value!.props.drawn.actions)).toEqual(['submit']);
 
     await submit.execute(null);
     expect(await settled(drawn)).toBe('submit');
@@ -93,9 +93,9 @@ describe('modal service', () => {
     const later = new Action({ value: { label: 'Later' }, visibility: 'suppress' });
 
     const promise = modal.yesNo('Delete item', 'This cannot be undone. Continue?', { actions: { later } });
-    expect(Object.keys(currentModal.value!.actions!)).toEqual(['yes', 'no', 'later']);
+    expect(Object.keys(currentModal.value!.props.drawn.actions)).toEqual(['yes', 'no', 'later']);
 
-    currentModal.value!.actions!.no.execute(null);
+    currentModal.value!.props.drawn.actions.no.execute(null);
     expect(await settled(promise)).toBe('no');
   });
 
@@ -106,9 +106,9 @@ describe('modal service', () => {
       const later = new Action({ value: { label: 'Later' }, visibility });
 
       const promise = modal.yesNo('Delete item', 'This cannot be undone. Continue?', { actions: { later } });
-      expect(Object.keys(currentModal.value!.actions!)).toEqual(['yes', 'no', 'later']);
+      expect(Object.keys(currentModal.value!.props.drawn.actions)).toEqual(['yes', 'no', 'later']);
 
-      currentModal.value!.actions!.no.execute(null);
+      currentModal.value!.props.drawn.actions.no.execute(null);
       expect(await settled(promise)).toBe('no');
     }
   });
@@ -184,7 +184,7 @@ describe('modal service', () => {
   it('renders a custom component as the dialog body', async () => {
     const promise = modal.custom('Settings', 'MySettingsPanel', { userId: 42 });
 
-    const message = currentModal.value!.message;
+    const message = currentModal.value!.props.message;
     expect(message.kind).toBe('component');
     expect(message.componentName).toBe('MySettingsPanel');
     expect(message.componentBindings).toEqual({ userId: 42 });
@@ -228,13 +228,13 @@ describe('modal service', () => {
       firstSettled = true;
     });
 
-    await (<Action>currentModal.value!.actions!.submit).execute(null);
+    await (<Action>currentModal.value!.props.drawn.actions.submit).execute(null);
     expect(await settled(second)).toBe('submit');
     expect(firstSettled).toBe(false);
 
     // and the dialog underneath is still the one it was, with an action that still settles it
     expect(currentModal.value!.dialogId).toBe(first.dialogId);
-    await (<Action>currentModal.value!.actions!.submit).execute(null);
+    await (<Action>currentModal.value!.props.drawn.actions.submit).execute(null);
     expect(await settled(first)).toBe('submit');
   });
 
@@ -338,8 +338,8 @@ describe('modal service', () => {
 
     const promise = modal.message('Subscribe', 'Enter your email address:', { form });
 
-    expect(Object.keys(currentModal.value!.actions!)).toEqual(['submit']);
-    expect(currentModal.value!.actions!.submit).toBe(submit);
+    expect(Object.keys(currentModal.value!.props.drawn.actions)).toEqual(['submit']);
+    expect(currentModal.value!.props.drawn.actions.submit).toBe(submit);
     expect(warn).not.toHaveBeenCalled();
 
     await submit.execute(null);
@@ -411,5 +411,95 @@ describe('modal service', () => {
     mountedViews.value = [];
     promise.close('close');
     await settled(promise);
+  });
+
+  describe('props', () => {
+    it('holds what the dialog was opened with', async () => {
+      const form = new Form.Group({ name: new Form.Field({ value: '' }) });
+      const promise = modal.message('Details', 'fill this in', { form, size: 'lg', color: 'primary', icon: 'mdi-pen' });
+
+      expect(promise.props).toBe(currentModal.value!.props);
+      expect(promise.props.title.resolvedText).toBe('Details');
+      expect(promise.props.message.resolvedText).toBe('fill this in');
+      expect(promise.props.size).toBe('large');
+      expect(promise.props.form).toBe(form);
+      expect(Object.keys(promise.props.actions)).toEqual(['close']);
+      expect(promise.props.color).toBe('primary');
+      expect(promise.props.icon).toBe('mdi-pen');
+
+      promise.close('close');
+      await settled(promise);
+    });
+
+    it('is reactive, and takes render content and size names', async () => {
+      const promise = modal.message('Details', 'fill this in');
+      const size = computed(() => currentModal.value?.props.size);
+      const title = computed(() => currentModal.value?.props.title.resolvedText);
+
+      promise.props.size = 'sm';
+      promise.props.title = 'Step 2';
+      expect(size.value).toBe('small');
+      expect(title.value).toBe('Step 2');
+      expect(promise.props.title).toBeInstanceOf(RenderableValue);
+
+      const message = new RenderableValue('kept as given');
+      promise.props.message = message;
+      expect(promise.props.message).toBe(message);
+
+      promise.close('close');
+      await settled(promise);
+    });
+
+    it('draws a size that names none at the default', async () => {
+      const promise = modal.message('Details', 'fill this in', { size: 'huge' });
+      expect(promise.props.size).toBe('default');
+
+      promise.props.size = 'large';
+      promise.props.size = 'enormous';
+      expect(promise.props.size).toBe('default');
+      expect(vi.mocked(console.warn)).toHaveBeenCalledWith(expect.stringContaining("'enormous' is not a dialog size"));
+
+      promise.close('close');
+      await settled(promise);
+    });
+
+    it('settles with the actions written to it, and no longer with the ones it replaced', async () => {
+      const promise = modal.message('Details', 'fill this in');
+      const close = promise.props.actions.close;
+      const save = new Action({ value: { label: 'Save' } });
+
+      promise.props.actions = { save };
+      expect(Object.keys(currentModal.value!.props.drawn.actions)).toEqual(['save']);
+
+      await close.execute(null);
+      await nextTick();
+      expect(currentModal.value?.dialogId).toBe(promise.dialogId);
+
+      await save.execute(null);
+      expect(await settled(promise)).toBe('save');
+    });
+
+    it('draws the actions of a form written to it', async () => {
+      const submit = new Action({ value: { label: 'Send' } });
+      const promise = modal.message('Details', 'fill this in');
+
+      promise.props.form = new Form.Group({ name: new Form.Field({ value: '' }), submit });
+      expect(Object.keys(currentModal.value!.props.drawn.actions)).toEqual(['close', 'submit']);
+
+      await submit.execute(null);
+      expect(await settled(promise)).toBe('submit');
+    });
+
+    it('attaches nothing once the dialog has settled', async () => {
+      const promise = modal.message('Details', 'fill this in');
+      promise.close('close');
+      await settled(promise);
+
+      const save = new Action({ value: { label: 'Save' } });
+      const register = vi.spyOn(save, 'registerAction');
+      promise.props.actions = { save };
+
+      expect(register).not.toHaveBeenCalled();
+    });
   });
 });

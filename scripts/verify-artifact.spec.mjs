@@ -29,6 +29,7 @@ describe('the published artifact', () => {
       'modal',
       'resolveDialogSize',
       'setDfModalDefaults',
+      'useDialog',
       'useTeleportAnchor',
     ]);
   });

@@ -1,3 +1,5 @@
+import { vi } from 'vitest';
+
 import { defaultDialogSize, dialogSizes, isDialogSize, resolveDialogSize } from './dialog-size';
 
 describe('DialogSize', () => {
@@ -22,9 +24,18 @@ describe('DialogSize', () => {
     expect(defaultDialogSize).toBe('default');
   });
 
-  it('refuses what names no size, rather than falling back to the default', () => {
-    expect(() => resolveDialogSize('LARGE' as never)).toThrow("'LARGE' is not a dialog size");
-    expect(() => resolveDialogSize(3 as never)).toThrow("'3' is not a dialog size");
+  it('resolves what names no size to the default, warning once per name', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    expect(resolveDialogSize('LARGE')).toBe('default');
+    expect(resolveDialogSize('LARGE')).toBe('default');
+    expect(resolveDialogSize(3 as never)).toBe('default');
+
+    expect(warn.mock.calls.map(([message]) => message)).toEqual([
+      expect.stringContaining("'LARGE' is not a dialog size"),
+      expect.stringContaining("'3' is not a dialog size"),
+    ]);
+    warn.mockRestore();
   });
 
   it('answers isDialogSize for the sizes and their shorter names and for nothing else', () => {
