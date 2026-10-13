@@ -6,15 +6,15 @@
         <v-alert type="info" variant="tonal" border="start" class="mb-4">
           Resize your browser window to see how the form layout adapts to different screen sizes.
           <ul class="mt-2">
-            <li><strong>Large screens (md+):</strong> Two-column layout</li>
-            <li><strong>Small screens (sm):</strong> Modified layout with some fields side by side</li>
-            <li><strong>Extra small screens (xs):</strong> Single column layout</li>
+            <li><strong>xs:</strong> the base layout</li>
+            <li><strong>sm, md, lg:</strong> a layout of their own</li>
+            <li><strong>xl:</strong> the lg layout</li>
           </ul>
         </v-alert>
 
         <v-chip class="mb-4" color="primary"> Current breakpoint: {{ currentBreakpoint }} </v-chip>
 
-        <form-render :layout="formLayout" :components="components" />
+        <form-render :layout="formBuilder" :components="components" />
       </v-card-text>
     </v-card>
   </div>
@@ -22,7 +22,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useDisplay } from 'vuetify';
-import { VTextField, VTextarea, VSelect, VCheckbox, VBtn, VRadioGroup, VRadio, VSwitch } from 'vuetify/components';
+import { VTextField, VTextarea, VSelect, VCheckbox } from 'vuetify/components';
 
 import { FormBuilder, FormRender, FormBuilderBodyProp } from '../../src';
 
@@ -31,20 +31,20 @@ const formBuilder = new FormBuilder();
 // Base layout: xs, and every breakpoint up to the first override (sm)
 formBuilder
   .row({}, (row) =>
-    row.col({ cols: 12, offset: 0 }, (col) =>
+    row.col({ cols: 12 }, (col) =>
       col.component((cmpt) => cmpt.generic('h4', { [FormBuilderBodyProp]: 'Registration', class: 'ma-0' })),
     ),
   )
   // Name, email, phone and address
   .row({}, (row) =>
-    row.col({ cols: 12, offset: 0 }, (col) =>
+    row.col({ cols: 12 }, (col) =>
       col.component((cmpt) =>
         cmpt.generic('VTextField', { label: 'Full Name', placeholder: 'John Doe', density: 'compact' }),
       ),
     ),
   )
   .row({}, (row) =>
-    row.col({ cols: 12, offset: 0 }, (col) =>
+    row.col({ cols: 12 }, (col) =>
       col.component((cmpt) =>
         cmpt.generic('VTextField', {
           label: 'Email',
@@ -56,14 +56,14 @@ formBuilder
     ),
   )
   .row({}, (row) =>
-    row.col({ cols: 12, offset: 0 }, (col) =>
+    row.col({ cols: 12 }, (col) =>
       col.component((cmpt) =>
         cmpt.generic('VTextField', { label: 'Phone', placeholder: '+1 234 567 890', density: 'compact' }),
       ),
     ),
   )
   .row({}, (row) =>
-    row.col({ cols: 12, offset: 0 }, (col) =>
+    row.col({ cols: 12 }, (col) =>
       col.component((cmpt) =>
         cmpt.generic('VTextField', {
           label: 'Address',
@@ -75,7 +75,7 @@ formBuilder
   )
   // Confirmation field
   .row({}, (row) =>
-    row.col({ cols: 12, offset: 0 }, (col) =>
+    row.col({ cols: 12 }, (col) =>
       col.component((cmpt) =>
         cmpt.generic('VCheckbox', {
           label: 'I agree to the terms and conditions',
@@ -90,33 +90,33 @@ formBuilder
 formBuilder.breakpoint('md', (form) =>
   form
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) => cmpt.generic('h2', { [FormBuilderBodyProp]: 'Registration Form', class: 'ma-0 pa-0' })),
       ),
     )
     // Personal Information - a different row layout
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) => cmpt.generic('h4', { [FormBuilderBodyProp]: 'Personal Information', class: 'ma-0' })),
       ),
     )
     .row({}, (row) =>
       row
-        .col({ cols: 6, offset: 0 }, (col) =>
+        .col({ cols: 6 }, (col) =>
           col.component((cmpt) => cmpt.generic('VTextField', { label: 'First Name', placeholder: 'Enter first name' })),
         )
-        .col({ cols: 6, offset: 0 }, (col) =>
+        .col({ cols: 6 }, (col) =>
           col.component((cmpt) => cmpt.generic('VTextField', { label: 'Last Name', placeholder: 'Enter last name' })),
         ),
     )
     .row({}, (row) =>
       row
-        .col({ cols: 6, offset: 0 }, (col) =>
+        .col({ cols: 6 }, (col) =>
           col.component((cmpt) =>
             cmpt.generic('VTextField', { label: 'SSN', placeholder: 'Enter social security number' }),
           ),
         )
-        .col({ cols: 6, offset: 0 }, (col) =>
+        .col({ cols: 6 }, (col) =>
           col.component((cmpt) =>
             cmpt.generic('VSelect', {
               label: 'Gender',
@@ -131,23 +131,23 @@ formBuilder.breakpoint('md', (form) =>
     )
     // Contact Information
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) => cmpt.generic('h4', { [FormBuilderBodyProp]: 'Contact Information', class: 'mt-0' })),
       ),
     )
     .row({}, (row) =>
       row
-        .col({ cols: 6, offset: 0 }, (col) =>
+        .col({ cols: 6 }, (col) =>
           col.component((cmpt) =>
             cmpt.generic('VTextField', { label: 'Email', type: 'email', placeholder: 'email@domain.com' }),
           ),
         )
-        .col({ cols: 6, offset: 0 }, (col) =>
+        .col({ cols: 6 }, (col) =>
           col.component((cmpt) => cmpt.generic('VTextField', { label: 'Phone', placeholder: '+1 234 567 890' })),
         ),
     )
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) =>
           cmpt.generic('VSelect', {
             label: 'Preferred Contact Method',
@@ -162,28 +162,28 @@ formBuilder.breakpoint('md', (form) =>
     )
     // Address
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) => cmpt.generic('h4', { [FormBuilderBodyProp]: 'Address', class: 'mt-0' })),
       ),
     )
     .row({}, (row) =>
       row
-        .col({ cols: 8, offset: 0 }, (col) =>
+        .col({ cols: 8 }, (col) =>
           col.component((cmpt) => cmpt.generic('VTextField', { label: 'Street', placeholder: 'Enter street name' })),
         )
-        .col({ cols: 4, offset: 0 }, (col) =>
+        .col({ cols: 4 }, (col) =>
           col.component((cmpt) => cmpt.generic('VTextField', { label: 'House Number', placeholder: 'Enter number' })),
         ),
     )
     .row({}, (row) =>
       row
-        .col({ cols: 4, offset: 0 }, (col) =>
+        .col({ cols: 4 }, (col) =>
           col.component((cmpt) => cmpt.generic('VTextField', { label: 'Postal Code', placeholder: '12345' })),
         )
-        .col({ cols: 4, offset: 0 }, (col) =>
+        .col({ cols: 4 }, (col) =>
           col.component((cmpt) => cmpt.generic('VTextField', { label: 'City', placeholder: 'Enter city' })),
         )
-        .col({ cols: 4, offset: 0 }, (col) =>
+        .col({ cols: 4 }, (col) =>
           col.component((cmpt) => cmpt.generic('VTextField', { label: 'Country', placeholder: 'USA' })),
         ),
     ),
@@ -193,31 +193,31 @@ formBuilder.breakpoint('md', (form) =>
 formBuilder.breakpoint('sm', (form) =>
   form
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) => cmpt.generic('h3', { [FormBuilderBodyProp]: 'Registration Form', class: 'ma-0' })),
       ),
     )
     // Personal Information
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) => cmpt.generic('h5', { [FormBuilderBodyProp]: 'Personal Information', class: 'mt-0' })),
       ),
     )
     .row({}, (row) =>
       row
-        .col({ cols: 6, offset: 0 }, (col) =>
+        .col({ cols: 6 }, (col) =>
           col.component((cmpt) =>
             cmpt.generic('VTextField', { label: 'First Name', placeholder: 'Enter first name', density: 'compact' }),
           ),
         )
-        .col({ cols: 6, offset: 0 }, (col) =>
+        .col({ cols: 6 }, (col) =>
           col.component((cmpt) =>
             cmpt.generic('VTextField', { label: 'Last Name', placeholder: 'Enter last name', density: 'compact' }),
           ),
         ),
     )
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) =>
           cmpt.generic('VTextField', { label: 'SSN', placeholder: 'Enter social security number', density: 'compact' }),
         ),
@@ -225,12 +225,12 @@ formBuilder.breakpoint('sm', (form) =>
     )
     // Contact Information
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) => cmpt.generic('h5', { [FormBuilderBodyProp]: 'Contact Information', class: 'mt-0' })),
       ),
     )
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) =>
           cmpt.generic('VTextField', {
             label: 'Email',
@@ -242,7 +242,7 @@ formBuilder.breakpoint('sm', (form) =>
       ),
     )
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) =>
           cmpt.generic('VTextField', { label: 'Phone', placeholder: '+1 234 567 890', density: 'compact' }),
         ),
@@ -250,12 +250,12 @@ formBuilder.breakpoint('sm', (form) =>
     )
     // Address
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) => cmpt.generic('h5', { [FormBuilderBodyProp]: 'Address', class: 'mt-0' })),
       ),
     )
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) =>
           cmpt.generic('VTextField', {
             label: 'Street and Number',
@@ -267,12 +267,12 @@ formBuilder.breakpoint('sm', (form) =>
     )
     .row({}, (row) =>
       row
-        .col({ cols: 4, offset: 0 }, (col) =>
+        .col({ cols: 4 }, (col) =>
           col.component((cmpt) =>
             cmpt.generic('VTextField', { label: 'Postal Code', placeholder: '12345', density: 'compact' }),
           ),
         )
-        .col({ cols: 8, offset: 0 }, (col) =>
+        .col({ cols: 8 }, (col) =>
           col.component((cmpt) =>
             cmpt.generic('VTextField', { label: 'City', placeholder: 'New York', density: 'compact' }),
           ),
@@ -280,7 +280,7 @@ formBuilder.breakpoint('sm', (form) =>
     )
     // Notes
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) =>
           cmpt.generic('VTextarea', {
             label: 'Additional Notes',
@@ -297,31 +297,31 @@ formBuilder.breakpoint('sm', (form) =>
 formBuilder.breakpoint('lg', (form) =>
   form
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) => cmpt.generic('h2', { [FormBuilderBodyProp]: 'Registration Form', class: 'ma-0 pa-0' })),
       ),
     )
     // Personal Information
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) => cmpt.generic('h4', { [FormBuilderBodyProp]: 'Personal Information', class: 'mt-0' })),
       ),
     )
     // 4 fields in a row
     .row({}, (row) =>
       row
-        .col({ cols: 3, offset: 0 }, (col) =>
+        .col({ cols: 3 }, (col) =>
           col.component((cmpt) => cmpt.generic('VTextField', { label: 'First Name', placeholder: 'Enter first name' })),
         )
-        .col({ cols: 3, offset: 0 }, (col) =>
+        .col({ cols: 3 }, (col) =>
           col.component((cmpt) => cmpt.generic('VTextField', { label: 'Last Name', placeholder: 'Enter last name' })),
         )
-        .col({ cols: 3, offset: 0 }, (col) =>
+        .col({ cols: 3 }, (col) =>
           col.component((cmpt) =>
             cmpt.generic('VTextField', { label: 'SSN', placeholder: 'Enter social security number' }),
           ),
         )
-        .col({ cols: 3, offset: 0 }, (col) =>
+        .col({ cols: 3 }, (col) =>
           col.component((cmpt) =>
             cmpt.generic('VSelect', {
               label: 'Gender',
@@ -336,21 +336,21 @@ formBuilder.breakpoint('lg', (form) =>
     )
     // Contact Information
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) => cmpt.generic('h4', { [FormBuilderBodyProp]: 'Contact Information', class: 'mt-0' })),
       ),
     )
     .row({}, (row) =>
       row
-        .col({ cols: 4, offset: 0 }, (col) =>
+        .col({ cols: 4 }, (col) =>
           col.component((cmpt) =>
             cmpt.generic('VTextField', { label: 'Email', type: 'email', placeholder: 'email@domain.com' }),
           ),
         )
-        .col({ cols: 4, offset: 0 }, (col) =>
+        .col({ cols: 4 }, (col) =>
           col.component((cmpt) => cmpt.generic('VTextField', { label: 'Phone', placeholder: '+1 234 567 890' })),
         )
-        .col({ cols: 4, offset: 0 }, (col) =>
+        .col({ cols: 4 }, (col) =>
           col.component((cmpt) =>
             cmpt.generic('VSelect', {
               label: 'Preferred Contact Method',
@@ -365,40 +365,40 @@ formBuilder.breakpoint('lg', (form) =>
     )
     // Address
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) => cmpt.generic('h4', { [FormBuilderBodyProp]: 'Address', class: 'mt-0' })),
       ),
     )
     .row({}, (row) =>
       row
-        .col({ cols: 8, offset: 0 }, (col) =>
+        .col({ cols: 8 }, (col) =>
           col.component((cmpt) => cmpt.generic('VTextField', { label: 'Street', placeholder: 'Enter street name' })),
         )
-        .col({ cols: 4, offset: 0 }, (col) =>
+        .col({ cols: 4 }, (col) =>
           col.component((cmpt) => cmpt.generic('VTextField', { label: 'House Number', placeholder: 'Enter number' })),
         ),
     )
     .row({}, (row) =>
       row
-        .col({ cols: 4, offset: 0 }, (col) =>
+        .col({ cols: 4 }, (col) =>
           col.component((cmpt) => cmpt.generic('VTextField', { label: 'Postal Code', placeholder: '12345' })),
         )
-        .col({ cols: 4, offset: 0 }, (col) =>
+        .col({ cols: 4 }, (col) =>
           col.component((cmpt) => cmpt.generic('VTextField', { label: 'City', placeholder: 'Enter city' })),
         )
-        .col({ cols: 4, offset: 0 }, (col) =>
+        .col({ cols: 4 }, (col) =>
           col.component((cmpt) => cmpt.generic('VTextField', { label: 'Country', placeholder: 'USA' })),
         ),
     )
     // Additional Information
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) => cmpt.generic('h4', { [FormBuilderBodyProp]: 'Additional Information', class: 'mt-0' })),
       ),
     )
     .row({}, (row) =>
       row
-        .col({ cols: 6, offset: 0 }, (col) =>
+        .col({ cols: 6 }, (col) =>
           col.component((cmpt) =>
             cmpt.generic('VSelect', {
               label: 'Education',
@@ -412,23 +412,22 @@ formBuilder.breakpoint('lg', (form) =>
             }),
           ),
         )
-        .col({ cols: 6, offset: 0 }, (col) =>
+        .col({ cols: 6 }, (col) =>
           col.component((cmpt) =>
-            cmpt.generic('VRadioGroup', {
+            cmpt.generic('VSelect', {
               label: 'Status',
-              inline: true,
-              children: [
-                { name: 'VRadio', props: { label: 'Student', value: 'student' } },
-                { name: 'VRadio', props: { label: 'Employed', value: 'employed' } },
-                { name: 'VRadio', props: { label: 'Retired', value: 'retired' } },
-                { name: 'VRadio', props: { label: 'Other', value: 'other' } },
+              items: [
+                { title: 'Student', value: 'student' },
+                { title: 'Employed', value: 'employed' },
+                { title: 'Retired', value: 'retired' },
+                { title: 'Other', value: 'other' },
               ],
             }),
           ),
         ),
     )
     .row({}, (row) =>
-      row.col({ cols: 12, offset: 0 }, (col) =>
+      row.col({ cols: 12 }, (col) =>
         col.component((cmpt) =>
           cmpt.generic('VTextarea', {
             label: 'Additional Notes',
@@ -441,36 +440,15 @@ formBuilder.breakpoint('lg', (form) =>
 );
 
 // The components the layout names
-const components = {
-  VTextField,
-  VTextarea,
-  VSelect,
-  VCheckbox,
-  VBtn,
-  VRadioGroup,
-  VRadio,
-  VSwitch,
-};
+const components = { VTextField, VTextarea, VSelect, VCheckbox };
 
 // The current breakpoint, shown above the form
 const display = useDisplay();
 const currentBreakpoint = computed(() => display.name.value);
-
-const formLayout = formBuilder;
 </script>
 
 <style scoped>
 .demo-container {
   margin-bottom: 20px;
-}
-
-.code-block {
-  background-color: #f5f5f5;
-  padding: 15px;
-  border-radius: 4px;
-  overflow: auto;
-  font-family: monospace;
-  font-size: 14px;
-  white-space: pre-wrap;
 }
 </style>

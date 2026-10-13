@@ -1,6 +1,14 @@
-import { AbortEventHandlingException, ExecuteAction, Field, Group, ValidationError } from '@dynamicforms/vue-forms';
+import {
+  AbortEventHandlingException,
+  ExecuteAction,
+  Field,
+  Group,
+  SubmitAction,
+  ValidationError,
+  Validators,
+} from '@dynamicforms/vue-forms';
 import { Action } from '@dynamicforms/vuetify-inputs';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { vi } from 'vitest';
 import { nextTick } from 'vue';
 import { createVuetify } from 'vuetify';
@@ -394,6 +402,21 @@ describe('DfModal', () => {
 
       press('Enter');
       expect(inner.spy).not.toHaveBeenCalled();
+      wrapper.unmount();
+    });
+
+    it('does not reach an action a handler refuses through canExecute()', async () => {
+      const save = new Action({ value: { label: 'Save', defaultConfirm: true } });
+      const form: Group = new Group({ name: new Field({ value: '', validators: [new Validators.Required()] }), save });
+      save.registerAction(new SubmitAction(form, vi.fn()));
+      const execute = vi.spyOn(save, 'execute');
+      await flushPromises();
+      expect(save.executable).toBe(false);
+
+      const wrapper = mountModal({ modelValue: true, dialogId, actions: [save] });
+
+      press('Enter');
+      expect(execute).not.toHaveBeenCalled();
       wrapper.unmount();
     });
 

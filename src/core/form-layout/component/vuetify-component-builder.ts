@@ -66,10 +66,8 @@ export class VuetifyInputsComponentBuilder extends ComponentBuilderBase {
   }
 
   /**
-   * The component a tag names, where the tag is a value rather than something written out - a field stating what
-   * it is drawn as. Every `df*` method above states its own tag and does exactly this with it, so a tag that has
-   * a method of its own and one the package gains later reach the layout the same way; what a method adds over
-   * this is the props type it names.
+   * Same as `generic(tag, props)`, for a tag that comes from data. Each `df*` method calls `generic()` with its own
+   * tag and types `props` for that component.
    */
   byTag(tag: string, props: ComponentProps): this {
     return this.generic(tag, props);

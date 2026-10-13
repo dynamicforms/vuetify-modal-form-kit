@@ -8,7 +8,7 @@
           in the layout comes from FormBuilder too, but its field markup and v-model live in this template, wired up
           through a teleport anchor.
         </v-alert>
-        <form-render :layout="formLayout" :components="components" @breakpoint="breakpoint = $event" />
+        <form-render :layout="formBuilder" :components="components" @breakpoint="breakpoint = $event" />
         <!-- .value: the anchors are plain objects, and Vue unwraps only top-level refs. The Teleports are keyed on
              the breakpoint, so they remount and find the new anchor when a breakpoint moves a field to another
              row or column. They render after mount: the server renders the anchors empty. -->
@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { VTextField, VTextarea, VSelect, VCheckbox, VBtn, VRadioGroup, VRadio } from 'vuetify/components';
+import { VTextarea } from 'vuetify/components';
 
 import { FormBuilder, FormRender, FormBuilderBodyProp, useTeleportAnchor } from '../../src';
 
@@ -60,69 +60,14 @@ formBuilder
 // Contact Information Section - the two fields are teleported in from the template
 formBuilder.row({}, (row) =>
   row
-    .col({ cols: 6, offset: 0 }, (col) => col.component((cmpt) => cmpt.teleportAnchor(emailAnchor.id)))
-    .col({ cols: 6, offset: 0 }, (col) => col.component((cmpt) => cmpt.teleportAnchor(contactMethodAnchor.id))),
+    .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.teleportAnchor(emailAnchor.id)))
+    .col({ cols: 6 }, (col) => col.component((cmpt) => cmpt.teleportAnchor(contactMethodAnchor.id))),
 );
 
 formBuilder
   .simple()
   .generic('h3', { [FormBuilderBodyProp]: 'Additional Information', class: 'mt-0' })
   .generic('VTextarea', { label: 'Comments', rows: 3, modelValue: '' });
-/*
-  The same layout, declared with row() / col(), with the Contact Information fields in the components map:
-
-formBuilder
-  .row({ }, (row) => row
-    .col({ cols: 12, offset: 0 }, (col) => col
-      .component((cmpt) => cmpt
-        .generic('h3', { [FormBuilderBodyProp]: 'Personal Information', class: 'mt-0' }))))
-  .row({ }, (row) => row
-    .col({ cols: 6, offset: 0 }, (col) => col
-      .component((cmpt) => cmpt
-        .generic('VTextField', { label: 'First Name', modelValue: '' })))
-    .col({ cols: 6, offset: 0 }, (col) => col
-      .component((cmpt) => cmpt
-        .generic('VTextField', { label: 'Last Name', modelValue: '' }))))
-  // Contact Information Section
-  .row({ }, (row) => row
-    .col({ cols: 12, offset: 0 }, (col) => col
-      .component((cmpt) => cmpt
-        .generic('h3', { [FormBuilderBodyProp]: 'Contact Information', class: 'mt-0' }))))
-  .row({ }, (row) => row
-    .col({ cols: 6, offset: 0 }, (col) => col
-      .component((cmpt) => cmpt
-        .generic('VTextField', { label: 'Email', type: 'email', modelValue: '' })))
-    .col({ cols: 6, offset: 0 }, (col) => col
-      .component((cmpt) => cmpt
-        .generic('VSelect', {
-          label: 'Preferred Contact Method',
-          items: [
-            { title: 'Email', value: 'email' },
-            { title: 'Phone', value: 'phone' },
-            { title: 'Mail', value: 'mail' }
-          ],
-          modelValue: '',
-        }))))
-  // Additional Information Section
-  .row({ }, (row) => row
-    .col({ cols: 12, offset: 0 }, (col) => col
-      .component((cmpt) => cmpt
-        .generic('h3', { [FormBuilderBodyProp]: 'Additional Information', class: 'mt-0' }))))
-  .row({ }, (row) => row
-    .col({ cols: 12, offset: 0 }, (col) => col
-      .component((cmpt) => cmpt
-        .generic('VTextarea', { label: 'Comments', rows: 3, modelValue: '' }))));
-*/
 // The components the layout names
-const components = {
-  VTextField,
-  VTextarea,
-  VSelect,
-  VCheckbox,
-  VBtn,
-  VRadioGroup,
-  VRadio,
-};
-
-const formLayout = formBuilder;
+const components = { VTextarea };
 </script>

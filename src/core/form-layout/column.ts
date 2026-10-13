@@ -4,7 +4,7 @@ import {
   responsiveBreakpoints,
   ResponsiveRenderOptions,
 } from '@dynamicforms/vuetify-inputs';
-import { isBoolean, isNumber, isObjectLike, isString } from 'lodash-es';
+import { isBoolean, isInteger, isNumber, isObjectLike, isString } from 'lodash-es';
 
 import { Component, ComponentBuilderBase, VuetifyInputsComponentBuilder } from './component';
 import { isValidClass, isValidStyle, withBreakpointVariants } from './prop-validators';
@@ -46,12 +46,7 @@ class ColBase implements ComponentProps {
     return this;
   }
 
-  /**
-   * @return returns a proxy that allows to immediately from the column object add components, e.g.
-   * `col.simple().generic(...)` will add one component into this column. You may call the ComponentBuilder's
-   * methods as many times as you want to generate components. It takes no column count, and unlike
-   * `FormBuilder.simple()` the proxy it returns does not restart the layout.
-   */
+  /** See `Column.simple()`. */
   simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(): T {
     const res = new Proxy({} as T, {
       get: (target: T, prop: string | symbol) => {
@@ -114,10 +109,8 @@ export class Column extends ResponsiveRenderOptions<ColBase> {
   }
 
   /**
-   * @return returns a proxy that allows to immediately from the column object add components, e.g.
-   * `col.simple().generic(...)` will add one component into this column. You may call the ComponentBuilder's
-   * methods as many times as you want to generate components. It takes no column count, and unlike
-   * `FormBuilder.simple()` the proxy it returns does not restart the layout.
+   * Returns a proxy of a component builder. Each builder method called on it adds its component to this column. A
+   * name the builder has no method for, `simple` included, throws a `TypeError` and adds nothing.
    */
   simple<T extends ComponentBuilderBase = VuetifyInputsComponentBuilder>(): T {
     return this._value.simple<T>();
@@ -152,10 +145,11 @@ export class Column extends ResponsiveRenderOptions<ColBase> {
 
     const validAlignSelf = ['start', 'end', 'center', 'auto', 'baseline', 'stretch'];
     const isValidCols = (v: unknown): boolean => isNumber(v) || v === 'auto' || isBoolean(v);
-    const isValidOffset = (v: unknown): boolean => isNumber(v);
-    // v-col renders `order-<value>`, and Vuetify's stylesheet declares that class for 0 through 12 and for the
-    // two named positions
-    const isValidOrder = (v: unknown): boolean => isNumber(v) || v === 'first' || v === 'last';
+    // v-col renders `offset-<value>` / `order-<value>`, and Vuetify's stylesheet declares those classes for 0
+    // through 11 and for 0 through 12 and the two named positions
+    const inRange = (v: unknown, max: number): boolean => isInteger(v) && (v as number) >= 0 && (v as number) <= max;
+    const isValidOffset = (v: unknown): boolean => inRange(v, 11);
+    const isValidOrder = (v: unknown): boolean => inRange(v, 12) || v === 'first' || v === 'last';
 
     // `offset-<bp>` and `order-<bp>` camelize onto v-col's offsetMd / orderMd props; `cols` has no such variant,
     // as v-col names per-breakpoint widths sm/md/lg/xl/xxl instead

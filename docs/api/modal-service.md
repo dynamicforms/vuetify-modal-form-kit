@@ -58,9 +58,9 @@ member of `options.form`, otherwise its key in `options.actions` (e.g. `'close'`
 
 | Member | Description |
 |---|---|
-| `.close(value)` | Closes the dialog and resolves the promise with `value`. |
+| `.close(value)` | Closes the dialog and resolves the promise with `value`. On a settled dialog it does nothing. |
 | `.dialogId` | `symbol` identifying this dialog in the internal stack. |
-| `.payload` | What the executor of the settling action returned. `undefined` before the dialog settles, after `.close(value)`, and where the executor returned `null` or `undefined`. |
+| `.payload` | What the executor of the settling action returned. `undefined` before the dialog settles, when `.close(value)` settled it, and where the executor returned `null` or `undefined`. |
 | `.props` | `DialogProps`: the dialog's properties, readable and writable while it is open - see [Changing an open dialog](#changing-an-open-dialog). |
 
 ### Getting data out of a dialog
@@ -106,7 +106,8 @@ if ((await dialog) === 'save') {
 }
 ```
 
-- While the form is invalid, `execute()` resolves with a `SubmitRefusedException` and the dialog stays open.
+- While the form is invalid, the button is disabled, Enter does not run the action, and `execute()` resolves with a
+  `SubmitRefusedException`; the dialog stays open.
 - While the handler runs, the action is `busy`, its button shows `loading`, and the form is `'readonly'`.
 - A handler that throws ends the submit with a `SubmitFailedException`; the dialog stays open and shows the errors
   the handler wrote. The errors of the group itself are drawn below the body (see

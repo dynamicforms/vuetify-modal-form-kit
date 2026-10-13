@@ -118,17 +118,17 @@ const formLayout = computed(() => {
     if (field instanceof Form.Field) {
       // a suppressed field renders nothing, so a row and a column of its own would be an empty gutter gap
       if (field.visibility === 'suppress') return;
-      // the component is the field's to state, and a field that states none is drawn as a plain input
+      // drawn as the component the field states, and as df-input where it states none
       builder.byTag(field.extra.component ?? 'df-input', {
-        // the field's own label wins over the one read off its name: an element carries its presentation, and
-        // the name is only what is left when it carries none
+        // the field's own label, or its name in Title Case where it has none
         label: field.extra.label ?? generateLabel(fieldName),
         control: field,
       });
       return;
     }
 
-    // a member sent nowhere is not validated either, so leaving it off the screen hides nothing the form answers for
+    // a member that is not drawn is warned about, unless it is disabled: a disabled member is neither sent nor
+    // validated
     if (field.effectiveAccess !== 'disabled') unrendered.push(fieldName);
   });
 

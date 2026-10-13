@@ -3,9 +3,9 @@ import { reactive } from 'vue';
 import type { DialogActionFactories } from './dialog-actions';
 
 export interface DfModalDefaults {
-  // Title bar background color, used by every <df-modal> whose own `color` prop is unset.
+  /** Title bar background color, used by every `<df-modal>` whose own `color` prop is unset. */
   titleColor?: string;
-  // The factories of the default actions of `modal.message()` and `modal.yesNo()` that replace the built-in ones.
+  /** The factories of the default actions of `modal.message()` and `modal.yesNo()` that replace the built-in ones. */
   actions?: Partial<DialogActionFactories>;
 }
 

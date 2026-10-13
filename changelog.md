@@ -40,6 +40,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `vue-markdown-render` is no longer a peer dependency; vuetify-inputs renders the markdown.
 - A size that names none - in `ModalOptions.size`, `df-modal`'s `size` prop, `props.size` or
   `resolveDialogSize()` - is `'default'`, with a console warning, where it threw an `Error`.
+- Enter and Escape reach an action only while its `executable` is `true`, so not while one of its handlers returns
+  `false` from `canExecute()`, as a `SubmitAction` does on an invalid form.
+- **Breaking:** a column's `offset` takes an integer 0 to 11 and its `order` an integer 0 to 12, `'first'` or
+  `'last'`; another value is dropped. The `xs` variants of the per-breakpoint row and column props (`align-xs`,
+  `offset-xs`, ...) are removed from the types and dropped from the props: `v-row` and `v-col` have none.
+- `registerVuetifyComponents` leaves a component the app has registered under the same name registered.
+- `simple()` on a `FormBuilder` adds no row for a call that throws.
+- `.close(value)` on a settled dialog does nothing; it overwrote `.payload`.
+- `custom()`'s `title` takes a `RenderableValue`, as the other methods' do.
+- `TeleportAnchor.target` is typed `ComputedRef<string>`, and the `body` slot of `DfModalSlots` takes
+  `{ formControl: Form.Group | undefined }`.
 
 ## [0.9.0] - 2026-10-01
 

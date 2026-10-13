@@ -1,4 +1,3 @@
-<!-- FormRenderer.vue -->
 <template>
   <div class="form-layout">
     <v-row v-for="(row, rowIndex) in layoutToRender.rows" :key="rowIndex" v-bind="row.props as any">
@@ -31,9 +30,9 @@ const emit = defineEmits<FormRenderEmits>();
 const responsiveLayout = computed(() => FormBuilder.fromJSON(props.layout));
 const display = useDisplay();
 const breakpoint = computed(() => getBreakpointName(display));
-// see FormRenderEmits.breakpoint for why a consumer needs this. Keying a <Teleport defer> on it only works from
-// vue@3.5.32 on - the declared peer floor - which is where https://github.com/vuejs/core/pull/14642 fixed a
-// deferred Teleport losing its content when it updates (here, remounts on a new key) before its deferred mount runs
+// see FormRenderEmits.breakpoint for why a consumer needs this. A <Teleport defer> keyed on it keeps its content
+// only on vue >= 3.5.32, the peer floor: below it, a deferred Teleport that remounts before its deferred mount runs
+// loses its content
 watch(breakpoint, (bp) => emit('breakpoint', bp), { immediate: true });
 
 // a <Teleport :to="'#' + id"> only ever reaches the first element bearing that id, so two components sharing one
