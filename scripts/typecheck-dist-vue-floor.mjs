@@ -73,19 +73,20 @@ writeFileSync(
   `import {
   ComponentRender,
   DfModal,
-  DialogSize,
+  type DialogSize,
   DynamicFormsModalFormKit,
   FormBuilder,
   FormLayout,
   FormRender,
   ModalView,
   modal,
+  resolveDialogSize,
 } from './lib.js';
 
 // the components carry the type arguments whose arity is Vue's to decide
 export const components = { ComponentRender, DfModal, FormRender, ModalView };
 export const plugin = DynamicFormsModalFormKit;
-export const size: DialogSize = DialogSize.LARGE;
+export const size: DialogSize = resolveDialogSize('lg');
 export const layout = new FormBuilder();
 export const row = new FormLayout.Row();
 export const api = modal;

@@ -23,7 +23,8 @@ with a plain `v-model`, instead of going through `modal.message()` / `modal.yesN
 </template>
 
 <script setup>
-import { RenderableValue, ExecuteAction } from '@dynamicforms/vue-forms';
+import { ExecuteAction } from '@dynamicforms/vue-forms';
+import { RenderableValue } from '@dynamicforms/vuetify-inputs';
 import { Action, DfActions } from '@dynamicforms/vuetify-inputs';
 import { DfModal } from '@dynamicforms/vuetify-modal-form-kit';
 import { ref } from 'vue';

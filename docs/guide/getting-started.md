@@ -6,10 +6,6 @@
 npm install @dynamicforms/vuetify-modal-form-kit
 ```
 
-The library declares [`@dynamicforms/vue-forms`](:vue-forms:) `^2.0.2`,
-[`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) `^0.12.1`, Vue `^3.5.32` and Vuetify `^3.9` among its peer
-dependencies; install them alongside it if they are not already in your project.
-
 The package is ESM only and `engines.node` is `>=22.12`, which is the release where Node supports `require()` of
 an ES module - the way a CommonJS consumer reaches it. That path runs through a bundler: the peers it loads import
 their own stylesheets, which plain node has no loader for.
@@ -90,5 +86,56 @@ form.simple(2)
   <FormRender :layout="form" />
 </template>
 ```
+
+## Translating errors
+
+An error is data: a `code`, `params` and an English `detail`. The application converts it into what the user sees,
+as described in vue-forms' [Error messages and translation](:vue-forms:/api/validators.html#error-messages-and-translation),
+which also lists every code vue-forms raises with its params.
+
+The inputs of `@dynamicforms/vuetify-inputs` render each error as the content the `errorText` setting returns for
+it, and as its `detail` where the setting is not given or returns `undefined`. `errorText` is given once, when the
+plugin is installed, and converts every error the application shows: those of vue-forms' validators, of the
+application's own validators, of its server and of vuetify-inputs itself
+([error codes](:vuetify-inputs:/examples/localisation.html#error-codes)).
+
+`errorText` returns plain text, an `MdString`, which renders as markdown, an `HtmlString`, which renders as HTML, or a
+`SimpleComponentDef`. A catalogue that
+holds a markdown variant of a message under the code with `Md` appended lets the application render its errors as
+markdown without changing a validator:
+
+```typescript
+import { formatParams } from '@dynamicforms/translatable';
+import { DynamicFormsInputs, type ErrorText, MdString } from '@dynamicforms/vuetify-inputs';
+
+const { t, n, d, te } = i18n.global;
+// formats numbers and dates for the locale before t substitutes them
+const tf = formatParams(t, (value) =>
+  typeof value === 'number' ? n(value) : value instanceof Date ? d(value) : value);
+const markdown = true;
+
+const errorText: ErrorText = (error) => {
+  const key = `errors.${error.code}`;
+  if (markdown && te(`${key}Md`)) return new MdString(tf(`${key}Md`, error.params));
+  return te(key) ? tf(key, error.params) : undefined;
+};
+
+app.use(DynamicFormsInputs, { errorText });
+```
+
+```json
+{
+  "errors": {
+    "required": "Prosimo, vnesite vrednost",
+    "min_value": "Vrednost mora biti vsaj {minValue}",
+    "min_valueMd": "Vrednost mora biti vsaj **{minValue}**"
+  }
+}
+```
+
+- `errorText` runs while the errors are rendered, so the errors on screen follow a locale switch without
+  revalidating.
+- A code without a message renders as its `detail`; a code without an `Md` variant renders as plain text.
+- A message uses the placeholder names of its code's params.
 
 Coming from 0.6.x? The [migration guide](/guide/migration) lists the breaking changes with before/after code.

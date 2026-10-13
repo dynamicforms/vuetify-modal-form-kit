@@ -45,7 +45,6 @@ export default defineConfig({
         '@dynamicforms/vuetify-inputs',
         'lodash-es',
         'vue',
-        'vue-markdown-render',
         'vuetify',
         /^vuetify\/.*/,
       ],

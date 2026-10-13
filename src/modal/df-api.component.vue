@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 import * as Form from '@dynamicforms/vue-forms';
-import { MessagesWidget } from '@dynamicforms/vue-forms';
+import { MessagesWidget } from '@dynamicforms/vuetify-inputs';
 import { DfActions, dfInputComponentsByTag } from '@dynamicforms/vuetify-inputs';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 

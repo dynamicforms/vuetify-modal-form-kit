@@ -1,5 +1,5 @@
 import * as Form from '@dynamicforms/vue-forms';
-import { Action } from '@dynamicforms/vuetify-inputs';
+import { Action, type RenderContent, RenderableValue, type SimpleComponentDef } from '@dynamicforms/vuetify-inputs';
 import { computed, nextTick, ref } from 'vue';
 
 import { defaultDialogSize, type DialogSize, type DialogSizeName, resolveDialogSize } from './dialog-size';
@@ -61,8 +61,8 @@ export interface ModalOptions {
 
 export interface ModalData extends ModalOptions {
   dialogId: symbol;
-  title: Form.RenderableValue;
-  message: Form.RenderableValue;
+  title: RenderableValue;
+  message: RenderableValue;
   size: DialogSize;
   resolve: (value: string) => void;
 }
@@ -86,8 +86,8 @@ class ModalAPI {
   }
 
   yesNo(
-    title: Form.RenderContent | Form.RenderableValue,
-    message: Form.RenderContent | Form.RenderableValue,
+    title: RenderContent | RenderableValue,
+    message: RenderContent | RenderableValue,
     options?: ModalOptions,
   ): CloseablePromise<string> {
     const hasAction = this.hasOwnAction(options);
@@ -99,8 +99,8 @@ class ModalAPI {
   }
 
   message(
-    title: Form.RenderContent | Form.RenderableValue,
-    message: Form.RenderContent | Form.RenderableValue,
+    title: RenderContent | RenderableValue,
+    message: RenderContent | RenderableValue,
     options?: ModalOptions,
   ): CloseablePromise<string> {
     const hasAction = this.hasOwnAction(options);
@@ -111,12 +111,12 @@ class ModalAPI {
   }
 
   custom(
-    title: Form.RenderContent,
+    title: RenderContent,
     componentName: string,
     componentProps: Record<any, any>,
     options?: ModalOptions,
   ): CloseablePromise<string> {
-    return this.message(title, <Form.SimpleComponentDef>{ componentName, componentProps }, options);
+    return this.message(title, <SimpleComponentDef>{ componentName, componentProps }, options);
   }
 
   // Whether the caller states buttons of its own, and so whether the dialog adds its default ones. Only an action
@@ -136,13 +136,13 @@ class ModalAPI {
     });
   }
 
-  private getRenderableMessage(message: Form.RenderContent | Form.RenderableValue): Form.RenderableValue {
-    return message instanceof Form.RenderableValue ? message : new Form.RenderableValue(message);
+  private getRenderableMessage(message: RenderContent | RenderableValue): RenderableValue {
+    return message instanceof RenderableValue ? message : new RenderableValue(message);
   }
 
   private messageInternal(
-    title: Form.RenderContent | Form.RenderableValue,
-    message: Form.RenderContent | Form.RenderableValue,
+    title: RenderContent | RenderableValue,
+    message: RenderContent | RenderableValue,
     defaultActions: FormActions,
     options?: ModalOptions,
   ): CloseablePromise<string> {

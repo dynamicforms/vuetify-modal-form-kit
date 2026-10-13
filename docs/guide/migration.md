@@ -8,6 +8,42 @@ exists.
 
 <!-- New releases go directly below this comment, above the previous one, as `## Upgrading to vX.Y.Z (from vA.B.x)`. -->
 
+## Upgrading to v0.10.0 (from v0.9.x)
+
+0.10.0 requires `@dynamicforms/vue-forms` 3.0.0 and `@dynamicforms/vuetify-inputs` 0.13.0. Upgrade the three
+together, and work through the [vue-forms](https://docs.velis.si/dynamicforms/vue-forms/guide/migration) and
+[vuetify-inputs](https://docs.velis.si/dynamicforms/vuetify-inputs/guide/migration) migration guides first.
+
+```bash
+npm install @dynamicforms/vue-forms@^3.0.0-alpha.1 @dynamicforms/vuetify-inputs@^0.13.0 @dynamicforms/vuetify-modal-form-kit@^0.10.0
+```
+
+### Dialog content is imported from vuetify-inputs
+
+`RenderableValue`, `MdString`, `HtmlString` and `SimpleComponentDef`, which `title` and `message` take, are imported
+from `@dynamicforms/vuetify-inputs`:
+
+```typescript
+// before
+import { MdString, RenderableValue } from '@dynamicforms/vue-forms';
+
+// after
+import { MdString, RenderableValue } from '@dynamicforms/vuetify-inputs';
+```
+
+### HTML content is an `HtmlString`
+
+`SimpleComponentDef` has no `componentVHtml`, and an `innerHTML` in its `componentProps` is dropped. A dialog's HTML
+title or message is an `HtmlString`, rendered as the inner HTML of a `div` and not sanitized:
+
+```typescript
+// before
+modal.message('Terms', new RenderableValue({ componentName: 'div', componentVHtml: html }));
+
+// after
+modal.message('Terms', new HtmlString(html));
+```
+
 ## Upgrading to v0.9.0 (from v0.8.x)
 
 0.9.0 requires `@dynamicforms/vue-forms` 2.0.2 and `@dynamicforms/vuetify-inputs` 0.12.1. Upgrade the three together,

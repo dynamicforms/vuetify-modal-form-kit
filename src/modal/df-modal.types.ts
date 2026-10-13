@@ -1,4 +1,5 @@
 import * as Form from '@dynamicforms/vue-forms';
+import { RenderableValue } from '@dynamicforms/vuetify-inputs';
 
 import type { DialogSizeName } from './dialog-size';
 
@@ -7,7 +8,7 @@ export interface DfModalProps {
   size?: DialogSizeName;
   formControl?: Form.Group;
   dialogId?: symbol;
-  title?: Form.RenderableValue;
+  title?: RenderableValue;
   color?: string;
   icon?: string;
   // Actions considered for the Enter (defaultConfirm) / Esc (defaultReject) keyboard shortcuts. Rendering them is

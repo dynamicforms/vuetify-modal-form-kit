@@ -27,7 +27,7 @@ forwards its props and slots.
 | `size` | `DialogSizeName` | `'default'` | `'small'`, `'medium'`, `'large'` or `'x-large'`, or one of their shorter names (see [`DialogSize`](./modal-service#dialogsize)). Each of those switches to fullscreen below its own breakpoint; `'default'` sizes itself to its content and never does. Anything else throws. |
 | `formControl` | `Form.Group` | — | Exposed to the `body` slot as `formControl`; `df-modal` itself doesn't render a form from it. |
 | `dialogId` | `symbol` | — | Used internally by the `modal` service to manage the one-dialog-at-a-time stack. Leave unset for template dialogs. It also states who owns the stack entry: `df-modal` pushes only a template dialog's, and leaves one it was given a `dialogId` for on the stack when it unmounts. A `model-value` going false still removes whichever entry the component holds. |
-| `title` | `Form.RenderableValue` | — | Dialog title. Accepts plain text, Markdown (`MdString`), or a custom component. Falls back to the `title` slot if omitted. |
+| `title` | `RenderableValue` | — | Dialog title. Accepts plain text, Markdown (`MdString`), HTML (`HtmlString`), or a custom component. Falls back to the `title` slot if omitted. |
 | `color` | `string` | — | Title bar background color. Falls back to the global default set through [`setDfModalDefaults`](#global-defaults) where unset. |
 | `icon` | `string` | — | Icon shown next to the title. |
 | `actions` | `Form.Action[]` | `[]` | Drives the [keyboard shortcuts](#keyboard-shortcuts) below. Purely functional - it renders nothing by itself; render the same array through `<df-actions>` in the `actions` slot. |
