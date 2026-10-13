@@ -157,10 +157,12 @@ async function showFormDialog() {
 async function showSizedDialog(size: DialogSize) {
   const titleField = new Field({ value: 'Dialog Size Example', label: 'Dialog title' });
   const iconField = new Field({ value: 'mdi-resize', label: 'Icon' });
-  const colorField = new Field({ value: 'primary', label: 'Title color' });
+  const colorField = new Field({ value: 'none', label: 'Title color' });
   const sizeField = new Field({ value: size, label: 'Dialog size' });
   const icons = ['mdi-resize', 'mdi-star', 'mdi-heart', 'mdi-rocket', 'mdi-palette'];
-  const colors = ['primary', 'secondary', 'success', 'info', 'warning', 'error'];
+  // 'none' states no color, which leaves the title bar at its default
+  const colors = ['none', 'primary', 'secondary', 'success', 'info', 'warning', 'error'];
+  const colorOf = (name: string) => (name === 'none' ? undefined : name);
 
   const column = (cols: Record<string, number>, input: SimpleComponentDef): SimpleComponentDef => ({
     componentName: 'v-col',
@@ -208,7 +210,7 @@ async function showSizedDialog(size: DialogSize) {
         ),
       ],
     },
-    { icon: iconField.value, color: colorField.value, size },
+    { icon: iconField.value, color: colorOf(colorField.value), size },
   );
 
   const stop = watch(
@@ -216,7 +218,7 @@ async function showSizedDialog(size: DialogSize) {
     ([title, icon, color, dialogSize]) => {
       dialog.props.title = title;
       dialog.props.icon = icon;
-      dialog.props.color = color;
+      dialog.props.color = colorOf(color);
       dialog.props.size = dialogSize;
     },
   );
