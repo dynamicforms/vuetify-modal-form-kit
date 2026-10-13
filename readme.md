@@ -35,10 +35,6 @@ change with before/after code.
 npm install @dynamicforms/vuetify-modal-form-kit
 ```
 
-**Peer dependencies:** `vue`, `vuetify`, `@dynamicforms/vue-forms`, `@dynamicforms/vuetify-inputs`, `lodash-es` and
-`@mdi/font`, and the peer dependencies of `@dynamicforms/vuetify-inputs`. npm 7 and later installs them with the
-package.
-
 The package is ESM only, and `engines.node` is `>=22.12` - the release where Node supports `require()` of an ES
 module, which is how a CommonJS consumer reaches it. That path runs through a bundler: the peers it loads import
 their own stylesheets, which plain node has no loader for.
