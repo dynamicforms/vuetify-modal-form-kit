@@ -4,6 +4,7 @@ export type { DfModalProps, DfModalSlots } from './df-modal.types';
 export {
   default as modal,
   type CloseablePromise,
+  type CustomOptions,
   type DialogProps,
   type FormActions,
   type ModalOptions,

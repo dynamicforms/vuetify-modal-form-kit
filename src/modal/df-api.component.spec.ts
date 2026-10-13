@@ -2,7 +2,7 @@ import * as Form from '@dynamicforms/vue-forms';
 import { Action, dfInputComponentsByTag, type DfInputComponentTag } from '@dynamicforms/vuetify-inputs';
 import { mount } from '@vue/test-utils';
 import { vi } from 'vitest';
-import { h, nextTick } from 'vue';
+import { h, nextTick, ref } from 'vue';
 import { createVuetify } from 'vuetify';
 
 import { FormBuilder } from '../core/form-layout';
@@ -365,5 +365,70 @@ describe('ModalView', () => {
       },
     }).unmount();
     expect(seen).toBeUndefined();
+  });
+
+  describe('custom()', () => {
+    async function settle(promise: CloseablePromise<string>) {
+      promise.close('close');
+      await nextTick();
+      await promise;
+    }
+
+    it('renders a component given as such, with its props, without a global registration', async () => {
+      const wrapper = mountView();
+      const Panel = { props: ['userId'], setup: (props: any) => () => h('div', { class: 'panel' }, props.userId) };
+
+      const promise = modal.custom('Settings', Panel, { userId: 42 });
+      await nextTick();
+      expect(wrapper.find('.panel').text()).toBe('42');
+
+      await settle(promise);
+      wrapper.unmount();
+    });
+
+    it("resolves a name against the dialog's components", async () => {
+      const wrapper = mountView();
+      const Panel = { setup: () => () => h('div', { class: 'named-panel' }) };
+
+      const promise = modal.custom('Settings', 'NamedPanel', {}, { components: { NamedPanel: Panel } });
+      await nextTick();
+      expect(wrapper.find('.named-panel').exists()).toBe(true);
+
+      await settle(promise);
+      wrapper.unmount();
+    });
+
+    it('binds the refs of model both ways', async () => {
+      const wrapper = mountView();
+      const Picker = {
+        props: ['contactId'],
+        emits: ['update:contactId'],
+        setup:
+          (props: any, { emit }: any) =>
+          () =>
+            h(
+              'button',
+              { class: 'picker', onClick: () => emit('update:contactId', props.contactId + 1) },
+              props.contactId,
+            ),
+      };
+      const contactId = ref(1);
+
+      const promise = modal.custom('Contact', Picker, {}, { model: { contactId } });
+      await nextTick();
+      expect(wrapper.find('.picker').text()).toBe('1');
+
+      await wrapper.find('.picker').trigger('click');
+      expect(contactId.value).toBe(2);
+      await nextTick();
+      expect(wrapper.find('.picker').text()).toBe('2');
+
+      contactId.value = 7;
+      await nextTick();
+      expect(wrapper.find('.picker').text()).toBe('7');
+
+      await settle(promise);
+      wrapper.unmount();
+    });
   });
 });

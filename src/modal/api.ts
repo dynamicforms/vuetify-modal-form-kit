@@ -1,6 +1,6 @@
 import * as Form from '@dynamicforms/vue-forms';
 import { Action, type RenderContent, RenderableValue, type SimpleComponentDef } from '@dynamicforms/vuetify-inputs';
-import { computed, inject, type InjectionKey, nextTick, ref, shallowReactive } from 'vue';
+import { type Component, computed, inject, type InjectionKey, nextTick, type Ref, ref, shallowReactive } from 'vue';
 
 import { defaultDialogSize, type DialogSize, type DialogSizeName, resolveDialogSize } from './dialog-size';
 import dialogTracker from './top-modal-tracker';
@@ -54,12 +54,24 @@ export interface ModalOptions {
   color?: string;
   icon?: string;
   /**
-   * Components the layout generated from `form` resolves names against, before the `df-*` components `<modal-view>`
-   * supplies. A component given here needs no global registration. `modal.custom()` and a `SimpleComponentDef` in
-   * `title` or `message` do not use this map: they resolve a globally registered component.
+   * Components the dialog body resolves names against, before the `df-*` components `<modal-view>` supplies: the
+   * layout generated from `form`, and the component `custom()` names or a `SimpleComponentDef` at the top of
+   * `message` names. A component given here needs no global registration. A component nested in the children of a
+   * `SimpleComponentDef`, and one in `title`, resolve globally registered components only.
    */
   components?: Record<string | symbol, any>;
 }
+
+/** The options of `custom()`. */
+export interface CustomOptions extends ModalOptions {
+  /**
+   * Two-way bound props of the component: each ref is passed as the prop of its key, and the component's
+   * `update:<key>` event writes the ref.
+   */
+  model?: Record<string, Ref<any>>;
+}
+
+let lastCustomComponent = 0;
 
 /**
  * The properties of a dialog the modal service opened. Each one is reactive: a read in a render function, `computed`
@@ -260,11 +272,26 @@ class ModalAPI {
 
   custom(
     title: RenderContent,
-    componentName: string,
+    component: string | Component,
     componentProps: Record<any, any>,
-    options?: ModalOptions,
+    options?: CustomOptions,
   ): CloseablePromise<string> {
-    return this.message(title, <SimpleComponentDef>{ componentName, componentProps }, options);
+    const { model, ...modalOptions } = options ?? {};
+    // a component given as such is reached through the dialog's components, under a name of its own
+    let componentName = component as string;
+    if (typeof component !== 'string') {
+      componentName = `df-modal-custom-${++lastCustomComponent}`;
+      modalOptions.components = { ...modalOptions.components, [componentName]: component };
+    }
+    const props: Record<string, any> = { ...componentProps };
+    Object.entries(model ?? {}).forEach(([key, value]) => {
+      // a getter: the props are read while the body renders, so the component follows the ref
+      Object.defineProperty(props, key, { get: () => value.value, enumerable: true, configurable: true });
+      props[`onUpdate:${key}`] = (newValue: unknown) => {
+        value.value = newValue;
+      };
+    });
+    return this.message(title, <SimpleComponentDef>{ componentName, componentProps: props }, modalOptions);
   }
 
   // Whether the caller states buttons of its own, and so whether the dialog adds its default ones. Only an action

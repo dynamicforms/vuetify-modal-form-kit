@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The promise the `modal` service returns carries `props`: the open dialog's `title`, `message`, `size`, `form`,
   `actions`, `color`, `icon` and `components`, reactive and writable. A write changes the dialog on screen.
 - `useDialog()` returns the dialog a component in its body is rendered in.
+- `custom()` takes a component as well as a name, and resolves a name against `options.components` before the
+  globally registered components; so does a `SimpleComponentDef` at the top of `message`. `CustomOptions.model`
+  binds refs to the component's props both ways.
 
 ### Changed
 
