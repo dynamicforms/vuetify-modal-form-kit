@@ -11,11 +11,11 @@
         <form-render :layout="formLayout" :components="components" @breakpoint="breakpoint = $event" />
         <!-- .value: the anchors are plain objects, and Vue unwraps only top-level refs. The Teleports are keyed on
              the breakpoint, so they remount and find the new anchor when a breakpoint moves a field to another
-             row or column. -->
-        <Teleport :key="breakpoint" :to="emailAnchor.target.value" defer>
+             row or column. They render after mount: the server renders the anchors empty. -->
+        <Teleport v-if="mounted" :key="`email-${breakpoint}`" :to="emailAnchor.target.value" defer>
           <v-text-field v-model="email" label="Email" type="email" />
         </Teleport>
-        <Teleport :key="breakpoint" :to="contactMethodAnchor.target.value" defer>
+        <Teleport v-if="mounted" :key="`contact-${breakpoint}`" :to="contactMethodAnchor.target.value" defer>
           <v-select v-model="contactMethod" label="Preferred Contact Method" :items="contactMethodItems" />
         </Teleport>
       </v-card-text>
@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { VTextField, VTextarea, VSelect, VCheckbox, VBtn, VRadioGroup, VRadio } from 'vuetify/components';
 
 import { FormBuilder, FormRender, FormBuilderBodyProp, useTeleportAnchor } from '../../src';
@@ -35,6 +35,10 @@ const contactMethod = ref('');
 const emailAnchor = useTeleportAnchor();
 const contactMethodAnchor = useTeleportAnchor();
 const breakpoint = ref();
+const mounted = ref(false);
+onMounted(() => {
+  mounted.value = true;
+});
 const contactMethodItems = [
   { title: 'Email', value: 'email' },
   { title: 'Phone', value: 'phone' },

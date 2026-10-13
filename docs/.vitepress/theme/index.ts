@@ -1,5 +1,4 @@
 import { DynamicFormsInputs } from '@dynamicforms/vuetify-inputs';
-import { h } from 'vue'
 import type { Theme } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import { createVuetify } from 'vuetify'
@@ -16,6 +15,7 @@ export default {
   extends: DefaultTheme,
   enhanceApp({ app }) {
     const vuetify = createVuetify({
+      ssr: true,
       components,
       directives,
       theme: {
@@ -27,9 +27,4 @@ export default {
     app.use(DynamicFormsModalFormKit);
     app.use(DynamicFormsInputs, { registerComponents: true, errorText });
   },
-  Layout: () => {
-    return h(DefaultTheme.Layout, null, {
-      // lahko dodamo custom slote za layout, če bo potrebno
-    })
-  }
 } satisfies Theme

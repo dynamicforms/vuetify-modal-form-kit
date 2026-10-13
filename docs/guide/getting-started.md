@@ -10,6 +10,8 @@ The package is ESM only. `engines.node` is `>=22.12`, the first Node release tha
 module, which a CommonJS consumer uses. A CommonJS consumer still needs a bundler: the peers import their own
 stylesheets, which Node cannot load.
 
+Server-side rendering takes the setup in [Server-side rendering](/guide/ssr).
+
 In your `main.ts`:
 ```typescript
 import { DynamicFormsModalFormKit } from '@dynamicforms/vuetify-modal-form-kit';
