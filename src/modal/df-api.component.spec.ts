@@ -2,17 +2,17 @@ import * as Form from '@dynamicforms/vue-forms';
 import { Action, dfInputComponentsByTag, type DfInputComponentTag } from '@dynamicforms/vuetify-inputs';
 import { mount } from '@vue/test-utils';
 import { vi } from 'vitest';
-import { nextTick } from 'vue';
+import { h, nextTick } from 'vue';
 import { createVuetify } from 'vuetify';
 
 import { FormBuilder } from '../core/form-layout';
 
-import modal, { currentModal } from './api';
+import modal, { type CloseablePromise, currentModal, useDialog } from './api';
 import ModalView from './df-api.component.vue';
 
 const stubs = {
   DfModal: {
-    props: ['modelValue', 'formControl', 'actions', 'title'],
+    props: ['modelValue', 'formControl', 'actions', 'title', 'size'],
     template: '<div class="df-modal" :data-open="String(modelValue)"><slot name="body" /><slot name="actions" /></div>',
   },
   DfActions: { props: ['actions'], template: '<div class="df-actions" :data-count="actions.length" />' },
@@ -291,9 +291,79 @@ describe('ModalView', () => {
     expect(shownDialogs(second)).toBe(1);
 
     // and it is the dialog it was: the action it opened with still settles the promise the caller holds
-    await currentModal.value!.actions!.close.execute(null);
+    await currentModal.value!.props.drawn.actions.close.execute(null);
     await nextTick();
     expect(await promise).toBe('close');
     second.unmount();
+  });
+
+  it('draws what is written to the props of the open dialog', async () => {
+    const wrapper = mountView();
+    const promise = modal.message('Details', 'fill this in', { size: 'small' });
+    await nextTick();
+    const dialog = wrapper.findComponent(stubs.DfModal);
+    expect(dialog.props('size')).toBe('small');
+
+    promise.props.size = 'x-large';
+    promise.props.title = 'Step 2';
+    promise.props.actions = { ...promise.props.actions, save: new Action({ value: { label: 'Save' } }) };
+    await nextTick();
+
+    expect(dialog.props('size')).toBe('x-large');
+    expect(dialog.props('title').resolvedText).toBe('Step 2');
+    expect(wrapper.find('.df-actions').attributes('data-count')).toBe('2');
+
+    promise.close('close');
+    await nextTick();
+    await promise;
+    wrapper.unmount();
+  });
+
+  it('hands a component in the dialog body its own dialog', async () => {
+    const seen: (CloseablePromise<string> | undefined)[] = [];
+    const DialogPanel = {
+      setup() {
+        const dialog = useDialog();
+        seen.push(dialog);
+        return () => h('div', { class: 'dialog-panel' }, dialog?.props.size);
+      },
+    };
+    // the real widget, which renders the panel the dialog's message names
+    const wrapper = mount(ModalView, {
+      global: { stubs: { ...stubs, MessagesWidget: false }, components: { DialogPanel }, plugins: [createVuetify()] },
+    });
+
+    const first = modal.custom('First', 'DialogPanel', {});
+    await nextTick();
+    const second = modal.custom('Second', 'DialogPanel', {});
+    await nextTick();
+    expect(seen).toEqual([first, second]);
+
+    second.props.size = 'large';
+    await nextTick();
+    expect(wrapper.find('.dialog-panel').text()).toBe('large');
+
+    second.close('close');
+    await nextTick();
+    await second;
+    await nextTick();
+    // the panel of the dialog underneath is set up again, with its own dialog
+    expect(seen).toEqual([first, second, first]);
+
+    first.close('close');
+    await nextTick();
+    await first;
+    wrapper.unmount();
+  });
+
+  it('hands no dialog to a component outside one', () => {
+    let seen: CloseablePromise<string> | undefined = undefined;
+    mount({
+      setup() {
+        seen = useDialog();
+        return () => null;
+      },
+    }).unmount();
+    expect(seen).toBeUndefined();
   });
 });

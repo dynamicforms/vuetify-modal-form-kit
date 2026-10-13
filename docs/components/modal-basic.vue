@@ -44,7 +44,10 @@
             <v-col cols="12" md="6">
               <v-card variant="outlined" class="pa-4 mb-4">
                 <v-card-title class="text-subtitle-1 px-0">Dialog Sizes</v-card-title>
-                <v-card-text class="px-0"> Dialogs with different sizes (small, medium, large, x-large). </v-card-text>
+                <v-card-text class="px-0">
+                  Dialogs with different sizes (small, medium, large, x-large); the inputs in the dialog change its
+                  title, icon and size.
+                </v-card-text>
                 <v-card-actions class="px-0">
                   <v-btn-group variant="outlined">
                     <v-btn color="primary" @click="showSizedDialog('small')">S</v-btn>
@@ -72,9 +75,9 @@
 <script setup lang="ts">
 import { Field, Group, Validators } from '@dynamicforms/vue-forms';
 import { Action, MdString, RenderableValue } from '@dynamicforms/vuetify-inputs';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
-import { type DialogSize, modal, ModalView } from '../../src';
+import { type DialogSize, dialogSizes, modal, ModalView } from '../../src';
 
 // Flag to control whether to show modal API component in this demo
 // In a real app, this would be in your App.vue
@@ -148,23 +151,59 @@ async function showFormDialog() {
   }
 }
 
-// Dialog with different sizes
+// Dialog with different sizes: the inputs in the dialog body change the title, the icon and the size of the open
+// dialog through its props
 async function showSizedDialog(size: DialogSize) {
-  const okAction = new Action({ value: { label: 'OK', icon: 'mdi-check', defaultConfirm: true } });
+  const titleField = new Field({ value: 'Dialog Size Example', label: 'Dialog title' });
+  const iconField = new Field({ value: 'mdi-resize', label: 'Icon' });
+  const sizeField = new Field({ value: size, label: 'Dialog size' });
+  const icons = ['mdi-resize', 'mdi-star', 'mdi-heart', 'mdi-rocket', 'mdi-palette'];
 
-  // Create a form with a size field
-  const form = new Group({
-    // Size field controls dialog size
-    size: new Field({ value: size }),
-    // Action button
-    ok: okAction,
-  });
+  const dialog = modal.message(
+    titleField.value,
+    {
+      componentName: 'div',
+      children: [
+        {
+          componentName: 'div',
+          componentProps: { class: 'd-flex ga-4' },
+          children: [
+            { componentName: 'df-input', componentProps: { control: titleField, class: 'flex-grow-1' } },
+            {
+              componentName: 'df-select',
+              componentProps: {
+                control: iconField,
+                choices: icons.map((icon) => ({ id: icon, text: icon.slice(4), icon })),
+                allowNull: false,
+                style: 'flex: 0 0 10em',
+              },
+            },
+          ],
+        },
+        {
+          componentName: 'df-select',
+          componentProps: {
+            control: sizeField,
+            choices: dialogSizes.map((name) => ({ id: name, text: name })),
+            allowNull: false,
+          },
+        },
+      ],
+    },
+    { icon: iconField.value, size },
+  );
 
-  // Show sized dialog
-  dialogResult.value = await modal.message('Dialog Size Example', `This dialog is displayed with size: ${size}`, {
-    form,
-    size,
-  });
+  const stop = watch(
+    () => [titleField.value, iconField.value, sizeField.value] as const,
+    ([title, icon, dialogSize]) => {
+      dialog.props.title = title;
+      dialog.props.icon = icon;
+      dialog.props.size = dialogSize;
+    },
+  );
+
+  dialogResult.value = await dialog;
+  stop();
 }
 </script>
 

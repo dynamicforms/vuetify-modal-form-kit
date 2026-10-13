@@ -2,17 +2,18 @@
   <df-modal
     v-if="currentModal && isDrawingView"
     v-model="isOpen"
-    :form-control="currentModal.form"
-    :size="currentModal.size"
+    :form-control="currentModal.props.form"
+    :size="currentModal.props.size"
     :dialog-id="currentModal.dialogId"
-    :title="currentModal.title"
-    :color="currentModal.color"
-    :icon="currentModal.icon"
+    :title="currentModal.props.title"
+    :color="currentModal.props.color"
+    :icon="currentModal.props.icon"
     :actions="actionsArray"
   >
     <template #body>
-      <messages-widget v-if="message" :message="[message]" :classes="messageClass" />
-      <form-render v-if="formLayout" :layout="formLayout" :components="components" />
+      <!-- keyed by the dialog: a component in the body reads its dialog once, in setup(), through useDialog() -->
+      <messages-widget v-if="message" :key="dialogKey(currentModal)" :message="[message]" :classes="messageClass" />
+      <form-render v-if="formLayout" :key="dialogKey(currentModal)" :layout="formLayout" :components="components" />
     </template>
     <template #actions>
       <df-actions :actions="actionsArray" class="d-flex justify-end" style="gap: 0.5em" />
@@ -24,12 +25,12 @@
 import * as Form from '@dynamicforms/vue-forms';
 import { MessagesWidget } from '@dynamicforms/vuetify-inputs';
 import { DfActions, dfInputComponentsByTag } from '@dynamicforms/vuetify-inputs';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, provide, ref, watch } from 'vue';
 
 import { FormBuilder } from '../core/form-layout';
 import { FormRender } from '../layout';
 
-import { currentModal, installed, mountedViews } from './api';
+import { currentModal, dialogKey as injectionKey, installed, type ModalData, mountedViews } from './api';
 import DfModal from './df-modal.component.vue';
 
 const isOpen = ref(false);
@@ -44,9 +45,22 @@ watch(
   { immediate: true },
 );
 
-const message = computed(() => currentModal.value?.message);
+const message = computed(() => currentModal.value?.props.message);
 const messageClass = computed(() => (message.value ? message.value.extraClasses : undefined));
-const actionsArray = computed(() => Object.values(currentModal.value?.actions ?? {}));
+const actionsArray = computed(() => Object.values(currentModal.value?.props.drawn.actions ?? {}));
+
+provide(
+  injectionKey,
+  computed(() => currentModal.value?.dialog),
+);
+
+// a symbol is not a valid vnode key
+const dialogKeys = new WeakMap<ModalData, number>();
+let lastDialogKey = 0;
+function dialogKey(modal: ModalData) {
+  if (!dialogKeys.has(modal)) dialogKeys.set(modal, ++lastDialogKey);
+  return dialogKeys.get(modal)!;
+}
 
 // The fallback label, for a field that carries none: camelCase or snake_case read as Title Case.
 function generateLabel(fieldName: string): string {
@@ -76,9 +90,9 @@ function warnUnrendered(form: Form.Group, names: string[]) {
 
 // Build form layout from form fields
 const formLayout = computed(() => {
-  if (!currentModal.value?.form) return null;
+  const form = currentModal.value?.props.form;
+  if (!form) return null;
 
-  const form = currentModal.value.form;
   const formBuilder = new FormBuilder();
   const builder = formBuilder.simple();
   const unrendered: string[] = [];
@@ -111,7 +125,7 @@ const formLayout = computed(() => {
 // The components a layout may name: what `@dynamicforms/vuetify-inputs` draws with, under the caller's own. The
 // caller's win, so an application component reaches a dialog body without being registered globally, and a tag
 // the peer's map already holds can be replaced for one dialog.
-const components = computed(() => ({ ...dfInputComponentsByTag, ...(currentModal.value?.components ?? {}) }));
+const components = computed(() => ({ ...dfInputComponentsByTag, ...(currentModal.value?.props.components ?? {}) }));
 
 // One view draws, whatever is mounted: two of them rendering the same `currentModal` would put one dialog on
 // screen twice, over two overlays. The first mounted draws, and hands that over to the next one still up when

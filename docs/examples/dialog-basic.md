@@ -35,6 +35,10 @@ A message dialog, a yes/no confirmation, a validated form dialog, and sized dial
   as the dialog body instead of a message/form.
 - **Sizing** - `options.size` picks `'small'` / `'medium'` / `'large'` / `'x-large'`, each of which goes
   fullscreen below its own breakpoint. The default sizes itself to its content.
+- **Changing an open dialog** - the sized dialogs' body holds an input for the title and selects for the icon and
+  the size. The demo writes what they hold to the dialog's `props.title`, `props.icon` and `props.size`, which
+  changes the open dialog - see
+  [Changing an open dialog](/api/modal-service#changing-an-open-dialog).
 
 Full method signatures, `ModalOptions`, and `DialogSize` are documented in the
 [`modal` service API reference](/api/modal-service).

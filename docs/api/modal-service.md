@@ -22,6 +22,7 @@ part in this, so keep the two in sync if you set both. The promise also carries:
 | `.close(value)` | Closes the dialog from outside, resolving the promise with `value`. |
 | `.dialogId` | `symbol` identifying this dialog in the internal stack. |
 | `.payload` | What the executor of the action that settled the dialog returned, once it has - `undefined` before that, and for a dialog closed from outside or settled by an action that produced nothing. |
+| `.props` | `DialogProps`: the dialog's properties, to read and change while it is open - see [Changing an open dialog](#changing-an-open-dialog). |
 
 ### Getting data out of a dialog
 
@@ -40,6 +41,44 @@ if ((await dialog) === 'save') {
 
 The other route out is the form itself: a dialog handed a `Form.Group` edits that group, and the caller reads it
 back when the dialog settles. `.payload` is for what the action computes rather than what the user typed.
+
+### Changing an open dialog
+
+`.props` holds the dialog's properties. Each one is reactive, and writing one changes the dialog on screen:
+
+| Property | Read as | Written as |
+|---|---|---|
+| `title`, `message` | `RenderableValue` | anything `title` and `message` accept in a [method](#methods) |
+| `size` | `DialogSize` | `DialogSizeName`; a name of no size throws, and the size stays |
+| `form` | `Form.Group \| undefined` | the same |
+| `actions` | `FormActions` | the same |
+| `color`, `icon` | `string \| undefined` | the same |
+| `components` | `Record<string \| symbol, any> \| undefined` | the same |
+
+`actions` holds the dialog's default actions (`close`, or `yes` / `no`) merged under `options.actions`. Writing it
+replaces that set, and the default actions are not added to it again. The dialog draws `actions` together with the
+`Action` members of `form` whose name `actions` does not hold, as it does when it opens, and settles with the
+actions of the new set.
+
+```typescript
+const dialog = modal.message('Import', 'Reading the file');
+const rows = await readRows(file);
+dialog.props.message = `Importing ${rows.length} rows`;
+dialog.props.size = 'large';
+```
+
+A component in the dialog body - one `custom()` names, or one a layout of `form` renders - reaches its dialog
+through `useDialog()`, called in `setup()`. It returns the promise of the dialog the component is rendered in, with
+its `props` and `close()`, and `undefined` outside the body of a dialog `<modal-view>` draws:
+
+```typescript
+import { useDialog } from '@dynamicforms/vuetify-modal-form-kit';
+
+const dialog = useDialog();
+function next() {
+  dialog!.props.title = 'Step 2';
+}
+```
 
 ## Methods
 
@@ -140,7 +179,7 @@ const answer = await submit.execute();
 
 The resolver a dialog attaches belongs to that dialog: it answers for the element it was registered on and for no
 sibling binding of it, only while its own dialog is the one on screen, and it is dropped again when the dialog
-settles. An `Action` kept across openings - a module-level one, or a form reused for every call - collects nothing
+settles or when a write to `props.actions` or `props.form` leaves the action out of the dialog. An `Action` kept across openings - a module-level one, or a form reused for every call - collects nothing
 over repeated dialogs.
 
 ## `DialogSize`
