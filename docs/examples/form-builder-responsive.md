@@ -67,8 +67,8 @@ formBuilder.row({ }, (row) => row
     .component((cmpt) => cmpt
       .generic('VTextarea', { label: 'Comments' }))));
 
-// Form-level breakpoint: from xl upwards the form is this one, and replaces all rows above, with their own
-// breakpoints
+// Form-level breakpoint: from xl upwards the form has only these rows; the rows above, with their row and column
+// breakpoints, do not render there
 formBuilder.breakpoint('xl', (form) => form
   .row({ }, (row) => row
     .col({ cols: 6 }, (col) => col

@@ -2,8 +2,6 @@ import vuetify from 'vite-plugin-vuetify';
 import { defineConfig } from 'vitepress';
 import { crosslinksConfig } from 'vitepress-plugin-crosslinks';
 
-import ssrCkeditorStub from './ssr-ckeditor-stub.ts';
-
 export default defineConfig({
   title: 'DynamicForms Vuetify modal form kit',
   description: 'One dialog onscreen at any one time plus a programmatic (vs template) form builder.',
@@ -30,6 +28,9 @@ export default defineConfig({
           items: [
             { text: 'Installation', link: '/guide/getting-started#installation' },
             { text: 'Basic Usage', link: '/guide/getting-started#basic-usage' },
+            { text: "Translating the library's strings", link: '/guide/getting-started#translating-the-library-s-strings' },
+            { text: 'Translating errors', link: '/guide/getting-started#translating-errors' },
+            { text: 'Server-side rendering', link: '/guide/ssr' },
           ]
         },
         {
@@ -75,7 +76,7 @@ export default defineConfig({
     }
   },
   vite: {
-    plugins: [vuetify(), ssrCkeditorStub],
+    plugins: [vuetify()],
     optimizeDeps: {
       include: ['vuetify'],
     },

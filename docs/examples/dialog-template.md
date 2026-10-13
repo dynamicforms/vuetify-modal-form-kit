@@ -88,8 +88,8 @@ and [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) documents `Action` and `<
 dialogs the `modal` service opens do. It reads them from its `actions` prop, so the prop gets the same `Action[]` that
 `<df-actions>` renders. In the demo above, Enter in a field logs in and Esc cancels.
 
-A key executes an action whose visibility is `'full'`, whose `effectiveEnabled` is `true` (false where the action or
-a container above it is disabled) and whose `busy` is `false`. While an overlay above the dialog is open, the key goes
+A key executes an action whose `executable` is `true`: its visibility is `'full'`, it and every container above it
+are enabled, it is not `busy`, and every handler's `canExecute()` returns `true`. While an overlay above the dialog is open, the key goes
 to the overlay: Esc first closes an open `<df-select>` menu or `<df-date-time>` picker, and a second Esc rejects the
 dialog. [`<df-modal>`](/api/df-modal#keyboard-shortcuts) lists the rules.
 

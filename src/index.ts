@@ -18,18 +18,12 @@ export interface DynamicFormsModalFormKitOptions extends ModalTranslationSetting
 export const DynamicFormsModalFormKit = {
   install: (app: App, options?: Partial<DynamicFormsModalFormKitOptions>) => {
     if (options?.registerComponents ?? false) {
-      Object.entries(Components).map(([name, component]) => app.component(name, component));
+      Object.entries(Components).forEach(([name, component]) => app.component(name, component));
     }
     if (options?.registerVuetifyComponents ?? false) {
-      Object.entries(VuetifyComponents).map(([name, component]) => {
-        try {
-          return app.component(name, component);
-        } catch (error: any) {
-          if (!error.message.includes('already registered')) {
-            throw error;
-          }
-        }
-        return null;
+      // a component the app has registered under the same name keeps its registration
+      Object.entries(VuetifyComponents).forEach(([name, component]) => {
+        if (!app.component(name)) app.component(name, component);
       });
     }
     if (options?.modalDefaults) setDfModalDefaults(options.modalDefaults);

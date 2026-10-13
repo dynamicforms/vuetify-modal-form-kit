@@ -144,19 +144,18 @@ watch(
   { immediate: true },
 );
 
-// What the action's value renders as at the current width, resolved by the same function <df-actions> draws a
-// button with, so the button and the keystroke answer one reading. defaultConfirm / defaultReject live on the
-// value and not on a class, which is what lets a dialog take an action of either class, and
-// ActionBreakpointRenderOptions leaves both out, so a breakpoint stating one is a type error.
+// The action's value at the current width, resolved with the function <df-actions> draws a button with.
+// defaultConfirm / defaultReject are read off the value, so an Action of vue-forms and of vuetify-inputs both state
+// them; ActionBreakpointRenderOptions does not include them, so a breakpoint stating one is a type error.
 function renderOptions(action: Form.Action) {
   return getRenderOptionsForBreakpoint(action.value ?? {}, breakpoint.value);
 }
 
-// The keyboard reaches an action that is rendered at FULL, that is enabled all the way up - `effectiveEnabled` is
-// false where the action or any container above it is disabled - and that is not already running. `busy` is what
-// keeps a held-down Enter from starting a second run of a handler that has yet to settle.
+// The keyboard reaches an action whose button <df-actions> enables: `executable` is false where the action or a
+// container above it is disabled, the action is not at 'full' visibility or is running, or a handler's
+// canExecute() returns false.
 function isReachable(action: Form.Action) {
-  return action.effectiveEnabled && action.visibility === 'full' && !action.busy;
+  return action.executable;
 }
 
 // execute() is asynchronous and this is a document listener, so nothing wraps it the way Vue wraps a template
@@ -177,8 +176,7 @@ const rejectAction = computed(() =>
   props.actions.find((action) => renderOptions(action).defaultReject && isReachable(action)),
 );
 
-// A dialog that states a way of rejecting itself carries the button for it, and one that does not carries none:
-// the button is the click-target of the action Escape reaches, so there is nothing for it to do without one.
+// The header's close button is shown only while Escape reaches an action.
 const showsCloseButton = computed(() => rejectAction.value !== undefined);
 
 function onClose(e: MouseEvent) {

@@ -141,6 +141,19 @@ describe('modal service', () => {
     expect(closed.payload).toBeUndefined();
   });
 
+  it('keeps the payload of the action that settled it when closed again', async () => {
+    const submit = new Action({ value: { label: 'Send' } });
+    submit.registerAction(new Form.ExecuteAction(async () => ({ id: 7 })));
+    const form = new Form.Group({ submit });
+
+    const dialog = modal.message('Subscribe', 'once', { form });
+    await submit.execute(null);
+    dialog.close('cancelled');
+
+    expect(await settled(dialog)).toBe('submit');
+    expect(dialog.payload).toEqual({ id: 7 });
+  });
+
   it('closes from the outside through the returned promise', async () => {
     const promise = modal.message('Working', 'Please wait...');
     expect(currentModal.value).not.toBeNull();

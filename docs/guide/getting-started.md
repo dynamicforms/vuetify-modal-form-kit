@@ -10,8 +10,11 @@ The package is ESM only. `engines.node` is `>=22.12`, the first Node release tha
 module, which a CommonJS consumer uses. A CommonJS consumer still needs a bundler: the peers import their own
 stylesheets, which Node cannot load.
 
+Server-side rendering takes the setup in [Server-side rendering](/guide/ssr).
+
 In your `main.ts`:
 ```typescript
+import { DynamicFormsInputs } from '@dynamicforms/vuetify-inputs';
 import { DynamicFormsModalFormKit } from '@dynamicforms/vuetify-modal-form-kit';
 // this library has no stylesheet; the inputs it renders use the vuetify-inputs one
 import '@dynamicforms/vuetify-inputs/styles.css';
@@ -21,13 +24,17 @@ const app = createApp(MyApp);
 app.use(router);
 app.use(vuetify);
 
+// registers the df-* components a layout names, such as dfInput()'s df-input
+app.use(DynamicFormsInputs, { registerComponents: true });
 app.use(DynamicFormsModalFormKit, { registerComponents: true, registerVuetifyComponents: false });
 ```
 
 `registerComponents` and `registerVuetifyComponents` default to `false`. `registerComponents` registers
 `<modal-view>`, `<df-modal>`, `<form-render>` and `<component-render>` globally; `registerVuetifyComponents`
 registers the Vuetify components the library renders (`VBtn`, `VCard*`, `VDialog`, `VIcon`, `VRow`, `VCol`,
-`VSheet`), for projects that do not register Vuetify's components globally. `modalDefaults` sets the values a dialog
+`VSheet`), for projects that do not register Vuetify's components globally; a component the app has registered under
+the same name keeps its registration. The options are of the exported type `DynamicFormsModalFormKitOptions`.
+`modalDefaults` sets the values a dialog
 uses where it states none of its own - see
 [`<df-modal>` → Global defaults](/api/df-modal#global-defaults):
 
@@ -35,7 +42,8 @@ uses where it states none of its own - see
 app.use(DynamicFormsModalFormKit, { modalDefaults: { titleColor: 'primary' } });
 ```
 
-`translate` and `translateNamespace` translate the library's strings - see
+`translate` and `translateNamespace` (the exported type `ModalTranslationSettings`) translate the library's strings
+- see
 [Translating the library's strings](#translating-the-library-s-strings).
 
 ## Basic Usage
@@ -104,7 +112,7 @@ The library has three strings, the labels of the [default actions](/api/modal-se
 
 They are translated with `@dynamicforms/translatable`, as the strings of `@dynamicforms/vuetify-inputs` are. The
 `translate` option of the plugin is a function shaped like vue-i18n's `t`; the keys are looked up under
-`translateNamespace`, `df_modal` by default (`df_modal.Close`), and without a namespace where it is `''`. A key the
+`translateNamespace`, `df_modal` by default (exported as `defaultTranslateNamespace`; `df_modal.Close`), and without a namespace where it is `''`. A key the
 function does not translate keeps its English default. The labels are read while the buttons render, so they follow
 a locale switch:
 

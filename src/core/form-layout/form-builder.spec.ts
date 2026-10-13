@@ -1,6 +1,7 @@
 import { responsiveBreakpoints } from '@dynamicforms/vuetify-inputs';
 
 import { FormBuilder } from './form-builder';
+import { Row } from './row';
 import { FormBuilderName, FormJSONResponsive } from './types';
 
 describe('FormBuilder', () => {
@@ -266,6 +267,17 @@ describe('FormBuilder', () => {
 
     // a probe builds nothing: no row and no column
     expect(fb.toJSON()).toEqual({ rows: [] });
+  });
+
+  it('throws for a name the component builder has no method for, and adds no row', () => {
+    const fb = new FormBuilder();
+
+    expect(() => (<any>fb.simple()).noSuchMethod()).toThrow(TypeError);
+    expect(fb.toJSON()).toEqual({ rows: [] });
+
+    const row = new Row({});
+    expect(() => (<any>row.simple()).simple()).toThrow(TypeError);
+    expect(row.toJSON().columns).toEqual([]);
   });
 
   describe('fromJSON', () => {

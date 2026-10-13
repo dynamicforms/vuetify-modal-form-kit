@@ -25,7 +25,7 @@ slots.
 | `size` | `DialogSizeName` | `'default'` | `'small'`, `'medium'`, `'large'` or `'x-large'`, or one of their shorter names (see [`DialogSize`](./modal-service#dialogsize)). Each of those switches to fullscreen below its own breakpoint; `'default'` sizes itself to its content and never does. Anything else is `'default'`, with a console warning. |
 | `formControl` | `Form.Group` | — | Passed to the `body` slot as `formControl`. `df-modal` renders no form from it. |
 | `dialogId` | `symbol` | — | The stack entry of a dialog of the `modal` service, set by `<modal-view>`. Leave it unset for a template dialog. `df-modal` pushes and removes the entry of a template dialog only; one it was given a `dialogId` for stays on the stack when it unmounts. A `model-value` going false removes the entry in both cases. |
-| `title` | `RenderableValue` | — | Dialog title. Accepts plain text, Markdown (`MdString`), HTML (`HtmlString`), or a custom component. Falls back to the `title` slot if omitted. |
+| `title` | `RenderableValue` | — | Dialog title. Accepts plain text, Markdown (`MdString`), HTML (`HtmlString`), or a custom component. The `title` slot replaces its rendering. |
 | `color` | `string` | — | Title bar background color. Falls back to the global default set through [`setDfModalDefaults`](#global-defaults) where unset. |
 | `icon` | `string` | — | Icon shown next to the title. |
 | `actions` | `Form.Action[]` | `[]` | The actions the [keyboard shortcuts](#keyboard-shortcuts) and the close button reach. It renders nothing; render the same array through `<df-actions>` in the `actions` slot. |
@@ -42,7 +42,7 @@ slots.
 |------|-------|-------------|
 | `title` | — | Overrides the default title rendering (a `MessagesWidget` fed from the `title` prop). |
 | `body` | `{ formControl }` | The dialog's content. |
-| `errors` | `{ errors, formControl }` | Below the body. `errors` are the errors of `formControl` itself, such as a group validator's or those a submit handler wrote to it, not those of its members, that the inputs show now: by vuetify-inputs' `useShownErrors()`, an error of origin `'server'` always and any other once the form is `touched`. By default a `<df-input-hint>` draws them, as an input draws its own, and nothing is drawn where there are none. |
+| `errors` | `{ errors, formControl }` | Below the body. `errors` are the errors of `formControl` itself, such as a group validator's or those a submit handler wrote to it; the errors of its members are not included. They are filtered by vuetify-inputs' `useShownErrors()`: an error of origin `'server'` always, any other once the form is `touched`. By default a `<df-input-hint>` draws them; nothing is drawn where there are none. |
 | `actions` | — | The dialog's buttons. Render the `actions` prop's array here through `<df-actions>` rather than with `v-btn`s, so a click and a keystroke reach the same action - see [Template Dialog → Keep actions consistent](/examples/dialog-template#keep-actions-consistent-always-render-them-through-df-actions), and [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) for the `Action` / `df-actions` API. |
 
 Dialogs share one stack, and a `df-modal` is shown only while its entry is on top, so of several open
@@ -53,8 +53,8 @@ the service and stays on the stack when the `df-modal` drawing it unmounts; the 
 
 ## Global defaults
 
-`setDfModalDefaults` sets the values a `<df-modal>` uses for a prop it is not given, directly or through the
-[`modal` service](./modal-service)'s `ModalOptions`:
+`setDfModalDefaults(defaults: Partial<DfModalDefaults>)` sets the values a `<df-modal>` uses for a prop it is not
+given, directly or through the [`modal` service](./modal-service)'s `ModalOptions`:
 
 ```typescript
 import { setDfModalDefaults } from '@dynamicforms/vuetify-modal-form-kit';
@@ -100,15 +100,18 @@ same keystroke. The dialog's overlay root has the class `df-modal`, and Enter an
 that class has the highest z-index in `.v-overlay-container`; tooltips and snackbars are not counted. Closing a menu
 and then the dialog takes two Escapes.
 
-An action is reachable when all three hold:
+An action is reachable while its [`executable`](:vue-forms:/api/action.html) is `true`, that is when all of these
+hold:
 
 | Read | Reachable when |
 |---|---|
 | `effectiveEnabled` | `true`: the action and every container above it have `access` `'editable'`. A `Group` that is not editable takes all its actions out of reach. |
 | `visibility` | `'full'`. An action at `'hidden'`, `'invisible'` or `'suppress'` is not on screen and not reachable. |
 | `busy` | `false`. `busy` is `true` from the call to `execute()` until the run settles, so a second Enter does not start a second run. |
+| `canExecute()` | `true` for every `ExecuteAction` registered on the action. A `SubmitAction` returns `false` while its target is invalid or a validation is running. |
 
-`<df-actions>` disables a button on `effectiveEnabled` and `busy`, and shows it `loading` while the action is busy.
+`<df-actions>` disables a button while its action is not `executable`, and shows it `loading` while the action is
+busy.
 
 A handler that rejects is passed to `app.config.errorHandler`, with `'df-modal keyboard shortcut'` as the info
 string, or to `console.error` where the app has no handler; a document listener has no Vue error handling of its
@@ -124,9 +127,7 @@ const loginAction = new Action({ value: { name: 'login', label: 'Log in', defaul
 
 The dialog reads the two flags with vuetify-inputs' `getRenderOptionsForBreakpoint()`, the function `<df-actions>`
 draws the button with. `ActionBreakpointRenderOptions` does not include them, so a flag stated inside a breakpoint is
-a type error, and the screen width does not change which action Enter or Escape runs. Because the flags are read off
-`value`, an `Action` of vue-forms and the vuetify-inputs subclass both state them; the subclass adds the
-breakpoint-resolved render options.
+a type error, and the screen width does not change which action Enter or Escape runs.
 
 Enter and Escape call `execute()` on the same `Action` instance a click on the `<df-actions>` button does. This holds
 for `<df-modal>` in a template (see [Template Dialog](/examples/dialog-template#keyboard-shortcuts)) and for the

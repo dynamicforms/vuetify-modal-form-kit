@@ -3,10 +3,12 @@ import { isArray, isNumber, isObjectLike, isString } from 'lodash-es';
 
 /**
  * The keys a per-breakpoint Vuetify prop is written under: the plain name and one `<name>-<breakpoint>` per
- * breakpoint, which camelize onto the component's `offsetMd` / `alignSm` props.
+ * breakpoint from `sm` up, which camelize onto the component's `offsetMd` / `alignSm` props. `v-row` and `v-col`
+ * have no `xs` variant; the plain name applies there.
  */
 export function withBreakpointVariants(...keys: string[]): string[] {
-  return [...keys, ...responsiveBreakpoints.flatMap((bp) => keys.map((key) => `${key}-${bp}`))];
+  const breakpoints = responsiveBreakpoints.filter((bp) => bp !== 'xs');
+  return [...keys, ...breakpoints.flatMap((bp) => keys.map((key) => `${key}-${bp}`))];
 }
 
 /** A class binding is a string, a list of strings or a class-to-flag object. */

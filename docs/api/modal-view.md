@@ -50,7 +50,8 @@ again, with its actions.
 One view draws the stack. A second mounted `<modal-view>` warns on the console and renders nothing; it takes over
 the drawing when the view that has it unmounts, so a route transition with two views mounted for a moment shows
 the dialog once. The stack is module state: one per page, shared by every Vue app on it, and under SSR one per
-process rather than per request. The library is therefore for one app in the browser.
+process rather than per request - see [Server-side rendering](/guide/ssr#state-per-request). The library is
+therefore for one app in the browser.
 
 ## The generated layout
 

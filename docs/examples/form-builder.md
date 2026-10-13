@@ -121,8 +121,11 @@ An anchor's id exists only in the application that generated it. A layout with a
 `components` map. A layout that comes from a backend or is otherwise serialized uses code-declared content;
 teleport anchors suit a layout built and rendered by the same component.
 
-`defer` (a `<Teleport>` prop since Vue 3.5) lets the `<Teleport>` mount before or after the anchor in the same
+`defer` lets the `<Teleport>` mount before or after the anchor in the same
 render.
+
+Under server-side rendering the `<Teleport>` renders after mount - see
+[Server-side rendering](/guide/ssr#what-the-server-renders).
 
 ### The same field across breakpoints
 
@@ -160,7 +163,7 @@ The same ref given to two different fields gives both anchors one id in a layout
 `<Teleport :to="'#' + id">` reaches only the first element with that id, and the other anchor stays empty;
 `<FormRender>` logs a warning for it.
 
-The Contact Information section of the example above uses teleport anchors keyed on the breakpoint.
+The Contact Information section of the demo at the top of this page uses teleport anchors keyed on the breakpoint.
 
 ## See also
 
@@ -199,7 +202,9 @@ form
 
 // The same layout, declared with row() / col():
 
-form
+const sameForm = new FormBuilder();
+
+sameForm
   .row({ }, (row) => {
     row.col({ cols: 12 }, (col) => col
       .component((cmpt) => cmpt

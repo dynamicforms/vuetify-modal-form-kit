@@ -10,7 +10,6 @@ export type DialogSize = 'small' | 'medium' | 'large' | 'x-large' | 'default';
  * `'modal-xl'` - which `resolveDialogSize` accepts as well. `(string & {})` keeps the shorter names assignable without
  * collapsing the union into `string`, so the editor still lists the five sizes.
  */
-
 export type DialogSizeName = DialogSize | (string & {});
 
 /** every size */

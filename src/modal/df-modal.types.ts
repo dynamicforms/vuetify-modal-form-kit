@@ -11,15 +11,16 @@ export interface DfModalProps {
   title?: RenderableValue;
   color?: string;
   icon?: string;
-  // Actions considered for the Enter (defaultConfirm) / Esc (defaultReject) keyboard shortcuts. Rendering them is
-  // still up to the `actions` slot - this prop only drives the keyboard handling. The flags are read off the
-  // action's value, which is where <df-actions> reads them too, so any vue-forms Action states them.
+  /**
+   * The actions the Enter (`defaultConfirm`) and Esc (`defaultReject`) shortcuts run. The prop renders nothing; the
+   * `actions` slot renders them. The flags are read off the action's value, as `<df-actions>` reads them.
+   */
   actions?: Form.Action[];
 }
 
 export type DfModalSlots = {
   title: () => any;
-  body: (props: { formControl: Form.Group }) => Form.Group;
+  body: (props: { formControl: Form.Group | undefined }) => any;
   errors: (props: { errors: Form.ValidationError[]; formControl: Form.Group | undefined }) => any;
   actions: () => any;
 };
