@@ -4,7 +4,7 @@ A `FormBuilder` layout can differ per Vuetify breakpoint, on the form, a row or 
 
 ## Responsive Layout
 
-The demo states a layout for `xs`, `sm` and `md`; `lg` and `xl` use the `md` one:
+The demo's base layout is the `xs` one; `sm`, `md` and `lg` state their own, and `xl` uses the `lg` one:
 
 <form-responsive/>
 
@@ -22,18 +22,8 @@ Overrides on each level:
 ```typescript
 const formBuilder = new FormBuilder();
 
-// Base layout: used at every breakpoint that neither states nor inherits an override
+// Base layout: from xs up to the first breakpoint that states an override
 formBuilder
-  .row({ }, (row) => row
-    .col({ cols: 6 }, (col) => col
-      .component((cmpt) => cmpt
-        .generic('VTextField', { label: 'Name' })))
-    .col({ cols: 6 }, (col) => col
-      .component((cmpt) => cmpt
-        .generic('VTextField', { label: 'Email' }))));
-
-// Form-level breakpoint: the whole form from sm upwards
-formBuilder.breakpoint('sm', (form) => form
   .row({ }, (row) => row
     .col({ cols: 12 }, (col) => col
       .component((cmpt) => cmpt
@@ -41,40 +31,52 @@ formBuilder.breakpoint('sm', (form) => form
   .row({ }, (row) => row
     .col({ cols: 12 }, (col) => col
       .component((cmpt) => cmpt
-        .generic('VTextField', { label: 'Email', density: 'compact' })))));
+        .generic('VTextField', { label: 'Email', density: 'compact' }))));
 
 // Row-level breakpoint: this row only
 formBuilder.row({ }, (row) => row
-  // Base layout of this row: 3 equal columns
-  .col({ cols: 4 }, (col) => col
+  // 2 columns
+  .col({ cols: 6 }, (col) => col
     .component((cmpt) => cmpt
       .generic('VTextField', { label: 'City' })))
-  .col({ cols: 4 }, (col) => col
+  .col({ cols: 6 }, (col) => col
     .component((cmpt) => cmpt
-      .generic('VTextField', { label: 'State' })))
-  .col({ cols: 4 }, (col) => col
-    .component((cmpt) => cmpt
-      .generic('VTextField', { label: 'Zip' })))
-  // 2 columns from md upwards
+      .generic('VTextField', { label: 'State/Zip' })))
+  // 3 columns from md upwards
   .breakpoint('md', (row) => row
-    .col({ cols: 6 }, (col) => col
+    .col({ cols: 4 }, (col) => col
       .component((cmpt) => cmpt
         .generic('VTextField', { label: 'City' })))
-    .col({ cols: 6 }, (col) => col
+    .col({ cols: 4 }, (col) => col
       .component((cmpt) => cmpt
-        .generic('VTextField', { label: 'State/Zip' })))));
+        .generic('VTextField', { label: 'State' })))
+    .col({ cols: 4 }, (col) => col
+      .component((cmpt) => cmpt
+        .generic('VTextField', { label: 'Zip' })))));
 
 // Column-level breakpoint: this column only
 formBuilder.row({ }, (row) => row
-  .col({ cols: 3 }, (col) => col
+  .col({ cols: 12 }, (col) => col
+    // 12 columns wide; 3 from md upwards
+    .breakpoint('md', (col) => { col.props.cols = 3; return col; })
     .component((cmpt) => cmpt
       .generic('VTextField', { label: 'First field' })))
-  .col({ cols: 9 }, (col) => col
-    // 9 columns wide; 12 from sm and 6 from md upwards
-    .breakpoint('md', (col) => { col.props.cols = 6; return col; })
-    .breakpoint('sm', (col) => { col.props.cols = 12; return col; })
+  .col({ cols: 12 }, (col) => col
+    // 12 columns wide; 9 from md upwards
+    .breakpoint('md', (col) => { col.props.cols = 9; return col; })
     .component((cmpt) => cmpt
       .generic('VTextarea', { label: 'Comments' }))));
+
+// Form-level breakpoint: from xl upwards the form is this one, and replaces all rows above, with their own
+// breakpoints
+formBuilder.breakpoint('xl', (form) => form
+  .row({ }, (row) => row
+    .col({ cols: 6 }, (col) => col
+      .component((cmpt) => cmpt
+        .generic('VTextField', { label: 'Name' })))
+    .col({ cols: 6 }, (col) => col
+      .component((cmpt) => cmpt
+        .generic('VTextField', { label: 'Email' })))));
 ```
 
 ## What a breakpoint inherits
