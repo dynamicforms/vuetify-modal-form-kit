@@ -29,8 +29,8 @@ A message dialog, a yes/no confirmation, a form dialog with validation and sized
 - **Error messages** - the form dialog's email field has a pattern validator with the code `invalid_email`. The
   documentation app installs vuetify-inputs with an `errorText` that renders that code from a markdown message - see
   [Translating errors](/guide/getting-started#translating-errors).
-- **Custom components** - `modal.custom('Title', componentName, componentProps)` renders a globally registered
-  component as the dialog body.
+- **Custom components** - `modal.custom('Title', component, componentProps)` renders a component, or a component
+  named in `options.components` or registered globally, as the dialog body.
 - **Sizing** - `options.size` is `'small'`, `'medium'`, `'large'` or `'x-large'`; each is fullscreen below its own
   breakpoint. `'default'` sizes the dialog to its content.
 - **Changing an open dialog** - the sized dialogs' body holds an input for the title and selects for the icon, the

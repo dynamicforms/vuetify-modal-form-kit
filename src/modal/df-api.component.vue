@@ -12,7 +12,21 @@
   >
     <template #body>
       <!-- keyed by the dialog: a component in the body reads its dialog once, in setup(), through useDialog() -->
-      <messages-widget v-if="message" :key="dialogKey(currentModal)" :message="[message]" :classes="messageClass" />
+      <component
+        :is="bodyComponent"
+        v-if="message && bodyComponent"
+        :key="dialogKey(currentModal)"
+        v-bind="message.componentBindings"
+        :class="messageClass"
+      >
+        <messages-widget v-if="message.componentChildren.length" :message="[...message.componentChildren]" />
+      </component>
+      <messages-widget
+        v-else-if="message"
+        :key="dialogKey(currentModal)"
+        :message="[message]"
+        :classes="messageClass"
+      />
       <form-render v-if="formLayout" :key="dialogKey(currentModal)" :layout="formLayout" :components="components" />
     </template>
     <template #actions>
@@ -126,6 +140,13 @@ const formLayout = computed(() => {
 // caller's win, so an application component reaches a dialog body without being registered globally, and a tag
 // the peer's map already holds can be replaced for one dialog.
 const components = computed(() => ({ ...dfInputComponentsByTag, ...(currentModal.value?.props.components ?? {}) }));
+
+// The component a SimpleComponentDef at the top of the message names, where the components above hold it. Any other
+// message, and a name they do not hold, renders through MessagesWidget, which resolves globally registered ones.
+const bodyComponent = computed(() => {
+  if (message.value?.kind !== 'component') return undefined;
+  return (components.value as Record<string, unknown>)[message.value.componentName];
+});
 
 // One view draws, whatever is mounted: two of them rendering the same `currentModal` would put one dialog on
 // screen twice, over two overlays. The first mounted draws, and hands that over to the next one still up when

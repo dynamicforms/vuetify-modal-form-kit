@@ -21,14 +21,32 @@ const result = await modal.message('Done', 'Your changes have been saved.');
 |---|---|---|
 | `message` | `message(title, message, options?)` | Shows a message dialog. Gets a single `close` action unless `options.actions` or `options.form` states an action that is [drawn](#actions). |
 | `yesNo` | `yesNo(title, message, options?)` | Shows a confirmation dialog with `yes` / `no` actions unless `options.actions` or `options.form` states an action that is [drawn](#actions). |
-| `custom` | `custom(title, componentName, componentProps, options?)` | `message()` with a globally registered component (`componentName`) and its `componentProps` as the body. |
+| `custom` | `custom(title, component, componentProps, options?)` | `message()` with a component and its `componentProps` as the body - see [`custom()`](#custom). |
 | `isTop` | `isTop(promise)` | `true` while the dialog behind that promise is the one on top of the stack. |
 | `isInstalled` | `isInstalled()` | `true` once a `<modal-view>` is mounted. Without one, no dialog renders and no action can resolve one, so `.close(value)` is the only way to settle its promise. |
 
 `title` and `message` take a string, an `MdString` (Markdown), an `HtmlString` (HTML, not sanitized), a
 `SimpleComponentDef`, or a `RenderableValue` holding one of these (e.g. to add a CSS class); all five are exported by
-`@dynamicforms/vuetify-inputs`. A component a `SimpleComponentDef` names, or `custom()`'s `componentName`, must be
-registered globally. `message()`, `yesNo()` and `custom()` return a [`CloseablePromise`](#closeablepromise).
+`@dynamicforms/vuetify-inputs`. The component a `SimpleComponentDef` at the top of `message` names is resolved
+against `options.components`, then the `df-*` components, then the globally registered ones; a component nested in
+its children, or in `title`, must be registered globally. `message()`, `yesNo()` and `custom()` return a
+[`CloseablePromise`](#closeablepromise).
+
+### `custom()`
+
+`component` is a component, or the name of one, resolved as a `SimpleComponentDef`'s at the top of `message`. A
+component given as such needs no registration. `options` is a `CustomOptions`: `ModalOptions` with `model`, whose
+refs are two-way bound props of the component. Each ref is passed as the prop of its key, and the component's
+`update:<key>` event writes the ref:
+
+```typescript
+import ContactPicker from './contact-picker.vue';
+
+const contactId = ref<number | null>(null);
+if ((await modal.custom('Call', ContactPicker, { clubId }, { model: { contactId } })) === 'close') {
+  call(contactId.value);
+}
+```
 
 ## `CloseablePromise`
 
@@ -113,7 +131,7 @@ Passed as the last argument to `message()` / `yesNo()` / `custom()`.
 | `size` | `DialogSizeName` | `'small'`, `'medium'`, `'large'` or `'x-large'`, or one of their shorter names - see [`DialogSize`](#dialogsize). Defaults to `'default'`. |
 | `color` | `string` | The `color` of the title bar's `v-sheet`. Where unset, the default set with [`setDfModalDefaults`](./df-modal#global-defaults). |
 | `icon` | `string` | Icon shown before the title. |
-| `components` | `Record<string \| symbol, any>` | Components the [generated layout](./modal-view#the-generated-layout) of `form` resolves names against, before the `df-*` components of [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:). A component given here needs no global registration; a `df-*` name given here replaces that component in this dialog. `custom()` and a `SimpleComponentDef` in `title` or `message` do not use this map. |
+| `components` | `Record<string \| symbol, any>` | Components the dialog body resolves names against, before the `df-*` components of [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:): the [generated layout](./modal-view#the-generated-layout) of `form`, `custom()`'s component and a `SimpleComponentDef` at the top of `message`. A component given here needs no global registration; a `df-*` name given here replaces that component in this dialog. |
 
 ### Which name settles the dialog
 
