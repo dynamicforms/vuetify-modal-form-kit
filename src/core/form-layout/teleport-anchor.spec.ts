@@ -1,4 +1,4 @@
-import { useTeleportAnchor } from './teleport-anchor';
+import { useTeleportAnchor, useTeleportAnchors } from './teleport-anchor';
 
 describe('useTeleportAnchor', () => {
   it('starts with an empty id and a bare "#" target', () => {
@@ -25,5 +25,17 @@ describe('useTeleportAnchor', () => {
     expect(first.target.value).toBe('#abc');
     expect(second.id.value).toBe('');
     expect(second.target.value).toBe('#');
+  });
+});
+
+describe('useTeleportAnchors', () => {
+  it('returns one independent anchor per name', () => {
+    const anchors = useTeleportAnchors(['firstName', 'lastName']);
+
+    expect(Object.keys(anchors)).toEqual(['firstName', 'lastName']);
+    anchors.firstName.id.value = 'first';
+
+    expect(anchors.firstName.target.value).toBe('#first');
+    expect(anchors.lastName.target.value).toBe('#');
   });
 });

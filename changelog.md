@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `custom()` takes a component as well as a name, and resolves a name against `options.components` before the
   globally registered components; so does a `SimpleComponentDef` at the top of `message`. `CustomOptions.model`
   binds refs to the component's props both ways.
+- `useTeleportAnchors(names)`: one `useTeleportAnchor()` per name, keyed by the name.
 
 ### Changed
 

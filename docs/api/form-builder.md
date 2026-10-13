@@ -74,9 +74,10 @@ The object passed to `component()`'s callback (`VuetifyInputsComponentBuilder` b
 | `dfInput` / `dfTextArea` / `dfSelect` / `dfCheckbox` / `dfDateTime` / `dfFile` / `dfImage` / `dfColor` / `dfRtfEditor` / `dfLabel` / `dfInputHint` / `dfActions` | Shorthands for `generic('df-*', props)`, typed to the props of the matching [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) component. There is one for each of its components. |
 | `byTag(tag, props)` | Builds the component `tag` names: through the `df*` shorthand for that tag (`'df-date-time'` builds what `dfDateTime(props)` builds), or through `generic(tag, props)` when there is none. Used when the tag comes from data; a tag vuetify-inputs adds before this builder has a shorthand for it is still rendered. |
 
-`FormBuilder`, `FormBuilderBodyProp` and `useTeleportAnchor` are top-level exports of
+`FormBuilder`, `FormBuilderBodyProp`, `useTeleportAnchor` and `useTeleportAnchors` are top-level exports of
 `@dynamicforms/vuetify-modal-form-kit`. `useTeleportAnchor()` returns
-`{ id: Ref<string>, target: ComputedRef<string> }`, where `target` is `'#' + id.value`. The object is not a ref, and
+`{ id: Ref<string>, target: ComputedRef<string> }`, where `target` is `'#' + id.value`.
+`useTeleportAnchors(names)` returns one such anchor per name, keyed by the name. The object is not a ref, and
 Vue unwraps only top-level refs of the render context, so a template binds `anchor.target.value` to
 `<Teleport :to>`.
 
