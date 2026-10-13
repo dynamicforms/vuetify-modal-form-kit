@@ -10,12 +10,13 @@ exists.
 
 ## Upgrading to v0.10.0 (from v0.9.x)
 
-0.10.0 requires `@dynamicforms/vue-forms` 3.0.0 and `@dynamicforms/vuetify-inputs` 0.13.0. Upgrade the three
-together, and work through the [vue-forms](https://docs.velis.si/dynamicforms/vue-forms/guide/migration) and
+0.10.0 requires `@dynamicforms/vue-forms` 3.0.0, `@dynamicforms/vuetify-inputs` 0.14.0 and
+`@dynamicforms/translatable` 0.3. Upgrade them together, and work through the [vue-forms](https://docs.velis.si/dynamicforms/vue-forms/guide/migration) and
 [vuetify-inputs](https://docs.velis.si/dynamicforms/vuetify-inputs/guide/migration) migration guides first.
 
 ```bash
-npm install @dynamicforms/vue-forms@^3.0.0-alpha.1 @dynamicforms/vuetify-inputs@^0.13.0 @dynamicforms/vuetify-modal-form-kit@^0.10.0
+npm install @dynamicforms/vue-forms@^3.0.0-alpha.1 @dynamicforms/vuetify-inputs@^0.14.0 @dynamicforms/translatable@^0.3.0 \
+  @dynamicforms/vuetify-modal-form-kit@^0.10.0
 ```
 
 ### Dialog content is imported from vuetify-inputs
@@ -61,6 +62,25 @@ try {
 // after
 size = isDialogSize(name) ? resolveDialogSize(name) : 'medium';
 ```
+
+### The default actions are translated by this library
+
+vuetify-inputs 0.14.0 has no ready-made actions. The `close`, `yes` and `no` actions of `modal.message()` and
+`modal.yesNo()` are this library's, labelled with its translations of `Close`, `Yes` and `No`. An application that
+translated these keys for vuetify-inputs gives the translation function to this library as well:
+
+```typescript
+// before
+app.use(DynamicFormsInputs, { translate: t, translateNamespace: 'df_inputs' });   // df_inputs.Close, .Yes, .No
+
+// after
+app.use(DynamicFormsInputs, { translate: t, translateNamespace: 'df_inputs' });
+app.use(DynamicFormsModalFormKit, { translate: t });                              // df_modal.Close, .Yes, .No
+```
+
+The icons are `mdi-close` for `close` and `no` and `mdi-check` for `yes`, and `yes` / `no` are drawn in the
+`success` / `error` color. `setDfModalDefaults({ actions })` replaces any of the three - see
+[Default actions](/api/modal-service#default-actions).
 
 ## Upgrading to v0.9.0 (from v0.8.x)
 

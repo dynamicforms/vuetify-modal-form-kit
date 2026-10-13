@@ -1,14 +1,15 @@
 import { App } from 'vue';
 
 import * as Components from './dynamicforms-components';
-import { type DfModalDefaults, setDfModalDefaults } from './modal';
+import { type DfModalDefaults, type ModalTranslationSettings, setDfModalDefaults } from './modal';
+import { modalTranslationSettingsKey } from './modal/translations';
 import * as VuetifyComponents from './vuetify-components';
 
 export * from './core';
 export * from './layout';
 export * from './modal';
 
-export interface DynamicFormsModalFormKitOptions {
+export interface DynamicFormsModalFormKitOptions extends ModalTranslationSettings {
   registerComponents: boolean;
   registerVuetifyComponents: boolean;
   modalDefaults: Partial<DfModalDefaults>;
@@ -32,5 +33,9 @@ export const DynamicFormsModalFormKit = {
       });
     }
     if (options?.modalDefaults) setDfModalDefaults(options.modalDefaults);
+    app.provide(modalTranslationSettingsKey, {
+      translate: options?.translate,
+      translateNamespace: options?.translateNamespace,
+    });
   },
 };

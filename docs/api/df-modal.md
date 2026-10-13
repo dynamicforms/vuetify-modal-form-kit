@@ -65,6 +65,7 @@ setDfModalDefaults({ titleColor: 'primary' });
 | Default | Falls back for | Description |
 |---|---|---|
 | `titleColor` | `color` | Title bar background color applied where a dialog states none of its own. |
+| `actions` | the default actions of the `modal` service | `Partial<DialogActionFactories>`: factories that replace the built-in `close`, `yes` and `no` of `modal.message()` and `modal.yesNo()` - see [Default actions](./modal-service#default-actions). |
 
 The defaults are reactive: a later call changes every open and future dialog that states no `color` of its own.
 `DynamicFormsModalFormKit.install()` takes the same object as `modalDefaults` (see
@@ -78,7 +79,7 @@ The `x` in the title bar runs the action Escape runs: the `defaultReject` action
 `modal` service therefore settles from the `x` with that action's key - `'close'` from `modal.message()`, `'no'`
 from `modal.yesNo()`.
 
-To give a dialog an `x`, give it a `defaultReject` action, e.g. `Action.closeAction()`; the same action answers
+To give a dialog an `x`, give it a `defaultReject` action, e.g. `defaultDialogActions.close()`; the same action answers
 Escape. There is no prop for the `x`: the button and the keystroke are present or absent together.
 
 ## Keyboard shortcuts

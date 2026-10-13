@@ -198,8 +198,8 @@ await modal.message('Subscribe', 'Enter your email address:', { form });   // re
 
 `action.execute()` called from code settles the dialog as a click on its button does.
 
-The dialog adds its default actions - `close`, or `yes` / `no` - when none of the caller's actions has visibility
-`'full'`. `<df-actions>` does not draw an action at `'suppress'` and hides one at `'hidden'` (`d-none`) or
+The dialog adds its [default actions](#default-actions) - `close`, or `yes` / `no` - when none of the caller's
+actions has visibility `'full'`. `<df-actions>` does not draw an action at `'suppress'` and hides one at `'hidden'` (`d-none`) or
 `'invisible'` (`invisible`), and the keyboard reaches only `'full'`, so without the default actions such a dialog
 could not be closed. The visibility is read when the dialog opens: changing it later does not add or remove the
 default actions.
@@ -234,6 +234,36 @@ for the element it is registered on, not for another binding of the same action,
 of the stack. It is unregistered when the dialog settles and when a write to `props.actions` or `props.form` removes
 the action from the dialog, so an `Action` reused across dialogs - a module-level one, or a form reused for every
 call - does not accumulate handlers.
+
+### Default actions
+
+`modal.message()` states a `close` action and `modal.yesNo()` a `yes` and a `no` action, each made by a factory
+for every dialog. `defaultDialogActions` holds the built-in factories:
+
+| Factory | Name | Label | Icon | Flags | Color |
+|---|---|---|---|---|---|
+| `close` | `close` | `Close` | `mdi-close` | `defaultConfirm`, `defaultReject` | the `defaultConfirm` one of `<df-actions>` |
+| `yes` | `yes` | `Yes` | `mdi-check` | `defaultConfirm` | `success` |
+| `no` | `no` | `No` | `mdi-close` | `defaultReject` | `error` |
+
+The labels are the library's [translations](/guide/getting-started#translating-the-library-s-strings), read while
+the button renders. The color is the button's, through `passthroughAttrs`.
+
+`setDfModalDefaults({ actions })` replaces factories; a factory it does not state stays the built-in one. A factory
+returns a new action on every call and states the flags Enter and Escape read:
+
+```typescript
+import { defaultDialogActions, setDfModalDefaults } from '@dynamicforms/vuetify-modal-form-kit';
+import { Action } from '@dynamicforms/vuetify-inputs';
+
+setDfModalDefaults({
+  actions: {
+    yes: () => new Action({ value: { name: 'yes', label: () => t('common.confirm'), defaultConfirm: true } }),
+    // the built-in one, drawn as a text link
+    no: () => new Action({ value: { ...defaultDialogActions.no().value, renderAs: 'text' } }),
+  },
+});
+```
 
 ## `DialogSize`
 

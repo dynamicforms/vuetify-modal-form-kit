@@ -19,3 +19,5 @@ export {
   resolveDialogSize,
 } from './dialog-size';
 export { setDfModalDefaults, type DfModalDefaults } from './modal-defaults';
+export { defaultDialogActions, type DialogActionFactories } from './dialog-actions';
+export { defaultTranslateNamespace, type ModalTranslationSettings, translateStrings } from './translations';
