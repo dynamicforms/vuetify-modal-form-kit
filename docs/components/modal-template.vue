@@ -3,9 +3,9 @@
     <v-card variant="outlined" class="pa-4">
       <v-card-title class="text-subtitle-1 px-0">Template Dialog (&lt;df-modal&gt;)</v-card-title>
       <v-card-text class="px-0">
-        Declared directly in the component's template instead of being opened from code. The actions are still
-        built with <code>new Action()</code> and rendered through <code>&lt;df-actions&gt;</code>, so they look
-        and behave exactly like the dialogs opened via <code>modal.*</code> above.
+        Declared directly in the component's template instead of being opened from code. The actions are still built
+        with <code>new Action()</code> and rendered through <code>&lt;df-actions&gt;</code>, so they look and behave
+        exactly like the dialogs opened via <code>modal.*</code> above.
       </v-card-text>
       <v-card-actions class="px-0">
         <v-btn color="primary" prepend-icon="mdi-login" @click="isOpen = true">Open Login Dialog</v-btn>
@@ -28,11 +28,12 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ExecuteAction } from '@dynamicforms/vue-forms';
 import { RenderableValue } from '@dynamicforms/vuetify-inputs';
 import { Action, DfActions } from '@dynamicforms/vuetify-inputs';
 import { ref } from 'vue';
+
 import { DfModal } from '../../src';
 
 // The title prop expects a RenderableValue - it supports plain text as well as Markdown, just like modal.message()
@@ -41,9 +42,9 @@ const title = new RenderableValue('Log in');
 const isOpen = ref(false);
 const username = ref('');
 const password = ref('');
-const lastResult = ref(null);
+const lastResult = ref<string | null>(null);
 
-function close(result) {
+function close(result: string) {
   lastResult.value = result;
   isOpen.value = false;
 }
@@ -63,7 +64,12 @@ cancelAction.registerAction(
 
 const loginAction = new Action({
   value: {
-    name: 'login', label: 'Log in', icon: 'mdi-check', showIcon: true, showLabel: true, defaultConfirm: true,
+    name: 'login',
+    label: 'Log in',
+    icon: 'mdi-check',
+    showIcon: true,
+    showLabel: true,
+    defaultConfirm: true,
   },
 });
 loginAction.registerAction(

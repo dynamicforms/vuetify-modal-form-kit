@@ -10,9 +10,7 @@
             <v-col cols="12" md="6">
               <v-card variant="outlined" class="pa-4 mb-4">
                 <v-card-title class="text-subtitle-1 px-0">Message Dialog</v-card-title>
-                <v-card-text class="px-0">
-                  Simple dialog with information message and a close button.
-                </v-card-text>
+                <v-card-text class="px-0"> Simple dialog with information message and a close button. </v-card-text>
                 <v-card-actions class="px-0">
                   <v-btn color="primary" prepend-icon="mdi-information-outline" @click="showMessage">
                     Show Message
@@ -24,9 +22,7 @@
             <v-col cols="12" md="6">
               <v-card variant="outlined" class="pa-4 mb-4">
                 <v-card-title class="text-subtitle-1 px-0">Confirmation Dialog</v-card-title>
-                <v-card-text class="px-0">
-                  Dialog with Yes/No options for confirmation.
-                </v-card-text>
+                <v-card-text class="px-0"> Dialog with Yes/No options for confirmation. </v-card-text>
                 <v-card-actions class="px-0">
                   <v-btn color="warning" prepend-icon="mdi-alert-outline" @click="showConfirmation">
                     Show Confirmation
@@ -38,13 +34,9 @@
             <v-col cols="12" md="6">
               <v-card variant="outlined" class="pa-4 mb-4">
                 <v-card-title class="text-subtitle-1 px-0">Form Dialog</v-card-title>
-                <v-card-text class="px-0">
-                  Dialog with a form including validation.
-                </v-card-text>
+                <v-card-text class="px-0"> Dialog with a form including validation. </v-card-text>
                 <v-card-actions class="px-0">
-                  <v-btn color="success" prepend-icon="mdi-form-select" @click="showFormDialog">
-                    Show Form
-                  </v-btn>
+                  <v-btn color="success" prepend-icon="mdi-form-select" @click="showFormDialog"> Show Form </v-btn>
                 </v-card-actions>
               </v-card>
             </v-col>
@@ -52,9 +44,7 @@
             <v-col cols="12" md="6">
               <v-card variant="outlined" class="pa-4 mb-4">
                 <v-card-title class="text-subtitle-1 px-0">Dialog Sizes</v-card-title>
-                <v-card-text class="px-0">
-                  Dialogs with different sizes (small, medium, large, x-large).
-                </v-card-text>
+                <v-card-text class="px-0"> Dialogs with different sizes (small, medium, large, x-large). </v-card-text>
                 <v-card-actions class="px-0">
                   <v-btn-group variant="outlined">
                     <v-btn color="primary" @click="showSizedDialog('small')">S</v-btn>
@@ -75,23 +65,23 @@
     </v-card>
 
     <!-- Modal API component (normally you would include this in your main App.vue) -->
-    <modal-view v-if="showModalApi"/>
+    <modal-view v-if="showModalApi" />
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue';
+<script setup lang="ts">
 import { Field, Group, Validators } from '@dynamicforms/vue-forms';
-import { MdString, RenderableValue } from '@dynamicforms/vuetify-inputs';
-import { Action } from '@dynamicforms/vuetify-inputs';
-import { modal, ModalView } from '../../src';
+import { Action, MdString, RenderableValue } from '@dynamicforms/vuetify-inputs';
+import { ref } from 'vue';
+
+import { type DialogSize, modal, ModalView } from '../../src';
 
 // Flag to control whether to show modal API component in this demo
 // In a real app, this would be in your App.vue
 const showModalApi = true;
 
 // To store and display the result of dialogs
-const dialogResult = ref(null);
+const dialogResult = ref<string | null>(null);
 
 // Simple message dialog
 async function showMessage() {
@@ -99,19 +89,17 @@ async function showMessage() {
     'Information',
     new RenderableValue(
       new MdString(
-        'This is a **simple message** dialog with a close button.\n\nStyling can be changed with custom CSS class.'
+        'This is a **simple message** dialog with a close button.\n\nStyling can be changed with custom CSS class.',
       ),
-      'md_extra_class'),
+      'md_extra_class',
+    ),
     { color: 'info', icon: 'mdi-information' },
   );
 }
 
 // Confirmation dialog
 async function showConfirmation() {
-  dialogResult.value = await modal.yesNo(
-    'Confirm Action',
-    'Are you sure you want to proceed with this action?'
-  );
+  dialogResult.value = await modal.yesNo('Confirm Action', 'Are you sure you want to proceed with this action?');
 }
 
 // Form dialog
@@ -146,11 +134,7 @@ async function showFormDialog() {
   });
 
   // Show dialog with form
-  dialogResult.value = await modal.message(
-    'User Information',
-    new RenderableValue({ componentName: 'div' }),
-    { form },
-  );
+  dialogResult.value = await modal.message('User Information', new RenderableValue({ componentName: 'div' }), { form });
 
   // If form was submitted successfully, display the entered values
   if (dialogResult.value === 'submit') {
@@ -160,18 +144,15 @@ async function showFormDialog() {
     };
 
     // Show the results in another dialog
-    modal.message(
-      'Form Submitted',
-      `You entered:\nName: ${userData.name}\nEmail: ${userData.email}`
-    );
+    modal.message('Form Submitted', `You entered:\nName: ${userData.name}\nEmail: ${userData.email}`);
   }
 }
 
 // Dialog with different sizes
-async function showSizedDialog(size) {
+async function showSizedDialog(size: DialogSize) {
   const okAction = new Action({ value: { label: 'OK', icon: 'mdi-check', defaultConfirm: true } });
 
-    // Create a form with a size field
+  // Create a form with a size field
   const form = new Group({
     // Size field controls dialog size
     size: new Field({ value: size }),
@@ -180,11 +161,10 @@ async function showSizedDialog(size) {
   });
 
   // Show sized dialog
-  dialogResult.value = await modal.message(
-    'Dialog Size Example',
-    `This dialog is displayed with size: ${size}`,
-    { form, size },
-  );
+  dialogResult.value = await modal.message('Dialog Size Example', `This dialog is displayed with size: ${size}`, {
+    form,
+    size,
+  });
 }
 </script>
 

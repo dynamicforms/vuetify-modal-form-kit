@@ -4,11 +4,11 @@
       <v-card-title>Basic Form Layout Example</v-card-title>
       <v-card-text>
         <v-alert type="info" variant="tonal" density="compact" class="mb-2">
-          Personal Information and Additional Information are declared entirely in code. Contact Information's
-          position in the layout comes from FormBuilder too, but its field markup and v-model live in this
-          template, wired up through a teleport anchor.
+          Personal Information and Additional Information are declared entirely in code. Contact Information's position
+          in the layout comes from FormBuilder too, but its field markup and v-model live in this template, wired up
+          through a teleport anchor.
         </v-alert>
-        <form-render :layout="formLayout" :components="components" @breakpoint="breakpoint = $event"/>
+        <form-render :layout="formLayout" :components="components" @breakpoint="breakpoint = $event" />
         <!-- .value is required here: emailAnchor/contactMethodAnchor are plain objects, not refs themselves, so
              Vue's template auto-unwrapping does not reach into their .target property. Both Teleports are keyed
              on the resolved breakpoint so a switch that moves a field to a different row/column - and so recreates
@@ -24,13 +24,13 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
+import { VTextField, VTextarea, VSelect, VCheckbox, VBtn, VRadioGroup, VRadio } from 'vuetify/components';
 
 import { FormBuilder, FormRender, FormBuilderBodyProp, useTeleportAnchor } from '../../src';
 
 // Import Vuetify components for direct use
-import { VTextField, VTextarea, VSelect, VCheckbox, VBtn, VRadioGroup, VRadio } from 'vuetify/components';
 
 // Reactive state and teleport anchors for the Contact Information fields, declared here rather than in the
 // components map: the builder only reserves their position in the layout.
@@ -49,7 +49,8 @@ const contactMethodItems = [
 const formBuilder = new FormBuilder();
 
 // Personal Information Section
-formBuilder.simple()
+formBuilder
+  .simple()
   .generic('h3', { [FormBuilderBodyProp]: 'Personal Information', class: 'mt-0' })
   .simple(2)
   .dfInput({ label: 'First name', placeholder: 'Enter your first name' })
@@ -59,13 +60,14 @@ formBuilder.simple()
 
 // Contact Information Section - the two fields below are teleported in from the template instead of being
 // resolved through the components map
-formBuilder.row({}, (row) => row
-  .col({ cols: 6, offset: 0 }, (col) => col
-    .component((cmpt) => cmpt.teleportAnchor(emailAnchor.id)))
-  .col({ cols: 6, offset: 0 }, (col) => col
-    .component((cmpt) => cmpt.teleportAnchor(contactMethodAnchor.id))));
+formBuilder.row({}, (row) =>
+  row
+    .col({ cols: 6, offset: 0 }, (col) => col.component((cmpt) => cmpt.teleportAnchor(emailAnchor.id)))
+    .col({ cols: 6, offset: 0 }, (col) => col.component((cmpt) => cmpt.teleportAnchor(contactMethodAnchor.id))),
+);
 
-formBuilder.simple()
+formBuilder
+  .simple()
   .generic('h3', { [FormBuilderBodyProp]: 'Additional Information', class: 'mt-0' })
   .generic('VTextarea', { label: 'Comments', rows: 3, modelValue: '' });
 /*
