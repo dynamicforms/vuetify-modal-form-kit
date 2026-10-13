@@ -1,3 +1,7 @@
+---
+outline: [2, 3]
+---
+
 # `modal` service
 
 The programmatic entry point for opening dialogs from code, without declaring anything in a template. Requires a
@@ -12,10 +16,29 @@ import { modal } from '@dynamicforms/vuetify-modal-form-kit';
 const result = await modal.message('Done', 'Your changes have been saved.');
 ```
 
-Every method returns a `CloseablePromise<string>` - a `Promise` that resolves to the key the action that closed the
-dialog is registered under: its field name when it is part of `options.form`, otherwise its key in
-`options.actions` (e.g. `'close'`, `'yes'`, `'no'`). An `Action`'s own `name` value is informational and plays no
-part in this, so keep the two in sync if you set both. The promise also carries:
+## Methods
+
+| Method | Signature | Description |
+|---|---|---|
+| `message` | `message(title, message, options?)` | Shows a message dialog. Gets a single `close` action unless `options.actions` or `options.form` states an action that is [drawn](#actions). |
+| `yesNo` | `yesNo(title, message, options?)` | Shows a confirmation dialog with `yes` / `no` actions unless `options.actions` or `options.form` states an action that is [drawn](#actions). |
+| `custom` | `custom(title, componentName, componentProps, options?)` | Shorthand for `message()` that renders a registered component (`componentName`) with `componentProps` as the body. |
+| `isTop` | `isTop(promise)` | `true` while the dialog behind that promise is the one on top of the stack. |
+| `isInstalled` | `isInstalled()` | `true` once a `<modal-view>` is mounted. Without one, no dialog renders and no action can resolve one, so `.close(value)` is the only way to settle its promise. |
+
+`title` and `message` accept a plain string, `MdString` (Markdown), `HtmlString` (HTML, not sanitized), a
+`SimpleComponentDef`, or a `RenderableValue` wrapping any of those (e.g. to attach an extra CSS class). All five are
+exported by `@dynamicforms/vuetify-inputs`. `message()`, `yesNo()` and `custom()` return a
+[`CloseablePromise`](#closeablepromise), through which the open dialog is read and changed.
+
+## `CloseablePromise`
+
+`import type { CloseablePromise, DialogProps } from '@dynamicforms/vuetify-modal-form-kit'`
+
+A `CloseablePromise<string>` is a `Promise` that resolves to the key the action that closed the dialog is registered
+under: its field name when it is part of `options.form`, otherwise its key in `options.actions` (e.g. `'close'`,
+`'yes'`, `'no'`). An `Action`'s own `name` value is informational and plays no part in this, so keep the two in sync
+if you set both. The promise also carries:
 
 | Member | Description |
 |---|---|
@@ -49,7 +72,7 @@ back when the dialog settles. `.payload` is for what the action computes rather 
 | Property | Read as | Written as |
 |---|---|---|
 | `title`, `message` | `RenderableValue` | anything `title` and `message` accept in a [method](#methods) |
-| `size` | `DialogSize` | `DialogSizeName`; a name of no size throws, and the size stays |
+| `size` | `DialogSize` | `DialogSizeName`; a name of no size is `'default'` |
 | `form` | `Form.Group \| undefined` | the same |
 | `actions` | `FormActions` | the same |
 | `color`, `icon` | `string \| undefined` | the same |
@@ -67,6 +90,8 @@ dialog.props.message = `Importing ${rows.length} rows`;
 dialog.props.size = 'large';
 ```
 
+### `useDialog()`
+
 A component in the dialog body - one `custom()` names, or one a layout of `form` renders - reaches its dialog
 through `useDialog()`, called in `setup()`. It returns the promise of the dialog the component is rendered in, with
 its `props` and `close()`, and `undefined` outside the body of a dialog `<modal-view>` draws:
@@ -79,20 +104,6 @@ function next() {
   dialog!.props.title = 'Step 2';
 }
 ```
-
-## Methods
-
-| Method | Signature | Description |
-|---|---|---|
-| `message` | `message(title, message, options?)` | Shows a message dialog. Gets a single `close` action unless `options.actions` or `options.form` states an action that is [drawn](#actions). |
-| `yesNo` | `yesNo(title, message, options?)` | Shows a confirmation dialog with `yes` / `no` actions unless `options.actions` or `options.form` states an action that is [drawn](#actions). |
-| `custom` | `custom(title, componentName, componentProps, options?)` | Shorthand for `message()` that renders a registered component (`componentName`) with `componentProps` as the body. |
-| `isTop` | `isTop(promise)` | `true` while the dialog behind that promise is the one on top of the stack. |
-| `isInstalled` | `isInstalled()` | `true` once a `<modal-view>` is mounted. Without one, no dialog renders and no action can resolve one, so `.close(value)` is the only way to settle its promise. |
-
-`title` and `message` accept a plain string, `MdString` (Markdown), `HtmlString` (HTML, not sanitized), a
-`SimpleComponentDef`, or a `RenderableValue` wrapping any of those (e.g. to attach an extra CSS class). All five are
-exported by `@dynamicforms/vuetify-inputs`.
 
 ## `ModalOptions`
 
@@ -202,8 +213,8 @@ shorter names.
 | `'default'` | none |
 
 An editor offers the five sizes, and the shorter names are accepted as well. `resolveDialogSize(name)` turns a name
-into the size it names, and throws an `Error` naming anything that names none - a size nobody defined is refused
-rather than drawn as the default. `isDialogSize(value)` answers the same question without the throw.
+into the size it names. Anything that names none resolves to `'default'`, with a console warning naming it, once per
+name. `isDialogSize(value)` answers whether a value names a size.
 
 ```typescript
 import { modal } from '@dynamicforms/vuetify-modal-form-kit';

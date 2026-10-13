@@ -40,7 +40,14 @@ A message dialog, a yes/no confirmation, a validated form dialog, and sized dial
   changes the open dialog - see
   [Changing an open dialog](/api/modal-service#changing-an-open-dialog).
 
-Full method signatures, `ModalOptions`, and `DialogSize` are documented in the
+## Changing an open dialog
+
+The sized dialogs write the title, the icon and the size their inputs hold to the dialog's `props`, the
+[`DialogProps`](/api/modal-service#changing-an-open-dialog) of the promise `modal.message()` returns:
+
+<<< ../components/modal-basic.vue#dialog-props{ts}
+
+Full method signatures, `CloseablePromise`, `ModalOptions`, and `DialogSize` are documented in the
 [`modal` service API reference](/api/modal-service).
 
 ## See also

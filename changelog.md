@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   HTML content is an `HtmlString`: `SimpleComponentDef` has no `componentVHtml`, and an `innerHTML` in its
   `componentProps` is dropped.
 - `vue-markdown-render` is no longer a peer dependency; vuetify-inputs renders the markdown.
+- A size that names none - in `ModalOptions.size`, `df-modal`'s `size` prop, `props.size` or
+  `resolveDialogSize()` - is `'default'`, with a console warning, where it threw an `Error`.
 
 ## [0.9.0] - 2026-10-01
 

@@ -74,7 +74,7 @@
 
 <script setup lang="ts">
 import { Field, Group, Validators } from '@dynamicforms/vue-forms';
-import { Action, MdString, RenderableValue } from '@dynamicforms/vuetify-inputs';
+import { Action, MdString, RenderableValue, type SimpleComponentDef } from '@dynamicforms/vuetify-inputs';
 import { ref, watch } from 'vue';
 
 import { type DialogSize, dialogSizes, modal, ModalView } from '../../src';
@@ -151,6 +151,7 @@ async function showFormDialog() {
   }
 }
 
+// #region dialog-props
 // Dialog with different sizes: the inputs in the dialog body change the title, the icon and the size of the open
 // dialog through its props
 async function showSizedDialog(size: DialogSize) {
@@ -159,35 +160,39 @@ async function showSizedDialog(size: DialogSize) {
   const sizeField = new Field({ value: size, label: 'Dialog size' });
   const icons = ['mdi-resize', 'mdi-star', 'mdi-heart', 'mdi-rocket', 'mdi-palette'];
 
+  const column = (cols: Record<string, number>, input: SimpleComponentDef): SimpleComponentDef => ({
+    componentName: 'v-col',
+    componentProps: cols,
+    children: [input],
+  });
   const dialog = modal.message(
     titleField.value,
     {
-      componentName: 'div',
+      componentName: 'v-row',
       children: [
-        {
-          componentName: 'div',
-          componentProps: { class: 'd-flex ga-4' },
-          children: [
-            { componentName: 'df-input', componentProps: { control: titleField, class: 'flex-grow-1' } },
-            {
-              componentName: 'df-select',
-              componentProps: {
-                control: iconField,
-                choices: icons.map((icon) => ({ id: icon, text: icon.slice(4), icon })),
-                allowNull: false,
-                style: 'flex: 0 0 10em',
-              },
+        column({ cols: 12, sm: 8 }, { componentName: 'df-input', componentProps: { control: titleField } }),
+        column(
+          { cols: 12, sm: 4 },
+          {
+            componentName: 'df-select',
+            componentProps: {
+              control: iconField,
+              choices: icons.map((icon) => ({ id: icon, text: icon.slice(4), icon })),
+              allowNull: false,
             },
-          ],
-        },
-        {
-          componentName: 'df-select',
-          componentProps: {
-            control: sizeField,
-            choices: dialogSizes.map((name) => ({ id: name, text: name })),
-            allowNull: false,
           },
-        },
+        ),
+        column(
+          { cols: 12 },
+          {
+            componentName: 'df-select',
+            componentProps: {
+              control: sizeField,
+              choices: dialogSizes.map((name) => ({ id: name, text: name })),
+              allowNull: false,
+            },
+          },
+        ),
       ],
     },
     { icon: iconField.value, size },
@@ -205,6 +210,7 @@ async function showSizedDialog(size: DialogSize) {
   dialogResult.value = await dialog;
   stop();
 }
+// #endregion dialog-props
 </script>
 
 <style scoped>

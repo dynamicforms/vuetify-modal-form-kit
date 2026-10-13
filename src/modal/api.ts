@@ -75,7 +75,7 @@ export interface DialogProps {
   get message(): RenderableValue;
   set message(value: RenderContent | RenderableValue);
   get size(): DialogSize;
-  /** Throws for a value that names no size, as `ModalOptions.size` does. */
+  /** A value that names no size is `'default'`, as in `ModalOptions.size`. */
   set size(value: DialogSizeName);
   form: Form.Group | undefined;
   actions: FormActions;

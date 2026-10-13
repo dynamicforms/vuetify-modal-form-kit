@@ -450,13 +450,14 @@ describe('modal service', () => {
       await settled(promise);
     });
 
-    it('refuses a size that names none, and keeps the one it has', async () => {
-      const promise = modal.message('Details', 'fill this in', { size: 'large' });
+    it('draws a size that names none at the default', async () => {
+      const promise = modal.message('Details', 'fill this in', { size: 'huge' });
+      expect(promise.props.size).toBe('default');
 
-      expect(() => {
-        promise.props.size = 'huge' as never;
-      }).toThrow("'huge' is not a dialog size");
-      expect(promise.props.size).toBe('large');
+      promise.props.size = 'large';
+      promise.props.size = 'enormous';
+      expect(promise.props.size).toBe('default');
+      expect(vi.mocked(console.warn)).toHaveBeenCalledWith(expect.stringContaining("'enormous' is not a dialog size"));
 
       promise.close('close');
       await settled(promise);

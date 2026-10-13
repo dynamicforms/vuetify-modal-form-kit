@@ -40,11 +40,21 @@ export function isDialogSize(value: unknown): value is DialogSizeName {
   return typeof value === 'string' && Object.hasOwn(sizeOfName, value);
 }
 
+// a size is resolved on every render of the dialog, so a name is reported once
+const reportedNames = new Set<unknown>();
+
 /**
- * The size `name` names. A shorter name resolves to its size, and anything that names none throws an `Error` naming
- * it: a size nobody defined is refused rather than drawn as the default.
+ * The size `name` names. A shorter name resolves to its size. Anything that names none resolves to
+ * `defaultDialogSize`, with a console warning naming it, once per name.
  */
 export function resolveDialogSize(name: DialogSizeName): DialogSize {
-  if (!isDialogSize(name)) throw new Error(`'${String(name)}' is not a dialog size: ${dialogSizes.join(', ')}`);
-  return sizeOfName[name];
+  if (isDialogSize(name)) return sizeOfName[name];
+  if (!reportedNames.has(name)) {
+    reportedNames.add(name);
+    console.warn(
+      `'${String(name)}' is not a dialog size (${dialogSizes.join(', ')}); ` +
+        `the dialog is drawn at '${defaultDialogSize}'.`,
+    );
+  }
+  return defaultDialogSize;
 }

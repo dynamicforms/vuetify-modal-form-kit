@@ -9,7 +9,7 @@ runnable demos see [Examples](/examples/) instead.
 |---|---|
 | [`<df-modal>`](./df-modal) | The dialog component itself - use it directly when a dialog is declared in a template (SFC), controlled with `v-model`. |
 | [`<modal-view>`](./modal-view) | A placeholder, not something you configure - mount one in your app root and dialogs opened via the `modal` service render into it. |
-| [`modal` service](./modal-service) | Promise-based API for opening dialogs from code (`modal.message`, `modal.yesNo`, `modal.custom`), rendered by `<modal-view>`. |
+| [`modal` service](./modal-service) | Promise-based API for opening dialogs from code (`modal.message`, `modal.yesNo`, `modal.custom`), rendered by `<modal-view>`. The [promise](./modal-service#closeablepromise) it returns closes the dialog, carries what settled it, and reads and changes the open dialog. |
 
 See also: [Modal Dialog](/examples/dialog-basic) (programmatic) and [Template Dialog](/examples/dialog-template)
 (SFC template) for worked examples.
