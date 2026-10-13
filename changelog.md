@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   globally registered components; so does a `SimpleComponentDef` at the top of `message`. `CustomOptions.model`
   binds refs to the component's props both ways.
 - `useTeleportAnchors(names)`: one `useTeleportAnchor()` per name, keyed by the name.
+- `<df-modal>`'s `errors` slot, below the body, draws the errors of `formControl` itself - a group validator's,
+  or those a submit handler wrote to the group - through `<df-input-hint>` by default, those vuetify-inputs'
+  `useShownErrors()` shows. `<modal-view>` draws them for the dialog's `form`.
 
 ### Changed
 

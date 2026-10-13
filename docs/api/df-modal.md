@@ -42,6 +42,7 @@ slots.
 |------|-------|-------------|
 | `title` | — | Overrides the default title rendering (a `MessagesWidget` fed from the `title` prop). |
 | `body` | `{ formControl }` | The dialog's content. |
+| `errors` | `{ errors, formControl }` | Below the body. `errors` are the errors of `formControl` itself, such as a group validator's or those a submit handler wrote to it, not those of its members, that the inputs show now: by vuetify-inputs' `useShownErrors()`, an error of origin `'server'` always and any other once the form is `touched`. By default a `<df-input-hint>` draws them, as an input draws its own, and nothing is drawn where there are none. |
 | `actions` | — | The dialog's buttons. Render the `actions` prop's array here through `<df-actions>` rather than with `v-btn`s, so a click and a keystroke reach the same action - see [Template Dialog → Keep actions consistent](/examples/dialog-template#keep-actions-consistent-always-render-them-through-df-actions), and [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) for the `Action` / `df-actions` API. |
 
 Dialogs share one stack, and a `df-modal` is shown only while its entry is on top, so of several open

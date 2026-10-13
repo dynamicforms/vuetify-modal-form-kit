@@ -33,6 +33,7 @@ properties:
 |---|---|
 | `formControl`, `size`, `dialogId`, `title`, `color`, `icon`, `actions` | The dialog's properties: what the `modal.*` call stated (see [`ModalOptions`](./modal-service#modaloptions)) and what was written to its `props` since |
 | `#body` | `message`: the component a `SimpleComponentDef` at its top names where `options.components` or the `df-*` components hold it, and a `MessagesWidget` otherwise; and, where the dialog has a `form`, a `FormRender` with one input per `Field` member - see [the generated layout](#the-generated-layout) |
+| `#errors` | The default: the errors of the dialog's `form` itself, below the body - see [`df-modal` slots](./df-modal#slots) |
 | `#actions` | A `<df-actions>` with the same actions as the `actions` prop |
 
 The `actions` prop and `<df-actions>` hold the same `Action` instances, so the
