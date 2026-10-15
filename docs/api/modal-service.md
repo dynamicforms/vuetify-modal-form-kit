@@ -199,11 +199,11 @@ await modal.message('Subscribe', 'Enter your email address:', { form });   // re
 
 `action.execute()` called from code settles the dialog as a click on its button does.
 
-The dialog adds its [default actions](#default-actions) - `close`, or `yes` / `no` - when none of the caller's
-actions has visibility `'full'`. `<df-actions>` does not draw an action at `'suppress'` and hides one at `'hidden'` (`d-none`) or
-`'invisible'` (`invisible`), and the keyboard reaches only `'full'`, so without the default actions such a dialog
-could not be closed. The visibility is read when the dialog opens: changing it later does not add or remove the
-default actions.
+The dialog adds its [default actions](#default-actions) - `close`, or `yes` / `no` - when none of the caller's actions
+has visibility `'full'`. `<df-actions>` does not draw an action at `'suppress'` and hides one at `'hidden'` (`d-none`)
+or `'invisible'` (`invisible`), and the keyboard reaches only `'full'`, so without the default actions such a dialog
+could not be closed. The visibility is read when the dialog opens: changing it later does not add or remove the default
+actions.
 
 `await action.execute()` returns what the action's `ExecuteAction` chain returned; a dialog does not change it:
 
@@ -285,8 +285,8 @@ shorter names.
 | `'default'` | none | the content's | never |
 
 `DialogSizeName` is typed so that an editor lists the five sizes and accepts the shorter names.
-`resolveDialogSize(name)` returns the size a name names. Anything that names none resolves to `'default'`, with a console warning naming it, once per
-name. `isDialogSize(value)` answers whether a value names a size.
+`resolveDialogSize(name)` returns the size a name names. Anything that names none resolves to `'default'`, with a
+console warning naming it, once per name. `isDialogSize(value)` answers whether a value names a size.
 
 ```typescript
 import { modal } from '@dynamicforms/vuetify-modal-form-kit';

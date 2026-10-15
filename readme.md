@@ -19,7 +19,7 @@ A `FormBuilder` layout renders in the body of a `<DfModal>`, so a dialog can hol
 ## Documentation
 
 Full documentation, the API reference and runnable examples are available at
-**https://docs.velis.si/dynamicforms/vuetify-modal-form-kit/**.
+**<https://docs.velis.si/dynamicforms/vuetify-modal-form-kit/>**.
 
 The [migration guide](https://docs.velis.si/dynamicforms/vuetify-modal-form-kit/guide/migration) lists every
 breaking change with before/after code.

@@ -10,8 +10,9 @@ exists.
 
 ## Upgrading to v0.10.0 (from v0.9.x)
 
-0.10.0 requires `@dynamicforms/vue-forms` 3.0.0, `@dynamicforms/vuetify-inputs` 0.14.1 and
-`@dynamicforms/translatable` 0.3. Upgrade them together, and work through the [vue-forms](https://docs.velis.si/dynamicforms/vue-forms/guide/migration) and
+0.10.0 requires `@dynamicforms/vue-forms` 3.0.0, `@dynamicforms/vuetify-inputs` 0.14.1 and `@dynamicforms/translatable`
+0.3. Upgrade them together, and work through the
+[vue-forms](https://docs.velis.si/dynamicforms/vue-forms/guide/migration) and
 [vuetify-inputs](https://docs.velis.si/dynamicforms/vuetify-inputs/guide/migration) migration guides first.
 
 ```bash

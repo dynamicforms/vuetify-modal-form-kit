@@ -105,6 +105,7 @@ formBuilder.row({ }, (row) => row
   .col({ cols: 6 }, (col) => col
     .component((cmpt) => cmpt.teleportAnchor(emailAnchor.id))));
 ```
+
 ```html
 <Teleport :to="emailAnchor.target.value" defer>
   <v-text-field v-model="email" label="Email" type="email" />
