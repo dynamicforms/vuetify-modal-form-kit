@@ -63,8 +63,8 @@ Column props (all optional): `cols` (a number, `'auto'` or a boolean; without it
 automatically), `offset` (an integer 0 to 11), `order` (an integer 0 to 12, `'first'` or `'last'`), `alignSelf`,
 `class`, `style`. `<v-col>` renders `offset` and `order` as the classes `offset-<value>` / `order-<value>`; a value
 outside these ranges has no class in Vuetify's stylesheet and is dropped from the serialized props. `offset-md`,
-`order-lg` and the other breakpoint-suffixed variants, from `sm` up, set Vuetify's `offsetMd` / `orderLg` props. A width per breakpoint is set with
-`breakpoint(name, colCallback)`; there is no `cols-md` key.
+`order-lg` and the other breakpoint-suffixed variants, from `sm` up, set Vuetify's `offsetMd` / `orderLg` props. A width
+per breakpoint is set with `breakpoint(name, colCallback)`; there is no `cols-md` key.
 
 ## Component builder
 
@@ -79,10 +79,10 @@ The object passed to `component()`'s callback (`VuetifyInputsComponentBuilder` b
 | `byTag(tag, props)` | Same as `generic(tag, props)`, for a tag that comes from data. `byTag('df-date-time', props)` builds what `dfDateTime(props)` builds. |
 
 `FormBuilder`, `FormBuilderBodyProp`, `useTeleportAnchor`, `useTeleportAnchors` and the type `TeleportAnchor` are
-top-level exports of `@dynamicforms/vuetify-modal-form-kit`. `useTeleportAnchor()` returns a `TeleportAnchor`, `{ id: Ref<string>, target: ComputedRef<string> }`, where `target` is `'#' + id.value`.
-`useTeleportAnchors(names)` returns one such anchor per name, keyed by the name. The object is not a ref, and
-Vue unwraps only top-level refs of the render context, so a template binds `anchor.target.value` to
-`<Teleport :to>`.
+top-level exports of `@dynamicforms/vuetify-modal-form-kit`. `useTeleportAnchor()` returns a `TeleportAnchor`,
+`{ id: Ref<string>, target: ComputedRef<string> }`, where `target` is `'#' + id.value`. `useTeleportAnchors(names)`
+returns one such anchor per name, keyed by the name. The object is not a ref, and Vue unwraps only top-level refs of
+the render context, so a template binds `anchor.target.value` to `<Teleport :to>`.
 
 The rest of the layout tree - `Row`, `Column`, `Component`, `ComponentBuilderBase`, `ComponentBuilderInterface`,
 `VuetifyInputsComponentBuilder`, `FormBuilderName`, `SimpleProxy`, `TwelveDivisible` and the props and JSON types of

@@ -170,6 +170,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   resolves component names against, in place of a nine-name list written out here. The caller's `options.components`
   still win over it, and a component the peer gains is drawable in a dialog the moment the peer is upgraded -
   `df-label` and `df-input-hint` are two the list did not name.
+
 ### Fixed
 
 - An `AbortEventHandlingException` raised by an asynchronous handler is an answer, as one raised by a synchronous
@@ -268,6 +269,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `require()` of an ES module from 22.12, which `engines.node` states, but this package imports Vuetify's component
   entries - directly and through `@dynamicforms/vuetify-inputs` - and each of those imports its own stylesheet: the
   path runs through a bundler that answers for `.css`, not through plain node.
+
 ## [0.7.0] - 2026-08-20
 
 ### Changed (breaking)

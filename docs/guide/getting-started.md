@@ -13,6 +13,7 @@ stylesheets, which Node cannot load.
 Server-side rendering takes the setup in [Server-side rendering](/guide/ssr).
 
 In your `main.ts`:
+
 ```typescript
 import { DynamicFormsInputs } from '@dynamicforms/vuetify-inputs';
 import { DynamicFormsModalFormKit } from '@dynamicforms/vuetify-modal-form-kit';
@@ -43,6 +44,7 @@ app.use(DynamicFormsModalFormKit, { modalDefaults: { titleColor: 'primary' } });
 ```
 
 `translate` and `translateNamespace` (the exported type `ModalTranslationSettings`) translate the library's strings
+
 - see
 [Translating the library's strings](#translating-the-library-s-strings).
 
@@ -112,9 +114,9 @@ The library has three strings, the labels of the [default actions](/api/modal-se
 
 They are translated with `@dynamicforms/translatable`, as the strings of `@dynamicforms/vuetify-inputs` are. The
 `translate` option of the plugin is a function shaped like vue-i18n's `t`; the keys are looked up under
-`translateNamespace`, `df_modal` by default (exported as `defaultTranslateNamespace`; `df_modal.Close`), and without a namespace where it is `''`. A key the
-function does not translate keeps its English default. The labels are read while the buttons render, so they follow
-a locale switch:
+`translateNamespace`, `df_modal` by default (exported as `defaultTranslateNamespace`; `df_modal.Close`), and without a
+namespace where it is `''`. A key the function does not translate keeps its English default. The labels are read while
+the buttons render, so they follow a locale switch:
 
 ```typescript
 const { t } = i18n.global;
