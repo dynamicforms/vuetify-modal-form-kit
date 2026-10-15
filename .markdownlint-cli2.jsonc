@@ -1,0 +1,13 @@
+{
+  "config": {
+    "MD013": { "line_length": 120, "tables": false, "code_blocks": false },
+    // Keep a Changelog repeats Added / Changed / Fixed under every version
+    "MD024": { "siblings_only": true },
+    // the docs embed Vue demo components and <script setup>
+    "MD033": false,
+    // VitePress builds heading anchors differently from markdownlint's GitHub slugs (`0.7.3` -> `0-7-3`)
+    "MD051": false
+  },
+  // CLAUDE.md is local and untracked
+  "ignores": ["**/node_modules/**", "**/dist/**", "coverage/**", "docs/.vitepress/cache/**", "CLAUDE.md"]
+}
