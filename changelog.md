@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2026-10-20
+
+### Changed
+
+- **Breaking:** requires `@dynamicforms/vuetify-inputs` 0.15.0 and `@dynamicforms/vue-forms` 3.0.0-alpha.3, whose
+  error codes carry their library's namespace: `vue-forms.<code>` and `vuetify-inputs.<code>`.
+- The documentation's `errorText` examples and demos use namespaced codes: they split a code at its last `.` and
+  map the namespace through the libraries' `ERROR_NAMESPACE` constants to a translation key prefix, e.g.
+  `vue-forms.required` to `libs.vue-forms.required`. The demos' own code is `app.invalid_email`.
+
 ## [0.10.0] - 2026-10-13
 
 ### Added

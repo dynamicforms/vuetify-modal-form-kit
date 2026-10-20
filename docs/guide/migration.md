@@ -8,6 +8,47 @@ exists.
 
 <!-- New releases go directly below this comment, above the previous one, as `## Upgrading to vX.Y.Z (from vA.B.x)`. -->
 
+## Upgrading to v0.11.0 (from v0.10.x)
+
+0.11.0 requires `@dynamicforms/vuetify-inputs` 0.15.0 and `@dynamicforms/vue-forms` 3.0.0-alpha.3. Upgrade them
+together, and work through the
+[vue-forms](https://docs.velis.si/dynamicforms/vue-forms/guide/migration) and
+[vuetify-inputs](https://docs.velis.si/dynamicforms/vuetify-inputs/guide/migration) migration guides first.
+
+```bash
+npm install @dynamicforms/vue-forms@^3.0.0-alpha.3 @dynamicforms/vuetify-inputs@^0.15.0 \
+  @dynamicforms/vuetify-modal-form-kit@^0.11.0
+```
+
+### Error codes carry a namespace
+
+The errors a dialog's form shows carry codes of the form `<namespace>.<code>`: `vue-forms.required`,
+`vuetify-inputs.invalid_hex_color`. An `errorText` that looks a translation up by the bare code splits the code at
+its last `.` and maps the namespace, taken from the libraries' `ERROR_NAMESPACE` constants, to a key prefix of its
+own:
+
+```typescript
+// before
+const key = `errors.${error.code}`;
+
+// after
+import { ERROR_NAMESPACE as VUE_FORMS_ERRORS } from '@dynamicforms/vue-forms';
+import { ERROR_NAMESPACE as VUETIFY_INPUTS_ERRORS } from '@dynamicforms/vuetify-inputs';
+
+const keyPrefixes: Record<string, string> = {
+  [VUE_FORMS_ERRORS]: 'libs.vue-forms',
+  [VUETIFY_INPUTS_ERRORS]: 'libs.vuetify-inputs',
+  app: 'errors',
+};
+const dot = error.code.lastIndexOf('.');
+const prefix = keyPrefixes[error.code.slice(0, dot)];
+const key = prefix === undefined ? undefined : `${prefix}.${error.code.slice(dot + 1)}`;
+```
+
+The application's own codes, given to its validators and server errors, are used as given; prefix them with a
+namespace of its own, such as `app.invalid_email`. See
+[Translating errors](/guide/getting-started#translating-errors).
+
 ## Upgrading to v0.10.0 (from v0.9.x)
 
 0.10.0 requires `@dynamicforms/vue-forms` 3.0.0, `@dynamicforms/vuetify-inputs` 0.14.1 and `@dynamicforms/translatable`

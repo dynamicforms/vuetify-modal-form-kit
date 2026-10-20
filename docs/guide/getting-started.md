@@ -142,12 +142,22 @@ installed, and converts every error: those of vue-forms' validators, of the appl
 and of vuetify-inputs itself ([error codes](:vuetify-inputs:/examples/localisation.html#error-codes)).
 
 `errorText` returns plain text, an `MdString` (rendered as markdown), an `HtmlString` (rendered as HTML) or a
-`SimpleComponentDef`. In the example below the catalogue holds a markdown variant of a message under the code with
-`Md` appended, and `errorText` prefers it:
+`SimpleComponentDef`. An error's code is `<namespace>.<code>`
+([error codes](:vuetify-inputs:/examples/localisation.html#error-codes)); it splits at its last `.`. The application
+maps each namespace to a translation key prefix of its own, taking a library's namespace from its `ERROR_NAMESPACE`
+constant: in the example below `vue-forms.required` renders through the key `libs.vue-forms.required` and the
+application's `app.over_budget` through `errors.over_budget`. The catalogue holds a markdown variant of a message
+under the key with `Md` appended, and `errorText` prefers it:
 
 ```typescript
 import { formatParams } from '@dynamicforms/translatable';
-import { DynamicFormsInputs, type ErrorText, MdString } from '@dynamicforms/vuetify-inputs';
+import { ERROR_NAMESPACE as VUE_FORMS_ERRORS } from '@dynamicforms/vue-forms';
+import {
+  DynamicFormsInputs,
+  ERROR_NAMESPACE as VUETIFY_INPUTS_ERRORS,
+  type ErrorText,
+  MdString,
+} from '@dynamicforms/vuetify-inputs';
 
 const { t, n, d, te } = i18n.global;
 // formats numbers and dates for the locale before t substitutes them
@@ -155,8 +165,18 @@ const tf = formatParams(t, (value) =>
   typeof value === 'number' ? n(value) : value instanceof Date ? d(value) : value);
 const markdown = true;
 
+// the translation key prefix of each error namespace
+const keyPrefixes: Record<string, string> = {
+  [VUE_FORMS_ERRORS]: 'libs.vue-forms',
+  [VUETIFY_INPUTS_ERRORS]: 'libs.vuetify-inputs',
+  app: 'errors',
+};
+
 const errorText: ErrorText = (error) => {
-  const key = `errors.${error.code}`;
+  const dot = error.code.lastIndexOf('.');
+  const prefix = keyPrefixes[error.code.slice(0, dot)];
+  if (prefix === undefined) return undefined;
+  const key = `${prefix}.${error.code.slice(dot + 1)}`;
   if (markdown && te(`${key}Md`)) return new MdString(tf(`${key}Md`, error.params));
   return te(key) ? tf(key, error.params) : undefined;
 };
@@ -166,16 +186,23 @@ app.use(DynamicFormsInputs, { errorText });
 
 ```json
 {
-  "errors": {
-    "required": "Prosimo, vnesite vrednost",
-    "min_value": "Vrednost mora biti vsaj {minValue}",
-    "min_valueMd": "Vrednost mora biti vsaj **{minValue}**"
-  }
+  "libs": {
+    "vue-forms": {
+      "required": "Prosimo, vnesite vrednost",
+      "min_value": "Vrednost mora biti vsaj {minValue}",
+      "min_valueMd": "Vrednost mora biti vsaj **{minValue}**"
+    },
+    "vuetify-inputs": { "invalid_hex_color": "Ni veljaven šestnajstiški niz." }
+  },
+  "errors": { "over_budget": "Izlet stane {total} €, kar je {over} € nad proračunom." }
 }
 ```
 
 - `errorText` runs when the errors render, so a locale switch changes the errors on screen without revalidating.
-- A code without a message renders as its `detail`; a code without an `Md` variant renders as plain text.
+- A code without a message, or in a namespace without a prefix, renders as its `detail`; a code without an `Md`
+  variant renders as plain text.
+- The application prefixes the codes it gives its own validators and server errors with a namespace of its own, such
+  as `app`; the libraries use such a code as given.
 - A message uses the placeholder names of its code's params.
 
 The [migration guide](/guide/migration) lists the breaking changes of each release with before/after code.

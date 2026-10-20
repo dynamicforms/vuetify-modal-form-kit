@@ -26,7 +26,7 @@ A message dialog, a yes/no confirmation, a form dialog with validation and sized
   responsive render options. Each `Field` is drawn as the component in `field.extra.component`, or as a
   `<df-input>` where it names none, with the field's label. A nested `Group` or `List` member is not drawn - see
   [`<modal-view>`](/api/modal-view#the-generated-layout).
-- **Error messages** - the form dialog's email field has a pattern validator with the code `invalid_email`. The
+- **Error messages** - the form dialog's email field has a pattern validator with the code `app.invalid_email`. The
   documentation app installs vuetify-inputs with an `errorText` that renders that code from a markdown message - see
   [Translating errors](/guide/getting-started#translating-errors).
 - **Custom components** - `modal.custom('Title', component, componentProps)` renders a component, or a component
