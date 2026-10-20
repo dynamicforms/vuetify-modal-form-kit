@@ -4,7 +4,7 @@ import { crosslinksConfig } from 'vitepress-plugin-crosslinks';
 
 export default defineConfig({
   title: 'DynamicForms Vuetify modal form kit',
-  description: 'Vue 3 + Vuetify 3 dialogs opened from code: await modal.yesNo() or modal.message(), vue-forms forms inside dialogs, and FormBuilder layouts.',
+  description: 'Vuetify 3 dialogs opened from code or a template, stacked one on screen with Enter/Esc shortcuts, plus responsive form layouts defined in TypeScript.',
   srcExclude: ['readme.md'],
   transformHead({ pageData, siteConfig }) {
     const path = pageData.relativePath.replace(/(^|\/)index\.md$/, '$1').replace(/\.md$/, '.html');

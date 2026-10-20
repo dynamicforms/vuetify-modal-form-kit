@@ -1,6 +1,6 @@
 ---
 title: 'Vuetify 3 Dialogs from Code'
-description: 'Promise-based Vuetify 3 dialogs for Vue 3: await a yes/no or message dialog, edit a vue-forms form in a dialog, one dialog on screen, FormBuilder layouts.'
+description: 'Vuetify 3 dialogs opened from code or a template, stacked one on screen with Enter/Esc shortcuts, plus responsive form layouts defined in TypeScript.'
 layout: home
 hero:
   name: DynamicForms Vuetify Modal Form Kit
