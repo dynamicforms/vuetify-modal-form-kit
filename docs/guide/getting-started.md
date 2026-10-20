@@ -1,3 +1,7 @@
+---
+description: 'Install @dynamicforms/vuetify-modal-form-kit, register the plugin, mount modal-view once and open dialogs from code; translate strings and errors.'
+---
+
 # Getting Started
 
 ## Installation

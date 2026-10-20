@@ -1,3 +1,7 @@
+---
+description: 'API reference: df-modal, modal-view, the promise-based modal service (message, yesNo, custom), FormBuilder, form-render and component-render.'
+---
+
 # API Reference
 
 The public API of `@dynamicforms/vuetify-modal-form-kit`. Runnable demos are in [Examples](/examples/).
