@@ -105,7 +105,7 @@ async function showConfirmation() {
 async function showFormDialog() {
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const emailFormat = new Validators.Pattern(emailPattern, {
-    code: 'invalid_email',
+    code: 'app.invalid_email',
     detail: 'Please enter a valid email address',
   });
 
