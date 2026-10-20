@@ -1,3 +1,7 @@
+---
+description: 'Runnable examples of Vuetify dialogs opened from code and declared in templates, and of simple and responsive FormBuilder layouts.'
+---
+
 # Examples
 
 Each example page holds a runnable demo of `@dynamicforms/vuetify-modal-form-kit` and the code it describes.
