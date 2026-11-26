@@ -238,6 +238,14 @@ const installedCount = computed(() => mountedViews.value.length);
 export const installed = computed(() => installedCount.value > 0);
 
 class ModalAPI {
+  /**
+   * The number of dialogs on the dialog stack: the ones this service opened that have not settled, and every
+   * `<df-modal>` used directly whose `v-model` is `true`. Reactive.
+   */
+  get openCount(): number {
+    return dialogTracker.size;
+  }
+
   isTop(promise: CloseablePromise<any>) {
     return dialogTracker.currentRef.value === promise.dialogId;
   }

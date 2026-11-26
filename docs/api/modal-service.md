@@ -48,6 +48,12 @@ if ((await modal.custom('Call', ContactPicker, { clubId }, { model: { contactId 
 }
 ```
 
+## Properties
+
+| Property | Type | Description |
+|---|---|---|
+| `openCount` | `number` (read-only) | The number of dialogs on the stack: those `message()`, `yesNo()` and `custom()` opened that have not settled, whether or not a `<modal-view>` is mounted, and every [`<df-modal>`](./df-modal) used directly whose `v-model` is `true`. `0` when there are none. Reactive: a `computed`, `watch` or render function that reads it re-runs when a dialog opens or closes. |
+
 ## `CloseablePromise`
 
 `import type { CloseablePromise, DialogProps } from '@dynamicforms/vuetify-modal-form-kit'`

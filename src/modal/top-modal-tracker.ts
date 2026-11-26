@@ -1,13 +1,19 @@
-import { computed, ComputedRef, ref } from 'vue';
+import { computed, ComputedRef, ref, shallowReactive } from 'vue';
 
 class DialogTracker {
-  private stack: symbol[] = [];
+  // reactive: a read of `size` is tracked
+  private readonly stack = shallowReactive<symbol[]>([]);
 
   public currentRef = ref<symbol | null>(null);
 
   push(sym: symbol): void {
     this.stack.push(sym);
     this.currentRef.value = sym;
+  }
+
+  /** The number of dialogs on the stack. */
+  get size(): number {
+    return this.stack.length;
   }
 
   isTop(sym: symbol): ComputedRef<boolean> {
