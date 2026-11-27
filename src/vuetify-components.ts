@@ -1,4 +1,3 @@
-// the Vuetify components the package templates use; registered by the `registerVuetifyComponents` install option
 export { VBtn } from 'vuetify/components/VBtn';
 export { VCard, VCardTitle, VCardActions, VCardText } from 'vuetify/components/VCard';
 export { VDialog } from 'vuetify/components/VDialog';
