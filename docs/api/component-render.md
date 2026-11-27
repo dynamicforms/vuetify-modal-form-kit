@@ -19,7 +19,7 @@ e.g. one with a different row and column layout, so that names resolve by the sa
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | `name` | `string \| symbol` | — | The name to resolve. `FormBuilderName` renders a nested form. A symbol that is not that one is resolved as a global component by its `description`, or as `'SymbolComponent'` where it carries none. |
-| `props` | `Record<string \| symbol, any> \| null` | `{}` | Bound to the resolved component. `FormBuilderBodyProp` is passed as the default slot, not as a prop. A serialized component without props has `ComponentJSON.props` `null`, which is passed here. |
+| `props` | `Record<string \| symbol, any> \| null` | `{}` | Bound to the resolved component. `FormBuilderBodyProp` is passed as the default slot, not as a prop. A serialised component without props has `ComponentJSON.props` `null`, which is passed here. |
 | `components` | `Record<string \| symbol, any>` | `{}` | Maps names to Vue components. A name not in the map is resolved as a globally registered component or a native tag. |
 
 `<component-render>` has no slots and emits nothing.

@@ -25,7 +25,7 @@ const result = await modal.message('Done', 'Your changes have been saved.');
 | `isTop` | `isTop(promise)` | `true` while the dialog behind that promise is the one on top of the stack. |
 | `isInstalled` | `isInstalled()` | `true` once a `<modal-view>` is mounted. Without one, no dialog renders and no action can resolve one, so `.close(value)` is the only way to settle its promise. |
 
-`title` and `message` take a string, an `MdString` (Markdown), an `HtmlString` (HTML, not sanitized), a
+`title` and `message` take a string, an `MdString` (Markdown), an `HtmlString` (HTML, not sanitised), a
 `SimpleComponentDef`, or a `RenderableValue` holding one of these (e.g. to add a CSS class); all five are exported by
 `@dynamicforms/vuetify-inputs`. The component a `SimpleComponentDef` at the top of `message` names is resolved
 against `options.components`, then the `df-*` components, then the globally registered ones; a component nested in
@@ -242,19 +242,23 @@ of the stack. It is unregistered when the dialog settles and when a write to `pr
 the action from the dialog, so an `Action` reused across dialogs - a module-level one, or a form reused for every
 call - does not accumulate handlers.
 
+The handler decides whether to settle the dialog after the action's `ExecuteAction` chain has run. If the dialog was
+closed with `.close(value)`, or another dialog was opened over it while an `async` executor was still running, the
+executor's result does not settle it.
+
 ### Default actions
 
 `modal.message()` states a `close` action and `modal.yesNo()` a `yes` and a `no` action, each made by a factory
 for every dialog. `defaultDialogActions` holds the built-in factories:
 
-| Factory | Name | Label | Icon | Flags | Color |
+| Factory | Name | Label | Icon | Flags | Colour |
 |---|---|---|---|---|---|
 | `close` | `close` | `Close` | `mdi-close` | `defaultConfirm`, `defaultReject` | the `defaultConfirm` one of `<df-actions>` |
 | `yes` | `yes` | `Yes` | `mdi-check` | `defaultConfirm` | `success` |
 | `no` | `no` | `No` | `mdi-close` | `defaultReject` | `error` |
 
 The labels are the library's [translations](/guide/getting-started#translating-the-library-s-strings), read while
-the button renders. The color is the button's, through `passthroughAttrs`.
+the button renders. The colour is the button's, through `passthroughAttrs`.
 
 `setDfModalDefaults({ actions })` replaces factories; a factory it does not state stays the built-in one. A factory
 returns a new action on every call and states the flags Enter and Escape read:

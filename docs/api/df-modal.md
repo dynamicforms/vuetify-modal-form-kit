@@ -26,7 +26,7 @@ slots.
 | `formControl` | `Form.Group` | — | Passed to the `body` slot as `formControl`. `df-modal` renders no form from it. |
 | `dialogId` | `symbol` | — | The stack entry of a dialog of the `modal` service, set by `<modal-view>`. Leave it unset for a template dialog. `df-modal` pushes and removes the entry of a template dialog only; one it was given a `dialogId` for stays on the stack when it unmounts. A `model-value` going false removes the entry in both cases. |
 | `title` | `RenderableValue` | — | Dialog title. Accepts plain text, Markdown (`MdString`), HTML (`HtmlString`), or a custom component. The `title` slot replaces its rendering. |
-| `color` | `string` | — | Title bar background color. Falls back to the global default set through [`setDfModalDefaults`](#global-defaults) where unset. |
+| `color` | `string` | — | Title bar background colour. Falls back to the global default set through [`setDfModalDefaults`](#global-defaults) where unset. |
 | `icon` | `string` | — | Icon shown next to the title. |
 | `actions` | `Form.Action[]` | `[]` | The actions the [keyboard shortcuts](#keyboard-shortcuts) and the close button reach. It renders nothing; render the same array through `<df-actions>` in the `actions` slot. |
 
@@ -64,7 +64,7 @@ setDfModalDefaults({ titleColor: 'primary' });
 
 | Default | Falls back for | Description |
 |---|---|---|
-| `titleColor` | `color` | Title bar background color applied where a dialog states none of its own. |
+| `titleColor` | `color` | Title bar background colour applied where a dialog states none of its own. |
 | `actions` | the default actions of the `modal` service | `Partial<DialogActionFactories>`: factories that replace the built-in `close`, `yes` and `no` of `modal.message()` and `modal.yesNo()` - see [Default actions](./modal-service#default-actions). |
 
 The defaults are reactive: a later call changes every open and future dialog that states no `color` of its own.
@@ -100,6 +100,10 @@ same keystroke. The dialog's overlay root has the class `df-modal`, and Enter an
 that class has the highest z-index in `.v-overlay-container`; tooltips and snackbars are not counted. Closing a menu
 and then the dialog takes two Escapes.
 
+Vuetify gives each overlay the next z-index of its stack when the overlay activates, so the active overlay with the
+highest z-index is the topmost one on screen and the one a click reaches. The keyboard reaches the same dialog as the
+mouse.
+
 An action is reachable while its [`executable`](:vue-forms:/api/action.html) is `true`, that is when all of these
 hold:
 
@@ -119,7 +123,7 @@ own. A handler that ends the run with an `AbortEventHandlingException` does not 
 exception, for a synchronous and an `async` handler alike, and neither route is used.
 
 `defaultConfirm` and `defaultReject` are set on the action's `value`. In `<df-actions>` they also set the button's
-color, `primary` and `secondary` (see [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:)):
+colour, `primary` and `secondary` (see [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:)):
 
 ```typescript
 const loginAction = new Action({ value: { name: 'login', label: 'Log in', defaultConfirm: true /* ... */ } });

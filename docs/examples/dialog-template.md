@@ -35,7 +35,7 @@ const isOpen = ref(false);
 const username = ref('');
 const password = ref('');
 
-// defaultConfirm/defaultReject wire Enter/Esc (via `:actions` below) and color the action primary/secondary
+// defaultConfirm/defaultReject wire Enter/Esc (via `:actions` below) and colour the action primary/secondary
 // in <df-actions> - see @dynamicforms/vuetify-inputs's Action API.
 const cancelAction = new Action({
   value: { name: 'cancel', label: 'Cancel', renderAs: 'text', showLabel: true, defaultReject: true },

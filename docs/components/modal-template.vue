@@ -50,7 +50,7 @@ function close(result: string) {
 }
 
 // <df-actions> renders Cancel as a text link and Log in as a tonal button. defaultConfirm / defaultReject bind the
-// action to Enter / Esc (see <df-modal>'s `actions` prop) and color it primary / secondary in <df-actions>.
+// action to Enter / Esc (see <df-modal>'s `actions` prop) and colour it primary / secondary in <df-actions>.
 const cancelAction = new Action({
   value: { name: 'cancel', label: 'Cancel', renderAs: 'text', showLabel: true, defaultReject: true },
 });

@@ -15,7 +15,7 @@ or a proxy that forwards to it, so calls chain. `.simple()` creates the rows, co
 | `row(rowProps, rowCallback)` | Appends a new `Row`, built by `rowCallback`. `rowProps` is a [`Row` props object](#row). |
 | `simple(cols = 1)` | Returns a proxy of a [component builder](#component-builder). Each call on it (e.g. `.dfInput(...)`) adds a component in a new `12 / cols`-wide column; after `cols` components a new row starts. `.simple(newCols)` later in the chain starts a new row layout. `cols` is one of `1 \| 2 \| 3 \| 4 \| 6 \| 12`. |
 | `breakpoint(name, formCallback)` | Overrides one breakpoint (`'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'`). `formCallback` receives the breakpoint's form, which has the same `row()` / `simple()` methods and is empty on the first call for that breakpoint. The callback's signature returns it; the returned value is not used. |
-| `toJSON(breakpoint?)` | Serializes the layout to the JSON [`<form-render>`](./form-render) takes. Without an argument the breakpoints are kept; with one, the layout is resolved for that breakpoint. A component without props serializes as `props: null`. |
+| `toJSON(breakpoint?)` | Serialises the layout to the JSON [`<form-render>`](./form-render) takes. Without an argument the breakpoints are kept; with one, the layout is resolved for that breakpoint. A component without props serialises as `props: null`. |
 | `FormBuilder.fromJSON(json)` | Static. Reads the JSON `toJSON()` produces into a `FormBuilder`; a `FormBuilder` is returned unchanged. `<FormRender>` calls it on the value of `:layout`. |
 
 A breakpoint on the form, a row or a column states only what changes and inherits the rest - see
@@ -37,7 +37,7 @@ Returned by `row()`'s callback.
 
 | Method | Description |
 |---|---|
-| `col(colProps, colCallback)` | Appends a new `Column`, built by `colCallback`. `colProps` is a [`Column` props object](#column). |
+| `col(colProps?, colCallback?)` | Appends a new `Column` with `colProps`, a [`Column` props object](#column), built by `colCallback`. Without `colCallback` the column is appended empty. |
 | `simple(cols = 1)` | Returns a proxy of a [component builder](#component-builder). Each call on it adds a component to this row in a new `12 / cols`-wide column; the columns stay in this row however many are added. |
 | `breakpoint(name, rowCallback)` | Overrides one breakpoint for this row. The callback receives the breakpoint's row, empty on the first call for that breakpoint, and returns it. |
 | `Row.fromJSON(json)` | Static. Reads an entry of `toJSON()`'s `rows[]` into a `Row`; a `Row` is returned unchanged. |
@@ -62,7 +62,7 @@ Returned by `col()`'s callback.
 Column props (all optional): `cols` (a number, `'auto'` or a boolean; without it `<v-col>` sizes the column
 automatically), `offset` (an integer 0 to 11), `order` (an integer 0 to 12, `'first'` or `'last'`), `alignSelf`,
 `class`, `style`. `<v-col>` renders `offset` and `order` as the classes `offset-<value>` / `order-<value>`; a value
-outside these ranges has no class in Vuetify's stylesheet and is dropped from the serialized props. `offset-md`,
+outside these ranges has no class in Vuetify's stylesheet and is dropped from the serialised props. `offset-md`,
 `order-lg` and the other breakpoint-suffixed variants, from `sm` up, set Vuetify's `offsetMd` / `orderLg` props. A width
 per breakpoint is set with `breakpoint(name, colCallback)`; there is no `cols-md` key.
 
@@ -73,7 +73,7 @@ The object passed to `component()`'s callback (`VuetifyInputsComponentBuilder` b
 | Method | Description |
 |---|---|
 | `generic(name, props)` | Renders a component of `<FormRender :components>`, a globally registered component or a native tag (e.g. `'h3'`) with `props`. The `FormBuilderBodyProp` symbol key in `props` sets the element's content (see the Registration Form example in [FormBuilder examples](/examples/form-builder)). |
-| `nestedForm(form)` | Embeds another `FormBuilder` layout. `toJSON()` serializes it, and `<FormRender>` renders it as a separate form that resolves its own breakpoints and uses the outer `:components` map. Nesting depth is not limited. |
+| `nestedForm(form)` | Embeds another `FormBuilder` layout. `toJSON()` serialises it, and `<FormRender>` renders it as a separate form that resolves its own breakpoints and uses the outer `:components` map. Nesting depth is not limited. |
 | `teleportAnchor(idRef)` | Adds a `<div>` (`generic('div', { id, style: 'display: contents' })`) that a `<Teleport :to="'#' + idRef.value">` in the application's template targets, so the field, its `v-model` and its handlers are written in the template. When `idRef.value` is empty, it is set to an id from Vue's `useId()`, which works only during a component's `setup()`; outside it Vue warns and the id stays empty. An id already in the ref is used as is, so a field declared again at another breakpoint keeps its id - see [FormBuilder examples](/examples/form-builder). |
 | `dfInput` / `dfTextArea` / `dfSelect` / `dfCheckbox` / `dfDateTime` / `dfFile` / `dfImage` / `dfColor` / `dfRtfEditor` / `dfLabel` / `dfInputHint` / `dfActions` | Shorthands for `generic('df-*', props)`, typed to the props of the matching [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:) component. There is one for each of its components. |
 | `byTag(tag, props)` | Same as `generic(tag, props)`, for a tag that comes from data. `byTag('df-date-time', props)` builds what `dfDateTime(props)` builds. |

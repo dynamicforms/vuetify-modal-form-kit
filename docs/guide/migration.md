@@ -77,7 +77,7 @@ import { MdString, RenderableValue } from '@dynamicforms/vuetify-inputs';
 ### HTML content is an `HtmlString`
 
 `SimpleComponentDef` has no `componentVHtml`, and an `innerHTML` in its `componentProps` is dropped. A dialog's HTML
-title or message is an `HtmlString`, rendered as the inner HTML of a `div` and not sanitized:
+title or message is an `HtmlString`, rendered as the inner HTML of a `div` and not sanitised:
 
 ```typescript
 // before
@@ -121,7 +121,7 @@ app.use(DynamicFormsModalFormKit, { translate: t });                            
 ```
 
 The icons are `mdi-close` for `close` and `no` and `mdi-check` for `yes`, and `yes` / `no` are drawn in the
-`success` / `error` color. `setDfModalDefaults({ actions })` replaces any of the three - see
+`success` / `error` colour. `setDfModalDefaults({ actions })` replaces any of the three - see
 [Default actions](/api/modal-service#default-actions).
 
 ### Row and column props take what `v-row` and `v-col` have
@@ -225,7 +225,7 @@ in the three sections below.
 ### `offset` and `order` take what Vuetify paints
 
 `FormLayout.ColumnProps` declared `offset` and `order` as `number | 'auto' | boolean` and kept only the number, so
-three quarters of what the type admitted vanished on the way to the serialized props. `<v-col>` renders each into
+three quarters of what the type admitted vanished on the way to the serialised props. `<v-col>` renders each into
 the class `offset-<value>` / `order-<value>`, and Vuetify's stylesheet declares no `offset-auto`, no `order-auto`
 and no boolean form, so the declaration is now what the layout keeps: `offset` is a `number`, and `order` is a
 `number`, `'first'` or `'last'`.
