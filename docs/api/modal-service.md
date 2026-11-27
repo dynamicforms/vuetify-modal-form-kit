@@ -260,6 +260,9 @@ for every dialog. `defaultDialogActions` holds the built-in factories:
 The labels are the library's [translations](/guide/getting-started#translating-the-library-s-strings), read while
 the button renders. The colour is the button's, through `passthroughAttrs`.
 
+The icons are Material Design Icons names, drawn with the icon set the application configures in Vuetify, e.g.
+`@mdi/font` with Vuetify's `mdi` set.
+
 `setDfModalDefaults({ actions })` replaces factories; a factory it does not state stays the built-in one. A factory
 returns a new action on every call and states the flags Enter and Escape read:
 
