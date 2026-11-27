@@ -192,3 +192,12 @@ jobs:
       # consults no loader hook that could answer for a `.css` file.
       - name: Verify the built artifact
         run: npm run verify:artifact
+
+  # the one required status check: fails when any other job failed or was cancelled
+  all-green:
+    if: always()
+    needs: [node, peer-range, vue-floor, node-floor]
+    runs-on: ubuntu-latest
+    steps:
+      - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
