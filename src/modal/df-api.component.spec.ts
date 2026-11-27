@@ -211,9 +211,9 @@ describe('ModalView', () => {
 
   it('lays out a field stating a tag the builder has no method for', async () => {
     const wrapper = mountView();
-    // a tag @dynamicforms/vuetify-inputs draws with before VuetifyInputsComponentBuilder has a method for it
-    const futureTag = 'df-list' as string as DfInputComponentTag;
-    const form = new Form.Group({ lines: new Form.Field({ value: [], component: futureTag }) });
+    // a tag VuetifyInputsComponentBuilder has no method for
+    const unbuiltTag = 'df-list' as string as DfInputComponentTag;
+    const form = new Form.Group({ lines: new Form.Field({ value: [], component: unbuiltTag }) });
 
     const promise = modal.message('Details', 'fill this in', { form });
     await nextTick();

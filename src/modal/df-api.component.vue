@@ -148,9 +148,7 @@ const bodyComponent = computed(() => {
   return (components.value as Record<string, unknown>)[message.value.componentName];
 });
 
-// One view draws, whatever is mounted: two of them rendering the same `currentModal` would put one dialog on
-// screen twice, over two overlays. The first mounted draws, and hands that over to the next one still up when
-// it leaves.
+// true for the first mounted view, the only one that draws
 const ownId = Symbol('modal-view');
 const isDrawingView = computed(() => mountedViews.value[0] === ownId);
 

@@ -62,14 +62,14 @@ class FormBase implements ComponentProps {
 }
 
 export class FormBuilder extends ResponsiveRenderOptions<FormBase> {
-  // FormJSON names its rows the way FormBase does, so a serialized layout goes straight in: the base constructor
+  // FormJSON names its rows the way FormBase does, so a serialised layout goes straight in: the base constructor
   // runs it, and every breakpoint it declares, through cleanBreakpoint
   constructor(layout?: FormJSONResponsive) {
     super(<BreakpointsJSON<FormBase>>(<unknown>layout));
   }
 
   /**
-   * Lifts a serialized layout - the base and every breakpoint it declares, rows, columns and components alike -
+   * Lifts a serialised layout - the base and every breakpoint it declares, rows, columns and components alike -
    * into a FormBuilder, and leaves an existing one alone.
    */
   static fromJSON(json?: FormJSONResponsive | FormBuilder): FormBuilder {
@@ -105,7 +105,7 @@ export class FormBuilder extends ResponsiveRenderOptions<FormBase> {
     const res: FormJSONResponsive = { rows: (this._value.rows ?? []).map((row) => row.toJSON()) };
     responsiveBreakpoints.forEach((bp) => {
       // a form breakpoint is nothing but its rows, so one that states nothing about them is left out entirely:
-      // serializing an empty list would state that the form has no rows there
+      // serialising an empty list would state that the form has no rows there
       if (this._value[bp]?.rows) res[bp] = this._value[bp].toJSON();
     });
     return res;
@@ -115,13 +115,11 @@ export class FormBuilder extends ResponsiveRenderOptions<FormBase> {
     if ((!bp || !isObjectLike(bp)) && !defaultIfEmpty) return null;
 
     const result = new FormBase();
-    // the base carries the field even when it holds nothing, so that cleaning it answers a FormBase rather than
-    // null: getOptionsForBreakpoint builds its result out of that answer, and the callers read the rows off it
-    // through toJSON. A breakpoint leaves it undefined instead, so that it states nothing about the rows rather
-    // than emptying the ones it inherits.
+    // the base always has rows (possibly empty) so it never cleans to null; a breakpoint leaves rows undefined to
+    // inherit them
     if (defaultIfEmpty) result.rows = [];
 
-    // a serialized layout holds plain objects where the builder API holds Rows; lifting them here covers every
+    // a serialised layout holds plain objects where the builder API holds Rows; lifting them here covers every
     // way data reaches _value, and leaves a Row that is already an instance alone
     if (isArray(bp?.rows)) result.rows = bp.rows.map((row) => Row.fromJSON(row));
 

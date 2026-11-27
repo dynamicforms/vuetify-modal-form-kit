@@ -1,5 +1,4 @@
 <template>
-  <!--https://stackoverflow.com/questions/55085735/vuetify-v-dialog-dynamic-width-->
   <!--
   `isShown` is derived from the prop and the dialog stack, so it takes no write: the update travels through
   onModelValueUpdate instead.
@@ -151,9 +150,7 @@ function renderOptions(action: Form.Action) {
   return getRenderOptionsForBreakpoint(action.value ?? {}, breakpoint.value);
 }
 
-// The keyboard reaches an action whose button <df-actions> enables: `executable` is false where the action or a
-// container above it is disabled, the action is not at 'full' visibility or is running, or a handler's
-// canExecute() returns false.
+// an action the keyboard may run: the one whose button <df-actions> enables (`action.executable`)
 function isReachable(action: Form.Action) {
   return action.executable;
 }
@@ -184,11 +181,7 @@ function onClose(e: MouseEvent) {
   if (rejectAction.value) run(rejectAction.value, e);
 }
 
-// Vuetify teleports every overlay into .v-overlay-container and gives it the z-index its stack hands out when the
-// overlay activates, so the one on screen with the highest z-index is the one the user is looking at. An overlay
-// above the dialog - a <df-select> menu, a <df-date-time> picker - closes on Escape from a window keydown listener
-// of its own and never calls preventDefault(), so that keystroke reaches this handler too. The dialog answers the
-// keyboard only while it is the topmost overlay, which is the same reach a click has.
+// class marking this dialog's overlay
 const overlayClass = 'df-modal';
 
 function overlayZIndex(el: Element) {
@@ -200,6 +193,8 @@ function overlayZIndex(el: Element) {
 // the keystroke, so neither stands between the dialog and the keyboard.
 const unstacked = '.v-tooltip, .v-snackbar';
 
+// true when no active stacked overlay has a higher z-index than this dialog's; menus and pickers above it do not
+// preventDefault() on Escape
 function isTopOverlay() {
   const active = Array.from(document.querySelectorAll('.v-overlay-container .v-overlay--active')).filter(
     (el) => !el.matches(unstacked),

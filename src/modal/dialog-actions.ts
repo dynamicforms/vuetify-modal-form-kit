@@ -17,7 +17,7 @@ export interface DialogActionFactories {
 /**
  * The built-in factories. Their labels are the library's translations of `Close`, `Yes` and `No`, read while the
  * button renders. `close` is the dialog's `defaultConfirm` and `defaultReject` action, `yes` its `defaultConfirm`
- * and `no` its `defaultReject`; `yes` is drawn in the `success` color and `no` in the `error` color.
+ * and `no` its `defaultReject`; `yes` is drawn in the `success` colour and `no` in the `error` colour.
  */
 export const defaultDialogActions: Readonly<DialogActionFactories> = Object.freeze({
   close: () =>

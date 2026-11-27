@@ -2,12 +2,9 @@ import { BreakpointNames } from '@dynamicforms/vuetify-inputs';
 
 import { FormBuilder, FormJSONResponsive } from '../core/form-layout';
 
-// the props and emits of the two render components live here, not in their SFCs: `<script setup>` has no exports,
-// and a consumer wrapping either component needs a name for the types it forwards
-
 /** Props of `<form-render>`. */
 export interface FormRenderProps {
-  /** the layout to render, either as a builder or as its serialization */
+  /** the layout to render, either as a builder or as its serialisation */
   layout: FormBuilder | FormJSONResponsive;
   /** component name to component definition; `<form-render>` adds itself to it under `FormBuilderName` */
   components?: Record<string | symbol, any>;
@@ -35,7 +32,7 @@ export type FormRenderEmits = {
 export interface ComponentRenderProps {
   /** the name to look up in `components`; `FormBuilderName` renders a nested form */
   name: string | symbol;
-  /** what is bound onto the resolved component; `FormBuilderBodyProp` in it becomes the default slot. A serialized
+  /** what is bound onto the resolved component; `FormBuilderBodyProp` in it becomes the default slot. A serialised
    * component that carries none states `null`, which is what `ComponentJSON` holds and what reaches this prop. */
   props?: Record<string | symbol, any> | null;
   /** component name to component definition; a name missing from it resolves against globally registered components */

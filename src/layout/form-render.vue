@@ -30,15 +30,11 @@ const emit = defineEmits<FormRenderEmits>();
 const responsiveLayout = computed(() => FormBuilder.fromJSON(props.layout));
 const display = useDisplay();
 const breakpoint = computed(() => getBreakpointName(display));
-// see FormRenderEmits.breakpoint for why a consumer needs this. A <Teleport defer> keyed on it keeps its content
-// only on vue >= 3.5.32, the peer floor: below it, a deferred Teleport that remounts before its deferred mount runs
-// loses its content
+// emits the resolved breakpoint immediately and on every change
 watch(breakpoint, (bp) => emit('breakpoint', bp), { immediate: true });
 
-// a <Teleport :to="'#' + id"> only ever reaches the first element bearing that id, so two components sharing one
-// within what a single breakpoint renders leaves one of them permanently empty - warn about it here, once per
-// resolved layout, rather than leave it a silent gap. Nested forms resolve their own breakpoint in their own
-// <form-render> instance, so each checks only the ids it renders itself.
+// warns when one resolved layout renders the same id twice (a <Teleport> reaches only the first); nested forms
+// check their own ids
 function warnDuplicateIds(layout: FormJSON) {
   const seen = new Set<string>();
   const duplicates = new Set<string>();

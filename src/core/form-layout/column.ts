@@ -14,10 +14,8 @@ import { ColumnJSON, ColumnJSONResponsive, ColumnPropsPartial, ComponentProps } 
 class ColBase implements ComponentProps {
   props: ColumnPropsPartial;
 
-  // undefined until something is added: a breakpoint that holds an empty list states that the column has no
-  // components there, while one that states nothing about them inherits the ones below it. `cols` is left out
-  // for the same reason - v-col defaults it to false on its own, and stating a width the caller never gave
-  // would override the one the column inherits at every breakpoint.
+  // undefined until a component is added: an empty list states the column has none at this breakpoint, undefined
+  // inherits the one below
   components?: Component[];
 
   constructor(props?: ColumnPropsPartial) {
@@ -68,7 +66,7 @@ class ColBase implements ComponentProps {
   }
 }
 
-// a serialized column names `props`, `components` or a breakpoint; ColumnProps declares none of those keys, so the
+// a serialised column names `props`, `components` or a breakpoint; ColumnProps declares none of those keys, so the
 // two shapes cannot be mistaken for one another. A column whose JSON states nothing at the base and only overrides
 // a breakpoint names none of the first two, which is why the breakpoints count.
 function isColumnJSON(data?: ColumnPropsPartial | ColumnJSONResponsive): data is ColumnJSONResponsive {
@@ -85,7 +83,7 @@ export class Column extends ResponsiveRenderOptions<ColBase> {
   }
 
   /**
-   * Lifts a serialized column - the base and every breakpoint it declares - into a Column, and leaves an
+   * Lifts a serialised column - the base and every breakpoint it declares - into a Column, and leaves an
    * existing one alone.
    */
   static fromJSON(json: ColumnJSONResponsive | Column): Column {
@@ -131,7 +129,7 @@ export class Column extends ResponsiveRenderOptions<ColBase> {
     responsiveBreakpoints.forEach((bp) => {
       const value = this._value[bp];
       if (!value) return;
-      // a breakpoint that states nothing about the components must not serialize an empty list: read back, that
+      // a breakpoint that states nothing about the components must not serialise an empty list: read back, that
       // would state that the column has none there
       res[bp] = value.components ? value.toJSON() : { props: value.props };
     });
@@ -173,6 +171,7 @@ export class Column extends ResponsiveRenderOptions<ColBase> {
       } else if (key === 'style') {
         if (isValidStyle(val)) result[key] = val as any;
       } else if (key === 'cols') {
+        // no default: a stated width overrides the one the column inherits
         if (isValidCols(val)) result[key] = val as any;
       } else if (key.startsWith('offset')) {
         if (isValidOffset(val)) (<any>result)[key] = val;
@@ -183,8 +182,7 @@ export class Column extends ResponsiveRenderOptions<ColBase> {
 
     const res = new ColBase(result);
     // undefined, not [], where the breakpoint holds no components - an empty list would state that it has none.
-    // Serialized components are lifted here, which is the one funnel both the constructor and every
-    // getOptionsForBreakpoint call pass through; a Component already in the list is left as it is.
+    // Lifts serialised components into Component instances; existing instances are kept.
     res.components = bp?.components ? bp.components.map((cmpt) => Component.fromJSON(cmpt)) : undefined;
     return res;
   }

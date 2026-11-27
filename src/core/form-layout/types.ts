@@ -2,9 +2,9 @@ import { BreakpointNames, BreakpointsJSON, DfInputComponentTag } from '@dynamicf
 
 /**
  * The tag of a component `@dynamicforms/vuetify-inputs` draws with, which is what a field states in order to be
- * drawn as something other than `df-input`. It is re-exported so that the `Extras` augmentation declaring that
- * key names a type the emitted declarations import rather than one they only mention.
+ * drawn as something other than `df-input`.
  */
+// re-exported so the emitted declarations of the `Extras` augmentation import it
 export type { DfInputComponentTag };
 
 export const FormBuilderName = Symbol('FormBuilder');
@@ -16,7 +16,7 @@ type BaseBkpt = Exclude<BreakpointNames, 'xs'> | 'base';
 export interface FormJSON {
   rows: RowJSON[];
 }
-// what a form breakpoint serializes to: it states only what it changes, so a missing `rows` inherits the list
+// what a form breakpoint serialises to: it states only what it changes, so a missing `rows` inherits the list
 // from the breakpoint below it, while an empty one states that the form has no rows there
 export type FormJSONBreakpoint = Partial<FormJSON>;
 export type FormJSONResponsive = BreakpointsJSON<FormJSON, FormJSONBreakpoint>;
@@ -50,7 +50,7 @@ export interface RowJSON {
   props: RowPropsPartial;
   columns: ColumnJSON[];
 }
-// what a row breakpoint serializes to: it states only what it changes, so a missing `columns` inherits the list
+// what a row breakpoint serialises to: it states only what it changes, so a missing `columns` inherits the list
 // from the breakpoint below it, while an empty one states that the row has no columns there
 export type RowJSONBreakpoint = Omit<RowJSON, 'columns'> & { columns?: ColumnJSON[] };
 export type RowJSONResponsive = BreakpointsJSON<RowJSON, RowJSONBreakpoint>;
@@ -79,7 +79,7 @@ export interface ColumnJSON {
   props: ColumnPropsPartial;
   components: ComponentJSON[];
 }
-// what a column breakpoint serializes to: it states only what it changes, so a missing `components` inherits the
+// what a column breakpoint serialises to: it states only what it changes, so a missing `components` inherits the
 // list from the breakpoint below it, while an empty one states that the column has none there
 export type ColumnJSONBreakpoint = Omit<ColumnJSON, 'components'> & { components?: ComponentJSON[] };
 export type ColumnJSONResponsive = BreakpointsJSON<ColumnJSON, ColumnJSONBreakpoint>;
