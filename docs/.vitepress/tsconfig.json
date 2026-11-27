@@ -1,0 +1,8 @@
+{
+  // The VitePress site configuration and theme, type-checked and linted against the `vitepress` types.
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["config.ts", "theme/**/*", "../../src/**/*"]
+}

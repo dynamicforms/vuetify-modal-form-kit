@@ -7,6 +7,10 @@ export default [
     languageOptions: { parserOptions: { project: './docs/tsconfig.json' } },
   },
   {
+    files: ['docs/.vitepress/**/*.ts'],
+    languageOptions: { parserOptions: { project: './docs/.vitepress/tsconfig.json' } },
+  },
+  {
     ignores: [
       'dist/*',
       'coverage/*',
