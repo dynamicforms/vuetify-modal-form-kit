@@ -39,18 +39,15 @@ app.use(DynamicFormsModalFormKit, { registerComponents: true, registerVuetifyCom
 registers the Vuetify components the library renders (`VBtn`, `VCard*`, `VDialog`, `VIcon`, `VRow`, `VCol`,
 `VSheet`), for projects that do not register Vuetify's components globally; a component the app has registered under
 the same name keeps its registration. The options are of the exported type `DynamicFormsModalFormKitOptions`.
-`modalDefaults` sets the values a dialog
-uses where it states none of its own - see
+`modalDefaults` sets the values a dialog uses where it states none of its own - see
 [`<df-modal>` → Global defaults](/api/df-modal#global-defaults):
 
 ```typescript
 app.use(DynamicFormsModalFormKit, { modalDefaults: { titleColor: 'primary' } });
 ```
 
-`translate` and `translateNamespace` (the exported type `ModalTranslationSettings`) translate the library's strings
-
-- see
-[Translating the library's strings](#translating-the-library-s-strings).
+`translate` and `translateNamespace` (the exported type `ModalTranslationSettings`) translate the library's strings -
+see [Translating the library's strings](#translating-the-library-s-strings).
 
 ## Basic Usage
 

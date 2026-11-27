@@ -13,10 +13,11 @@ const fix = process.argv.includes('--fix') || process.env.npm_config_fix === 'tr
 const fixArg = fix ? ['--fix'] : []
 
 const steps = [
-  ['eslint', ...fixArg, 'src', 'docs/components'],
+  ['eslint', ...fixArg, 'src', 'docs/components', 'docs/.vitepress/config.ts', 'docs/.vitepress/theme'],
   ['markdownlint-cli2', ...fixArg, '**/*.md'],
   ['vue-tsc', '--noEmit'],
   ['vue-tsc', '--noEmit', '-p', 'docs/tsconfig.json'],
+  ['vue-tsc', '--noEmit', '-p', 'docs/.vitepress/tsconfig.json'],
 ]
 
 let failed = false

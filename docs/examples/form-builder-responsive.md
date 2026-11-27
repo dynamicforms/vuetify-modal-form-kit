@@ -1,4 +1,4 @@
-# FormBuilder Component
+# FormBuilder - responsive layouts
 
 A `FormBuilder` layout can differ per Vuetify breakpoint, on the form, a row or a column.
 
@@ -102,8 +102,8 @@ formBuilder.row({ }, (row) => row
   .breakpoint('md', (bpRow) => { bpRow.columns = []; return bpRow; }));
 ```
 
-`toJSON()` keeps the difference: a breakpoint without content serializes without the `rows` / `columns` /
-`components` key, an empty list serializes as an empty list, and `FormBuilder.fromJSON()` reads it back into a
+`toJSON()` keeps the difference: a breakpoint without content serialises without the `rows` / `columns` /
+`components` key, an empty list serialises as an empty list, and `FormBuilder.fromJSON()` reads it back into a
 layout that renders the same at every breakpoint.
 
 The rules are those of `ResponsiveRenderOptions` in [`@dynamicforms/vuetify-inputs`](:vuetify-inputs:);

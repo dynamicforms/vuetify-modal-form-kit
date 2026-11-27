@@ -278,7 +278,7 @@ describe('Row', () => {
 
     const json = fb.toJSON();
 
-    // Should have 1 row with 3 columns, eash 6 wide (because we specified a 2-column layout)
+    // one row, three columns, each 6 wide: Row.simple(2) adds every component to this row in a new column
     expect(json.rows.length).toBe(1);
     expect(json.rows[0].columns.length).toBe(3);
 

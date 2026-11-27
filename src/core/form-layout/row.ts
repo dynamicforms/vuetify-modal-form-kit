@@ -52,7 +52,7 @@ class RowBase implements ComponentProps {
   }
 }
 
-// a serialized row names `props`, `columns` or a breakpoint; RowProps declares none of those keys, so the two
+// a serialised row names `props`, `columns` or a breakpoint; RowProps declares none of those keys, so the two
 // shapes cannot be mistaken for one another. A row whose JSON states nothing at the base and only overrides a
 // breakpoint names none of the first two, which is why the breakpoints count.
 function isRowJSON(data?: RowPropsPartial | RowJSONResponsive): data is RowJSONResponsive {
@@ -69,7 +69,7 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
   }
 
   /**
-   * Lifts a serialized row - the base and every breakpoint it declares - into a Row, and leaves an existing one
+   * Lifts a serialised row - the base and every breakpoint it declares - into a Row, and leaves an existing one
    * alone.
    */
   static fromJSON(json: RowJSONResponsive | Row): Row {
@@ -108,7 +108,7 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
     responsiveBreakpoints.forEach((bp) => {
       const value = this._value[bp];
       if (!value) return;
-      // a breakpoint that states nothing about the columns must not serialize an empty list: read back, that
+      // a breakpoint that states nothing about the columns must not serialise an empty list: read back, that
       // would state that the row has no columns there
       res[bp] = value.columns ? value.toJSON() : { props: value.props };
     });
@@ -154,8 +154,7 @@ export class Row extends ResponsiveRenderOptions<RowBase> {
 
     const res = new RowBase(result);
     // undefined, not [], where the breakpoint holds no columns - an empty list would state that it has none.
-    // Serialized columns are lifted here, which is the one funnel both the constructor and every
-    // getOptionsForBreakpoint call pass through; a Column already in the list is left as it is.
+    // Lifts serialised columns into Column instances; existing instances are kept.
     res.columns = bp?.columns ? bp.columns.map((col) => Column.fromJSON(col)) : undefined;
     return res;
   }

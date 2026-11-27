@@ -1,9 +1,4 @@
 <template>
-  <!--https://stackoverflow.com/questions/55085735/vuetify-v-dialog-dynamic-width-->
-  <!--
-  `isShown` is derived from the prop and the dialog stack, so it takes no write: the update travels through
-  onModelValueUpdate instead.
-  -->
   <v-dialog
     :class="overlayClass"
     :model-value="isShown"
@@ -15,10 +10,6 @@
     @update:model-value="(value: boolean) => onModelValueUpdate(value)"
   >
     <v-card>
-      <!--
-      Inline `padding: 0` to reset any VitePress or otherwise padding so that v-sheet's default padding
-      is always the same
-      -->
       <v-card-title style="padding: 0">
         <v-sheet
           :color="resolvedColor"
@@ -83,8 +74,7 @@ const instance = getCurrentInstance();
 const display = useDisplay();
 const breakpoint = useBreakpoint();
 const size = computed(() => resolveDialogSize(props.size));
-// The errors of the form itself, not of its members - a group validator's, or what a submit handler wrote to the
-// group - that the inputs' rule shows now: a server error always, any other once the form is touched
+// errors of the form itself, not of its members
 const formErrors = useShownErrors(() => props.formControl);
 const resolvedColor = computed(() => props.color || modalDefaults.titleColor || undefined);
 
@@ -111,13 +101,10 @@ const width = computed<'unset' | number>(() => {
   }
 });
 
-// Identity of a template dialog, which has no dialogId of its own. It has to outlive every recomputation of
-// `sym`: the stack is keyed by symbol, so a fresh one would never match the entry this component pushed.
+// stack key of a template dialog, which has no dialogId
 const ownSym = Symbol('df-dialog');
 const sym = computed(() => props.dialogId ?? ownSym);
-// `sym` is read inside the computed rather than passed to dialogTracker.isTop(): <modal-view> keeps one
-// <df-modal> alive across dialogs and only swaps `dialogId`, so a comparison bound to the symbol seen at setup
-// would hide every dialog after the first.
+// reads `sym` on every evaluation: <modal-view> swaps `dialogId` on one <df-modal>
 const isTop = computed(() => dialogTracker.currentRef.value === sym.value);
 const emit = defineEmits<{
   'update:model-value': [value: boolean];
@@ -125,7 +112,6 @@ const emit = defineEmits<{
 
 function onModelValueUpdate(value: boolean, dontEmit = false) {
   if (!props.dialogId || !value) {
-    // manage stack only if this dialog is a template-one, not managed by api.ts
     if (value) {
       dialogTracker.push(sym.value);
     } else {
@@ -144,24 +130,15 @@ watch(
   { immediate: true },
 );
 
-// The action's value at the current width, resolved with the function <df-actions> draws a button with.
-// defaultConfirm / defaultReject are read off the value, so an Action of vue-forms and of vuetify-inputs both state
-// them; ActionBreakpointRenderOptions does not include them, so a breakpoint stating one is a type error.
 function renderOptions(action: Form.Action) {
   return getRenderOptionsForBreakpoint(action.value ?? {}, breakpoint.value);
 }
 
-// The keyboard reaches an action whose button <df-actions> enables: `executable` is false where the action or a
-// container above it is disabled, the action is not at 'full' visibility or is running, or a handler's
-// canExecute() returns false.
 function isReachable(action: Form.Action) {
   return action.executable;
 }
 
-// execute() is asynchronous and this is a document listener, so nothing wraps it the way Vue wraps a template
-// handler: a rejecting handler would leave an unhandled rejection. The error goes where a template handler's
-// would have gone. An action a handler ended with an AbortEventHandlingException resolves with that exception, so
-// a refusal to run is not reported as a failure.
+// a rejection goes to the app's errorHandler, as it would from a template handler
 function run(action: Form.Action, e: Event) {
   e.preventDefault();
   action.execute(e).catch((error: unknown) => {
@@ -171,41 +148,32 @@ function run(action: Form.Action, e: Event) {
   });
 }
 
-// The action Escape reaches, which is also what the header's close button is a click-target for.
+// the action Escape and the header's close button run
 const rejectAction = computed(() =>
   props.actions.find((action) => renderOptions(action).defaultReject && isReachable(action)),
 );
 
-// The header's close button is shown only while Escape reaches an action.
 const showsCloseButton = computed(() => rejectAction.value !== undefined);
 
 function onClose(e: MouseEvent) {
-  // the same thing Escape does, so the dialog settles with the action's key rather than closing under its caller
   if (rejectAction.value) run(rejectAction.value, e);
 }
 
-// Vuetify teleports every overlay into .v-overlay-container and gives it the z-index its stack hands out when the
-// overlay activates, so the one on screen with the highest z-index is the one the user is looking at. An overlay
-// above the dialog - a <df-select> menu, a <df-date-time> picker - closes on Escape from a window keydown listener
-// of its own and never calls preventDefault(), so that keystroke reaches this handler too. The dialog answers the
-// keyboard only while it is the topmost overlay, which is the same reach a click has.
 const overlayClass = 'df-modal';
 
 function overlayZIndex(el: Element) {
   return Number.parseFloat((el as HTMLElement).style.zIndex) || 0;
 }
 
-// A tooltip and a snackbar are given a z-index above the overlay below them and then kept out of the stack that
-// orders the rest - Vuetify raises the index before it asks whether the overlay joins the stack. Neither takes
-// the keystroke, so neither stands between the dialog and the keyboard.
+// overlays with a z-index above the dialog that do not take the keyboard
 const unstacked = '.v-tooltip, .v-snackbar';
 
+// true when no other active overlay is above this dialog's
 function isTopOverlay() {
   const active = Array.from(document.querySelectorAll('.v-overlay-container .v-overlay--active')).filter(
     (el) => !el.matches(unstacked),
   );
   const own = active.filter((el) => el.classList.contains(overlayClass));
-  // No overlay of this dialog's own on screen: whatever else is open belongs to another dialog, not above this one.
   if (!own.length) return true;
   const top = Math.max(...active.map(overlayZIndex));
   return own.some((el) => overlayZIndex(el) >= top);
@@ -229,9 +197,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown);
-  // Only a template dialog's stack entry belongs to this component. Removing an api-owned one here would take the
-  // dialog off the stack while its modalDefinitions entry and its unsettled promise stay, so the next <modal-view>
-  // to mount would show nothing.
+  // an api-owned entry stays: its promise is still unsettled
   if (!props.dialogId) dialogTracker.remove(sym.value);
 });
 

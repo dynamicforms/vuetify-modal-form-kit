@@ -4,12 +4,7 @@ import { ComponentProps } from '../types';
 
 import { ComponentBuilderBase } from './component';
 
-/**
- * The component a field is drawn as. A generated layout - the one `<modal-view>` builds for a form that carries
- * none of its own - draws a field as `df-input` unless it names another tag here. The tags are
- * `@dynamicforms/vuetify-inputs`' own, so the catalogue of what can be drawn stays with the package that owns
- * the components.
- */
+/** The `@dynamicforms/vuetify-inputs` tag a field is drawn as in a generated layout; `df-input` when absent. */
 declare module '@dynamicforms/vue-forms' {
   interface Extras {
     component?: DfInputComponentTag;

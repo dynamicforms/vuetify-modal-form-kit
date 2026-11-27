@@ -46,7 +46,7 @@
                 <v-card-title class="text-subtitle-1 px-0">Dialog Sizes</v-card-title>
                 <v-card-text class="px-0">
                   Dialogs with different sizes (small, medium, large, x-large); the inputs in the dialog change its
-                  title, icon, title color and size.
+                  title, icon, title colour and size.
                 </v-card-text>
                 <v-card-actions class="px-0">
                   <v-btn-group variant="outlined">
@@ -109,7 +109,7 @@ async function showFormDialog() {
     detail: 'Please enter a valid email address',
   });
 
-  // defaultConfirm / defaultReject color the action primary / secondary and bind it to Enter / Esc - see
+  // defaultConfirm / defaultReject colour the action primary / secondary and bind it to Enter / Esc - see
   // <df-modal>'s `actions` prop
   const submitAction = new Action({ value: { label: 'Submit', icon: 'mdi-check', defaultConfirm: true } });
   const cancelAction = new Action({ value: { label: 'Cancel', icon: 'mdi-close', defaultReject: true } });
@@ -148,15 +148,15 @@ async function showFormDialog() {
 }
 
 // #region dialog-props
-// Dialog sizes: the inputs in the dialog body write the title, the icon, the title color and the size to the open
+// Dialog sizes: the inputs in the dialog body write the title, the icon, the title colour and the size to the open
 // dialog's props
 async function showSizedDialog(size: DialogSize) {
   const titleField = new Field({ value: 'Dialog Size Example', label: 'Dialog title' });
   const iconField = new Field({ value: 'mdi-resize', label: 'Icon' });
-  const colorField = new Field({ value: 'none', label: 'Title color' });
+  const colorField = new Field({ value: 'none', label: 'Title colour' });
   const sizeField = new Field({ value: size, label: 'Dialog size' });
   const icons = ['mdi-resize', 'mdi-star', 'mdi-heart', 'mdi-rocket', 'mdi-palette'];
-  // 'none' sets no color: the title bar keeps its default
+  // 'none' sets no colour: the title bar keeps its default
   const colors = ['none', 'primary', 'secondary', 'success', 'info', 'warning', 'error'];
   const colorOf = (name: string) => (name === 'none' ? undefined : name);
 

@@ -375,8 +375,7 @@ describe('modal service', () => {
     const first = modal.message('Subscribe', 'Enter your email address:', { form });
     const running = submit.execute(null);
 
-    // a dialog opens over it while the executor is still in flight, so by the time the executor answers the
-    // question the resolver was asked - is this dialog the one the user is looking at - has a different answer
+    // a second dialog opens while the executor runs, so the first is no longer on top when it returns
     const second = modal.message('Second', 'on top');
     release('stored');
     expect(await running).toBe('stored');

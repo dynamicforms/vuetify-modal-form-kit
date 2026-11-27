@@ -14,22 +14,8 @@ export interface CloseablePromise<T> extends Promise<T> {
   close: (value: T) => void;
   dialogId: symbol;
   /**
-   * What the executor of the action that settled the dialog returned, once it has. The dialog resolves with the
-   * key of that action - a string a `switch` reads - and this is where anything the action produced besides that
-   * key is found: the record a save handler answered with, the row a picker chose.
-   *
-   * It is `undefined` until the dialog settles, so it is read off the promise after awaiting it rather than off
-   * the awaited value:
-   *
-   * ```typescript
-   * const dialog = modal.message('Edit', 'change what you need', { form, actions: { save } });
-   * const answer = await dialog;        // 'save'
-   * const record = dialog.payload;      // what the save executor returned
-   * ```
-   *
-   * A dialog settled through `close(value)` carries none, and so does one settled by an action that produced
-   * nothing: an action with no executor of its own answers `null`, which is read here as no payload. Where that
-   * distinction matters, `await action.execute()` hands back the chain's answer untouched.
+   * What the executor of the settling action returned; `undefined` until the dialog settles, after `close(value)`,
+   * or when the executor returned `null`/nothing.
    */
   payload?: unknown;
   /** The properties of the dialog, to read and change while it is open. See {@link DialogProps}. */
@@ -40,16 +26,8 @@ export interface ModalOptions {
   form?: Form.Group;
   size?: DialogSizeName;
   /**
-   * The dialog's buttons, keyed by name, merged over the defaults it would otherwise state.
-   *
-   * The dialog resolves with the name of the action that settled it, and an action can carry two: the field name
-   * it has inside `form`, and the key it is written under here. Where one action is reachable both ways - which
-   * is how a form member is also stated as a dialog button - the field name is the one the dialog resolves with:
-   *
-   * ```typescript
-   * const form = new Form.Group({ submit });   // field name: 'submit'
-   * await modal.message(title, body, { form, actions: { send: submit } });   // resolves with 'submit'
-   * ```
+   * The dialog's buttons by name, merged over the default ones. An action that is also a member of `form` resolves
+   * the dialog with its field name.
    */
   actions?: FormActions;
   color?: string;
@@ -225,7 +203,7 @@ export interface ModalData {
   resolve: (value: string) => void;
 }
 
-// Provided by <modal-view> to the body of the dialog it draws; read by useDialog().
+// injection key of the promise of the dialog whose body is rendering
 export const dialogKey: InjectionKey<{ readonly value: CloseablePromise<string> | undefined }> = Symbol('dialog');
 
 const modalDefinitions = {} as Record<symbol, ModalData>;
@@ -303,14 +281,8 @@ class ModalAPI {
     return this.message(title, <SimpleComponentDef>{ componentName, componentProps: props }, modalOptions);
   }
 
-  // Whether the caller states buttons of its own, and so whether the dialog adds its default ones. Only an action
-  // the user can reach counts, which is the read <df-modal>'s keyboard makes: <df-actions> leaves out an action at
-  // 'suppress' and draws one at 'hidden' as `d-none` and one at 'invisible' as `visibility: hidden`, so none of the
-  // three takes a click, and the keyboard answers 'full' alone. A dialog counting one of them would be on screen
-  // with no way out of it.
-  // The visibility is the one the action carries as the dialog opens. The default actions are decided once, at
-  // that moment: an action raised to 'full' or dropped below it later neither removes the dialog's own buttons nor
-  // adds them.
+  // true when options hold an action at 'full' visibility (read once, as the dialog opens); the dialog then adds no
+  // default actions
   private hasOwnAction(options?: ModalOptions): boolean {
     const drawn = (action: Form.Action) => action.visibility === 'full';
     if (Object.values(options?.actions ?? {}).some(drawn)) return true;
@@ -345,12 +317,8 @@ class ModalAPI {
 
     const id = Symbol('modalstack');
 
-    // A registration belongs to the element's declaration, so one chain serves every binding of it and every
-    // dialog opened over one. This handler settles the dialog when the element that executed is the binding the
-    // dialog holds and the dialog is the one on screen. Both are asked after the chain has run, because that is
-    // where settling is decided: an executor may take a while, and the dialog may be closed from the outside
-    // through promise.close() while it does. The handler is dropped when the action stops settling the dialog and
-    // when the dialog settles, so nothing accumulates over repeated openings.
+    // one ExecuteAction per settling action; after the chain runs it settles the dialog if the executed element is
+    // the bound one and the dialog is on top; removed on settle or when the action stops settling
     const registered = new Map<Form.Action, Form.ExecuteAction>();
     const attachResolver = (target: Form.Action, name: string) => {
       const handler = new Form.ExecuteAction(async (field, supr, ...params) => {
@@ -409,8 +377,7 @@ class ModalAPI {
         // read off the promise once it has settled: the dialog resolves with the key, which stays a string.
         // `null` is what a chain with no executor answers, and is no payload.
         promise.payload = payload ?? undefined;
-        // Use nextTick to ensure Vue updates the DOM before cleanup
-        // This prevents race conditions when opening a new dialog immediately after closing one
+        // resolves after the next render, so the closed dialog has left the DOM before the caller can open another
         nextTick(() => resolve(value));
       };
     }) as CloseablePromise<string>;

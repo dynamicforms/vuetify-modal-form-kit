@@ -5,12 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.11.2] - 2026-11-26
+## [0.11.2] - 2026-11-27
 
 ### Added
 
 - `modal.openCount`: the number of dialogs on the dialog stack, those the `modal` service opened and `<df-modal>`
   dialogs whose `v-model` is `true`. Reactive.
+
+### Changed
+
+- `@mdi/font` is no longer a peer dependency: the default actions name `mdi-*` icons, which the application's
+  Vuetify icon set draws.
 
 ## [0.11.1] - 2026-11-14
 

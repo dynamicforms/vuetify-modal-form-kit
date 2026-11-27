@@ -1,4 +1,4 @@
-# Modal Dialog Component
+# Modal dialogs from code
 
 Dialogs opened from code through the `modal` service. They are kept on a stack, the call returns a promise, and a
 dialog can hold a `@dynamicforms/vue-forms` form.
@@ -34,7 +34,7 @@ A message dialog, a yes/no confirmation, a form dialog with validation and sized
 - **Sizing** - `options.size` is `'small'`, `'medium'`, `'large'` or `'x-large'`; each is fullscreen below its own
   breakpoint. `'default'` sizes the dialog to its content.
 - **Changing an open dialog** - the sized dialogs' body holds an input for the title and selects for the icon, the
-  title color and the size. The demo writes their values to the dialog's `props.title`, `props.icon`, `props.color`
+  title colour and the size. The demo writes their values to the dialog's `props.title`, `props.icon`, `props.color`
   and `props.size` - see
   [Changing an open dialog](/api/modal-service#changing-an-open-dialog).
 

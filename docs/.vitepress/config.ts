@@ -4,7 +4,9 @@ import { crosslinksConfig } from 'vitepress-plugin-crosslinks';
 
 export default defineConfig({
   title: 'DynamicForms Vuetify modal form kit',
-  description: 'Vuetify 3 dialogs opened from code or a template, stacked one on screen with Enter/Esc shortcuts, plus responsive form layouts defined in TypeScript.',
+  description:
+    'Vuetify 3 dialogs opened from code or a template, stacked one on screen with Enter/Esc shortcuts, ' +
+    'plus responsive form layouts defined in TypeScript.',
   srcExclude: ['readme.md'],
   transformHead({ pageData, siteConfig }) {
     const path = pageData.relativePath.replace(/(^|\/)index\.md$/, '$1').replace(/\.md$/, '.html');
@@ -24,7 +26,7 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'API', link: '/api/' },
-      { text: 'Examples', link: '/examples/' }
+      { text: 'Examples', link: '/examples/' },
     ],
     sidebar: {
       '/guide/': [
@@ -33,18 +35,21 @@ export default defineConfig({
           items: [
             { text: 'Installation', link: '/guide/getting-started#installation' },
             { text: 'Basic Usage', link: '/guide/getting-started#basic-usage' },
-            { text: "Translating the library's strings", link: '/guide/getting-started#translating-the-library-s-strings' },
+            {
+              text: "Translating the library's strings",
+              link: '/guide/getting-started#translating-the-library-s-strings',
+            },
             { text: 'Translating errors', link: '/guide/getting-started#translating-errors' },
             { text: 'Server-side rendering', link: '/guide/ssr' },
-          ]
+          ],
         },
         {
           text: 'Migration',
           items: [
             { text: 'Changelog', link: '/guide/changelog' },
             { text: 'Migration guide', link: '/guide/migration' },
-          ]
-        }
+          ],
+        },
       ],
       '/api/': [
         {
@@ -57,8 +62,8 @@ export default defineConfig({
             { text: 'FormBuilder', link: '/api/form-builder' },
             { text: 'form-render', link: '/api/form-render' },
             { text: 'component-render', link: '/api/component-render' },
-          ]
-        }
+          ],
+        },
       ],
       '/examples/': [
         {
@@ -68,17 +73,15 @@ export default defineConfig({
             { text: 'form builder - responsive', link: '/examples/form-builder-responsive' },
             { text: 'modal', link: '/examples/dialog-basic' },
             { text: 'modal - template dialog', link: '/examples/dialog-template' },
-          ]
-        }
-      ]
+          ],
+        },
+      ],
     },
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/dynamicforms/vuetify-modal-form-kit' }
-    ],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/dynamicforms/vuetify-modal-form-kit' }],
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2025 Jure Erznožnik'
-    }
+      copyright: 'Copyright © 2025 Jure Erznožnik',
+    },
   },
   vite: {
     plugins: [vuetify()],
@@ -86,10 +89,7 @@ export default defineConfig({
       include: ['vuetify'],
     },
     ssr: {
-      noExternal: [
-        /vuetify/,
-      ],
-    }
+      noExternal: [/vuetify/],
+    },
   },
 });
-
